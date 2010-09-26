@@ -1,0 +1,32 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.26
+Creation-Date: Fri, 11 Dec 2009 16:18:39 +0700
+Modification-Date: Fri, 23 Apr 2010 11:18:18 +0700
+
+====== Styles ======
+
+The style file (.sty) functions within the [[TeX]] publishing system. Here are some tips to working with the style file.
+
+===== Note Order =====
+The order in which the notes at the bottom of the page appear is dependent on how [[TeX]] reads in the styles in the style file. For example if the "Marker f" style is defined before the "Marker x" style, footnotes will be output before cross references on the bottom of the page. Change them around and the order will be reversed.
+
+===== Small Caps =====
+In Latin text, for the \sc, \nd and perhaps a couple of other character style markers the "small caps" feature can be provided as long as the font supports it. Right now, the only Latin font in the SIL repertoire that can provide small caps is Charis SIL version 4.106 available at: http://scripts.sil.org/CharisSIL_download
+
+To invoke the small caps feature (which is implemented as an [[OpenType]] feature), in the project style file (ptx2pdf.sty), find the style marker you wish to use this feature with. Next, insert this code into the style definition on its own line:
+
+	\FontName "[../Fonts/CharisSIL/CharisSILR.ttf]:+smcp"
+
+Remember that this will only work with a font that has this feature added to the font. If you are using a font other than Charis that has the small caps feature, you may need to consult the documentation for the right syntax for evoking that particular feature.
+
+===== Selah and \qs =====
+It should be possible to get the 'Selah' of Psalms, marked up as \qs selah\qs* to become right justified with the following hook. The assumption is the \ps always occurs at the end of a paragraph (marked with \q or similar). This hook for the \qs style should work:
+
+	\sethook{before}{qs}{\hfill\null\nobreak\hfill}
+
+===== Overriding Typeface Styles =====
+If you are using custom style files that are dependent on a parent style file, you might find it necessary to override the typeface style. For example, if you had the typeface set to bold but you wanted to override with italic, you might find that in the end you will end up with bold-italic. To overcome this, you can simply slip a "Regular" in the override style and then follow it with bold. The override would look something like this:
+
+	\Marker s2
+	\Regular
+	\Bold

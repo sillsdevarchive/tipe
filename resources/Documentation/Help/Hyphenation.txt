@@ -1,0 +1,64 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.26
+Creation-Date: Unknown
+Modification-Date: Fri, 23 Apr 2010 13:07:42 +0700
+
+====== Hyphenation ======
+
+Hyphenation is a complex but a very important part of any Scripture publication. This system will generate a hyphenated word list that will work with the [[TeX]] typesetting system and maybe others as well. This system will take multiple forms of input to generate this word list. It works like this.
+
+The client will provide a list of words which will form the primary input. The words it contains will go into the [[TeX]] hyphenation exceptions list. [[TeX]] will break on syllable or word boundaries exactly as they are described to it in this list. For example "Wis-con-sin" will break on one of the two hyphens in the word. If it was expressed "Wisconsin" it wouldn't break at all and that might be what you want.
+
+*****Add more about the names hyphenation file here...
+
+Put the list you just made in a file named hyphen-words.txt and put it in the Source folder. Make sure the character encoding is the same as the Scripture text files in that are in that folder. The final encoding changes can be made when the final list is generated.
+
+Much of the time this list is not enough and many more break boundary descriptions are needed. The next step is to create a list of prefixes and suffixes for every possible word that uses one. That may not be possible but if it is, create two separate files one named prefixes.txt and one called suffixes.txt and put them in the Source folder. In the prefix file make a list, one prefix unit per line and put a hyphen mark after it. Example: pre- but don't put any whole words like, pre-fix. In the suffix file make a list but this time put the hyphen marker at the front of the unit. Example: -fix do not do, suf-fix. Like with the first list, be sure the encoding is the same as all the others in the Source folder.
+
+===== Hyphenation Break Rules =====
+With these two lists in place a lot of words can be generated for the final list but there is one more possible means that can be used to get even more. A provision has been made where you can use a regular expression to generate more words based on simple rules. This is a very limited way but with some languages it can be very effective. To activate this you will need to enter a regular expression in the project.conf file in the hyphenBreakRules field.
+
+Regular expressions are very powerful and can be quite difficult to write correctly. We will use an example here but there is a lot of flexibility in how you write them. In this example we have a Latin script language that can break a line on any syllable that makes it a fairly simple case. Here is the rule for this language as entered in the project.conf file:
+
+hyphenBreakRules = "(?u).([eo]\u0300|(uo|[uo])\u0302|[aeiou])[\u0301\u030C\u0324]?(?=[^\u0300-\u0302\u030C\u0324])"
+
+**Summary:**
+1. (?u) = Any character
+2. . = combined with...
+3. ([eo]\u0300 = the character "e" or "o" with the \u0300 diacritic
+4. | = or
+5. (uo | [uo] the character "u" or "o" or the character combination of "uo" that has the \u0302 diacritic with it
+6. |[aeiou] = or one of these characters "a, e, i, o, u"
+7. [\u0301\u030C\u0324]? = that could contain one of these diacritics
+8. (?=[^\u0300-\u0302\u030C\u0324]) = then match any character at the end of the string except for these noted here
+
+It should be noted that the order of the vowels is important. If the [aeiou] is at the beginning it will fail in a number of places. As the engine searches from left to right, it is always best to search from least occurrence to greatest.
+
+Write more here...
+
+*****Outline the basic procedure with the commands needed to make it happen. Remember that the project needs to be reset and the source must be in its final form before an accurate word list can be generated.
+
+==== \lccode ====
+At this time, not everything is fully understood about hyphenation in TeX. What we do know now is that when it works, it looks great, when it doesn't work, it looks ugly. There's much to learn about this from the [[TeX]] book in Appendix H (pg. 448-455) and other places in the book.
+
+As we are not yet running under a rules-based system, which would be nice to do at some point, we use the exceptions list to drive our hyphenation process in TeX. This works, but is not optimal. One thing that is necessary in using the exceptions list is to set the lccode. When using some Unicode fonts it is sometimes necessary to set the \lccode for those characters which would be normally set to '0'. (See the TeX book pg. 41 & 345 for more details.)
+
+Sometimes you have a large range of codes to cover so for this reason we put the list in a file in your Hyphenation directory called "lccodelist.txt". The make_tex_hyphenation.py process will find it and insert them into your project hyphenation next time it builds it. The codes should be entered into that file like this:
+
+	\lccode"1000="1000
+	\lccode"1001="1001
+	...
+
+If you have a whole bunch of characters to cover you may want to automate the process with this nifty line of Perl code by Martin Hosken:
+
+	perl -e 'for (0x1000..0x109F) { printf "\\lccode \"%X = \"%X\n", $_, $_}' >lccodelist.txt
+
+Adjust for your situation.
+
+The above code will generate a blind list of \lccodes but you may want something more precise. Though not tested, this Perl code, also by Martin should give you an exact list of \ccodes for your project:
+
+	perl -CSD -ne 'foreach(split("")){$c{$_}++}; END {print join("\n", map {sprintf("\\lcode \"%04X = \"%04X", ord($_), ord($_))} sort keys %c)}' wordlist.txt > lccodelist.txt
+
+Again, adjust for your project.
+
+**One last note**, it is important and very necessary that you define non-word-forming characters in the lccode list. They need to be set to "0". If you do not, [[TeX]] will look for words that contain them and when it doesn't find one it will not bother to hyphenate the word, even though it is in the exceptions list. When you start a new project an lccodelist.txt file should have been copied into the Hyphenation folder. It should contain definitions for all the non-word-forming characters such as punctuation. However, you may need to add to it additional characters found in your orthography that are used for punctuation and such.

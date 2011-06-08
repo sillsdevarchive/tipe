@@ -140,3 +140,5 @@ class ErrorManager (object) :
 
 		errorWriteObject.write(event + '\n')
 		errorWriteObject.close()
+
+

@@ -85,3 +85,4 @@ def doIt(pathToProject, projType) :
 
 	thisModule = MakeNewProject()
 	return thisModule.main(pathToProject, projType)
+

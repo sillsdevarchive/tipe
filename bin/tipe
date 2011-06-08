@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
-# version: 20080423
+# version: 20110608
 # By Dennis Drescher (dennis_drescher at sil.org)
 
 # This script has been tested on Python 2.5.1 (Ubuntu)
@@ -16,10 +16,7 @@
 # respective project.
 
 # History:
-# 20080613 - djd - Initial draft
-# 20081023 - djd - Refactor .project.conf structure changes
-# 20081028 - djd - Removed system logging. Only using
-#        process logging now.
+# 20110608 - djd - Began refactor from ptxplus to tipe
 
 
 #############################################################
@@ -31,10 +28,10 @@
 import sys, os, codecs, shutil, operator
 
 
-basePath = os.environ.get('PTXPLUS_BASE')
+basePath = os.environ.get('TIPE_BASE')
 if not basePath :
-	basePath = "/usr/share/xetex-ptxplus"
-	os.environ['PTXPLUS_BASE'] = basePath
+	basePath = "/usr/share/xetex-tipe"
+	os.environ['TIPE_BASE'] = basePath
 
 # Before we get started we need to do some preliminary
 # tests to see what the environment we are starting in
@@ -94,7 +91,7 @@ if projectType in tools.getSystemSettingsObject()['System']['pubTypeList'] :
 
 
 if command == "manage" :
-	tools.userMessage("\n\t\tWelcome to XeTeX-ptxplus!\n")
+	tools.userMessage("\n\t\tWelcome to TIPE!\n")
 
 else :
 	# FIXME: Right now we hard code for publication types but
@@ -182,8 +179,8 @@ def importProject () :
 
 def archiveProject () :
 	'''Do an archive of any project. If a file name argument is passed we know
-		the ptxplus-manager is initiating the call. If no file name is sent
-		then it is a blind call from the ptxplus program and will use default
+		the tipe-manager is initiating the call. If no file name is sent
+		then it is a blind call from the tipe program and will use default
 		settings to produce an archive file in the Archive folder.'''
 
 	if len(sys.argv) < 3 :
@@ -221,8 +218,7 @@ if command == "manage" :
 	# In this instance we want to just call the GUI manager and release control cleanly
 	# We will make this generic enough to call a different manager gui
 	head, tail = os.path.split(sys.argv[0])
-	print "/bin/python/ptxplus-manager/" + tail + "-manager"
-	os.execl(basePath + "/bin/python/ptxplus-manager/" + tail + "-manager", "")
+	os.execl(basePath + "/bin/python/tipe-manager/" + tail + "-manager", "")
 
 elif command == "help" :
 	# We have to help the user get started so this will allow us to call help
@@ -270,8 +266,8 @@ elif command == "example" :
 				os.chdir(sys.argv[2])
 
 	except :
-		os.mkdir("ptxplus-example")
-		os.chdir("ptxplus-example")
+		os.mkdir("tipe-example")
+		os.chdir("TIPE_BASE-example")
 
 
 	mod = __import__("import_project")

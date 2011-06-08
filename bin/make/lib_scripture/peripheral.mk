@@ -12,8 +12,7 @@
 
 # History:
 
-# 20100824 - djd - Initial draft version. Moved all the code from the
-#		now deprecated matter_peripheral.mk
+# 20110608 - djd - Initial draft version from ptxplus
 
 
 ##############################################################
@@ -202,7 +201,7 @@ view-cover : $(PATH_PROCESS)/GROUP_COVER.$(EXT_PDF)
 	@ $(VIEWPDF) $< &
 
 # To produce individual elements of the outer cover just
-# use: ptxplus view-<file_name>
+# use: tipe view-<file_name>
 
 # Produce just the font group (bound)
 view-front : $(PATH_PROCESS)/GROUP_FRONT.$(EXT_PDF)

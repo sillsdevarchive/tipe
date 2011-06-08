@@ -5,9 +5,7 @@
 
 # History:
 
-# 20100602 - djd - Initial version created from code in
-#		matter_books.mk file.
-# 20100615 - djd - Changed hard codded extions to vars
+# 20110608 - djd - Initial version created from ptxplus
 
 
 ##############################################################

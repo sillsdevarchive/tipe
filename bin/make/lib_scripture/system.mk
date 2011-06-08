@@ -4,40 +4,7 @@
 
 # History:
 
-# 20080403 - djd - Added header information
-# 20080404 - djd - Removed front, mid and back matter stuff
-# 20080406 - did - Added PROCESS_INSTRUCTIONS rule
-# 20080407 - djd - Moved setup functions to this module
-# 20080410 - djd - Changed some vars to more descriptive ones
-# 20080429 - djd - Removed PY_SETTINGS var refs
-# 20080502 - djd - Changed path to process_instructions.mk
-# 20080504 - djd - Added a bulk copy rule for all admin files
-# 20080514 - djd - Added support for 3 level projects
-# 20080517 - djd - Removed rule for making process_instructions
-#		This is now handled by make_new_project.py
-# 20080627 - djd - Channeled some processes through the system
-#		processing command
-# 20080726 - djd - Moved folder create rules to this file
-# 20080807 - djd - Moved several rules out for new system
-#		organization
-# 20080809 - djd - Removed all system level rules as they are
-#		now being handled by the Python scripts.
-# 20080906 - djd - Took out the cleaning rules for source text
-# 20080926 - djd - Added Wiki information management rules
-# 20081004 - djd - Added project conf files editing rule
-# 20090110 - djd - Added booklet binding
-# 20091210 - djd - Reorganized and changed names of component
-#		groups to be more consistant
-# 20091211 - djd - Did more adjustments on the rules. Also, had
-#		this file moved to the end of the include chain
-#		because some rules in this file were dependent
-#		on rules that had not been expanded yet.
-# 20091223 - djd - Removed references to MAPS folder
-# 20100507 - djd - Moved out rules for illustration creation
-# 20100611 - djd - Added functions to share
-# 20100615 - djd - Changed hard codded extions to vars
-# 20100618 - djd - Added extra warning with zenity dialogs
-#		to the clean up process.
+# 20110608 - djd - Intial draft from ptxplus
 
 
 ##############################################################

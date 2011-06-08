@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- coding: utf_8 -*-
-# version: 20080729
+# version: 20110608
 # By Dennis Drescher (dennis_drescher at sil.org)
 
 # This script has been tested on Python 2.5.1 (Ubuntu)
@@ -16,8 +16,7 @@
 # chunks of text to checking classes.
 
 # History:
-# 20081128 - djd - Initial draft
-# 20090505 - djd - Added a filter for peripheral matter files
+# 20110608 - djd - Initial draft from ptxplus
 
 
 #############################################################
@@ -73,3 +72,4 @@ def doIt (log_manager):
 
 	thisModule = CheckBook()
 	return thisModule.main(log_manager)
+

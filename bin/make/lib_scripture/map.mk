@@ -16,28 +16,7 @@
 
 # History:
 
-# 20080925 - djd - Initial draft version.
-# 20090909 - te - Some debugging work was done to fix a problem
-#		with a python script not being called. More needs
-#		to be done on this and other make file scripts to
-#		make them more concise in the way the exicute.
-# 20090914 - djd - Removed some double dependency rules to simplify
-#		the process. Also removed the dependency for
-#		pdf generation. The process will fail if preprocessing
-#		has not been done. The reason is that there is
-#		a proceedure conflict between maps and books.
-# 20090923 - djd - Added the link-maps command to make created linked
-#		files easier.
-# 20091201 - djd - Changed references for MAP_IDS to MATTER_MAPS to
-#		reflect changes in the rest of the system
-# 20100113 - djd - Added code for processing maps with seperate
-#		style files
-# 20100116 - djd - Did a virtual rewrite on the process. It is now
-#		more consistant with the rest of the processes.
-# 20100125 - djd - Added ability to process map graphic files
-#		that have been created by an external process
-# 20100202 - djd - Added auto CMYK conversion ability
-# 20100615 - djd - Changed hard codded extions to vars
+# 20110608 - djd - Initial draft version from ptxplus.
 
 
 ##############################################################

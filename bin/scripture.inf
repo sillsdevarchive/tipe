@@ -107,7 +107,7 @@ FILE_HYCUSTOM               = 'hyphen-custom.txt'
 
 # HYPHEN PREFIX LIST
 # Some projects can benifit from hyphenating words that have
-# prefixes. ptxplus will support this by auto-hyphenating
+# prefixes. tipe will support this by auto-hyphenating
 # words that use certain specified word prefixes. All you
 # have to do is tell it where to find the file and it will
 # do the rest.
@@ -115,7 +115,7 @@ FILE_HYPREFIX               = 'hyphen-prefixes.txt'
 
 # HYPHEN SUFFIX LIST
 # Some projects can benifit from hyphenating words that have
-# suffixes. ptxplus will support this by auto-hyphenating
+# suffixes. tipe will support this by auto-hyphenating
 # words that use certain specified word suffixes. All you
 # have to do is tell it where to find the file and it will
 # do the rest.
@@ -124,7 +124,7 @@ FILE_HYSUFFIX               = 'hyphen-suffixes.txt'
 # MARGINAL VERSES MACRO
 # The file name of the TeX marginal verses macro used
 # in ptx2pdf.
-FILE_MARGINAL_VERSES        = 'ptxplus-marginalverses.tex'
+FILE_MARGINAL_VERSES        = 'tipe-marginalverses.tex'
 
 # AUTO TOC FILE
 # When auto TOC generation is turned on the contents
@@ -238,27 +238,27 @@ PATH_TEXTS                   = 'Texts'
 # Path to all peripheral matter template files
 # that will be used in the Source, Texts and
 # Process folders
-PATH_RESOURCES_TEMPLATES     = '__PTXPLUS__/resources/lib_templates'
+PATH_RESOURCES_TEMPLATES     = '__TIPE__/resources/lib_templates'
 
 # The path to the (global) maps source library. If no map files
 # are found in the source folder, new ones will be copied in from
 # this location. (DO NOT CHANGE)
-PATH_RESOURCES_MAPS          = '__PTXPLUS__/resources/lib_maps'
+PATH_RESOURCES_MAPS          = '__TIPE__/resources/lib_maps'
 
-# The path to the ptxplus system Illustrations folder
-PATH_RESOURCES_ILLUSTRATIONS = '__PTXPLUS__/resources/lib_illustrations'
+# The path to the tipe system Illustrations folder
+PATH_RESOURCES_ILLUSTRATIONS = '__TIPE__/resources/lib_illustrations'
 
-# The path to the ptxplus system Process folder
-PATH_RESOURCES_PROCESS       = '__PTXPLUS__/resources/lib_sysFiles/Process'
+# The path to the tipe system Process folder
+PATH_RESOURCES_PROCESS       = '__TIPE__/resources/lib_sysFiles/Process'
 
-# The path to the ptxplus system Hyphenation folder
-PATH_RESOURCES_HYPHENATION   = '__PTXPLUS__/resources/lib_sysFiles/Hyphenation'
+# The path to the tipe system Hyphenation folder
+PATH_RESOURCES_HYPHENATION   = '__TIPE__/resources/lib_sysFiles/Hyphenation'
 
 # The path to the new wiki pages
-PATH_WIKI_SOURCE             = '__PTXPLUS__/resources/lib_sysFiles/Admin/Wiki'
+PATH_WIKI_SOURCE             = '__TIPE__/resources/lib_sysFiles/Admin/Wiki'
 
 # This is where the system help can be found
-PATH_SYSTEM_HELP             = '__PTXPLUS__/resources/Documentation/Help'
+PATH_SYSTEM_HELP             = '__TIPE__/resources/Documentation/Help'
 
 # FILE EXTENSIONS
 # These are working extensions used by the system. The
@@ -344,8 +344,8 @@ MOD_IMPORT                  = 'copy_from_source'
 # RUN PROCESS
 # This is the main module used to run all processes on the
 # system. This needs to have the full path in it.
-#   Default = $(PTXPLUS_BASE)/bin/python/lib_system/run_process.py
-MOD_RUN_PROCESS             = '$(PTXPLUS_BASE)/bin/python/lib_system/run_process.py'
+#   Default = $(TIPE_BASE)/bin/python/lib_system/run_process.py
+MOD_RUN_PROCESS             = '$(TIPE_BASE)/bin/python/lib_system/run_process.py'
 
 # TEX
 # These are general TeX settings used by the system for
@@ -357,7 +357,7 @@ MOD_RUN_PROCESS             = '$(PTXPLUS_BASE)/bin/python/lib_system/run_process
 TEX_ENGINE                   = 'xetex'
 
 # TeX inputs setting
-TEX_INPUTS                   = 'TEXINPUTS=$(PATH_HOME):$(PATH_HOME)/$(PATH_HYPHENATION):$(PTXPLUS_BASE)/bin/tex/lib_scripture:.'
+TEX_INPUTS                   = 'TEXINPUTS=$(PATH_HOME):$(PATH_HOME)/$(PATH_HYPHENATION):$(TIPE_BASE)/bin/tex/lib_scripture:.'
 
 # COMPONENT SOURCE NAME (PTX)
 # Source names for all the components handled by this system.

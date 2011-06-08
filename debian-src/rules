@@ -15,7 +15,7 @@ build-stamp:
 	# Add here commands to compile the package.
 	#$(MAKE)
 
-	perl -i -pe 's/=.*$$/= "$(UPSTREAM)"/ if (m/^systemVersion/o)' bin/ptxplus.conf
+	perl -i -pe 's/=.*$$/= "$(UPSTREAM)"/ if (m/^systemVersion/o)' bin/tipe.conf
 	touch build-stamp
 
 clean:

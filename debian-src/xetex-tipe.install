@@ -1,0 +1,7 @@
+bin     usr/share/xetex-tipe
+resources     usr/share/xetex-tipe
+bin/tipe     usr/bin
+bin/python/tipe-manager/tipe-manager    usr/bin
+debian/xetex-tipe.desktop    /usr/share/applications
+debian/xetex-tipe.png        /usr/share/icons/hicolor/48x48/apps
+debian/xetex-tipe.png        /usr/share/icons/gnome/48x48/apps

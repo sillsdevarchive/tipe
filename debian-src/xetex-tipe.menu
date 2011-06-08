@@ -1,0 +1,5 @@
+?package(xetex-tipe):needs="X11" section="Applications/Office" \
+  title="TIPE Manager" command="/usr/bin/tipe-manager" \
+  longtitle="TIPE Manager" \
+  description="GUI to control TIPE" \
+  icon48x48="/usr/share/icons/hicolor/48x48/xetex-tipe.png"

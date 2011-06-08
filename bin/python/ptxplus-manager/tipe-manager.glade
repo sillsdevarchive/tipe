@@ -4,7 +4,7 @@
   <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="w_main">
 	<property name="visible">True</property>
-	<property name="title" translatable="yes">ptxplus-manager</property>
+	<property name="title" translatable="yes">tipe-manager</property>
 	<signal name="delete_event" handler="on_w_main_delete_event"/>
 	<child>
 	  <widget class="GtkVBox" id="vbox1">
@@ -116,7 +116,7 @@
 					  <widget class="GtkImageMenuItem" id="menu_quit">
 						<property name="label">gtk-quit</property>
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Quite ptxplus manager</property>
+						<property name="tooltip" translatable="yes">Quite tipe manager</property>
 						<property name="use_underline">True</property>
 						<property name="use_stock">True</property>
 						<property name="always_show_image">True</property>
@@ -893,7 +893,7 @@
 					  <widget class="GtkImageMenuItem" id="menu_about">
 						<property name="label">gtk-about</property>
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">About XeTeX-ptxplus Manager</property>
+						<property name="tooltip" translatable="yes">About XeTeX-tipe Manager</property>
 						<property name="use_underline">True</property>
 						<property name="use_stock">True</property>
 						<property name="always_show_image">True</property>
@@ -912,52 +912,10 @@
 		  </packing>
 		</child>
 		<child>
-		  <widget class="GtkHBox" id="hbox2">
-			<property name="visible">True</property>
-			<child>
-			  <widget class="GtkVBox" id="vbox3">
-				<property name="visible">True</property>
-				<child>
-				  <widget class="GtkComboBox" id="cb_components_tb">
-					<property name="width_request">1</property>
-					<property name="visible">True</property>
-					<property name="tooltip" translatable="yes">Select component to process</property>
-					<property name="wrap_width">5</property>
-					<signal name="changed" handler="on_cb_components_changed"/>
-				  </widget>
-				  <packing>
-					<property name="expand">False</property>
-					<property name="fill">False</property>
-					<property name="padding">4</property>
-					<property name="position">1</property>
-				  </packing>
-				</child>
-			  </widget>
-			  <packing>
-				<property name="position">0</property>
-			  </packing>
-			</child>
-			<child>
-			  <widget class="GtkToolbar" id="toolbar1">
-				<property name="visible">True</property>
-			  </widget>
-			  <packing>
-				<property name="position">1</property>
-			  </packing>
-			</child>
-			<child>
-			  <placeholder/>
-			</child>
-		  </widget>
-		  <packing>
-			<property name="position">1</property>
-		  </packing>
-		</child>
-		<child>
 		  <widget class="GtkHBox" id="hbox1">
 			<property name="visible">True</property>
 			<child>
-			  <widget class="GtkVBox" id="vbox2">
+			  <widget class="GtkVBox" id="vbox3">
 				<property name="visible">True</property>
 				<child>
 				  <widget class="GtkLabel" id="label2">
@@ -972,10 +930,9 @@
 				  </packing>
 				</child>
 				<child>
-				  <widget class="GtkComboBox" id="cb_components1">
+				  <widget class="GtkComboBox" id="cb_components">
 					<property name="width_request">1</property>
 					<property name="visible">True</property>
-					<property name="tooltip" translatable="yes">Select component to process</property>
 					<property name="wrap_width">5</property>
 					<signal name="changed" handler="on_cb_components_changed"/>
 				  </widget>
@@ -1108,7 +1065,6 @@
 			  <widget class="GtkNotebook" id="notebook1">
 				<property name="visible">True</property>
 				<property name="can_focus">True</property>
-				<property name="tab_hborder">0</property>
 				<signal name="switch_page" handler="on_notebook1_switch_page" after="yes"/>
 				<child>
 				  <widget class="GtkScrolledWindow" id="sc_session">
@@ -1237,7 +1193,7 @@
 						  </packing>
 						</child>
 						<child>
-						  <widget class="GtkVBox" id="vbox4">
+						  <widget class="GtkVBox" id="vbox2">
 							<property name="visible">True</property>
 							<child>
 							  <widget class="GtkLabel" id="label1">
@@ -1527,7 +1483,7 @@
 			</child>
 		  </widget>
 		  <packing>
-			<property name="position">2</property>
+			<property name="position">1</property>
 		  </packing>
 		</child>
 		<child>
@@ -1537,7 +1493,7 @@
 		  </widget>
 		  <packing>
 			<property name="expand">False</property>
-			<property name="position">3</property>
+			<property name="position">2</property>
 		  </packing>
 		</child>
 	  </widget>

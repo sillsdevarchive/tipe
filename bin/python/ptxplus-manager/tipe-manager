@@ -6,23 +6,7 @@
 #    Add a dialog to confirm restore of a backup
 
 # History:
-# 20081023 - djd - Changed references to config object to reflect
-#       reorganization to the .project.conf file
-# 20081112 - djd - Added an example menu item
-# 20081229 - djd - Added menu items, Preprocess, Process and Bind
-# 20090914 - djd - Removed "-book" from preprocess-book to try to resolve
-#       a makefile conflict with the maps routine.
-# 20091201 - djd - Removed Preprocess menu item, added groups to the component list
-#       and a few other modifications for processing groups
-# 20091209 - djd - Added code for get-clip command
-# 20091214 - djd - Added some wordlist and hyphen list making commands
-# 20100609 - djd - Fixed a problem with list values that only have one element
-#       being messed up when saved by the UI. Thanks TimE
-# 20100629 - djd - More robust read and write in list form was added by TimE
-#       this enabled us to put a comma in a comma seperated list.
-# 20100728 - djd - A a menu item for running postprocesses only
-# 20100804 - djd - Added a fix to keep object types in place after they have
-#       been modified (TimE)
+# 20110608 - djd - Intial refactor from ptxplus
 
 ########################################################################################
 
@@ -60,9 +44,9 @@ class ConfigGUI (object) :
 	"""A GTK based configuration file editor."""
 
 	def __init__ (self) :
-		basePath = os.environ.get('PTXPLUS_BASE')
+		basePath = os.environ.get('TIPE_BASE')
 		if not basePath:
-			basePath = "/usr/share/xetex-ptxplus"
+			basePath = "/usr/share/xetex-tipe"
 			self.binpath = ''
 		else :
 			self.binpath = basePath + "/bin/"
@@ -76,8 +60,8 @@ class ConfigGUI (object) :
 		self._tools = tools
 
 		# Some local settings
-		self.gladefile = basePath + "/bin/python/ptxplus-manager/ptxplus-manager.glade"
-		self.iconfile = basePath + "/resources/icons/ptxplus.png"
+		self.gladefile = basePath + "/bin/python/tipe-manager/tipe-manager.glade"
+		self.iconfile = basePath + "/resources/icons/tipe.png"
 		self.bkid = ''
 		self.wTree = gtk.glade.XML(self.gladefile)
 		self.wTree.get_widget('w_main').set_icon_from_file(self.iconfile)
@@ -353,7 +337,7 @@ class ConfigGUI (object) :
 # updated in the UI.
 
 	def execute (self, command, *opts) :
-		if command == 'ptxplus' and self.binpath != '' :
+		if command == 'tipe' and self.binpath != '' :
 			command = self.binpath + command
 		str = "%s %s" % (command, " ".join(opts))
 		self.write_files()
@@ -380,10 +364,10 @@ class ConfigGUI (object) :
 		newdir = None
 		while not newdir :
 			if isProject :
-				title = "ptxplus: Open Project Directory"
+				title = "tipe: Open Project Directory"
 				action = gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER
 			else :
-				title = "ptxplus: Create Project Directory"
+				title = "tipe: Create Project Directory"
 				action = gtk.FILE_CHOOSER_ACTION_CREATE_FOLDER
 
 			fcd = gtk.FileChooserDialog(title, self.wTree.get_widget('w_main'),
@@ -490,7 +474,7 @@ class ConfigGUI (object) :
 		self.nb_switch_page(None,None,None)
 
 	def makeDir (self) :
-		fcd = gtk.FileChooserDialog("ptxplus: Project Directory", None,
+		fcd = gtk.FileChooserDialog("tipe: Project Directory", None,
 				gtk.FILE_CHOOSER_ACTION_CREATE_FOLDER,
 				(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
 				 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -521,12 +505,12 @@ class ConfigGUI (object) :
 		# FIXME: Also, I would like to see better project path
 			# information sent out. This is incase we want to setup
 			# a project in some other place than cwd.
-		self.execute("ptxplus", "setup", "scripture", ".")
+		self.execute("tipe", "setup", "scripture", ".")
 		self.init_dir()
 		self.ourProjectConf = ".scripture.conf"
 
 	def m_open (self, widget) :
-		self.execute("ptxplus", "open", ".")
+		self.execute("tipe", "open", ".")
 		self.set_working_dir(True)
 
 	def m_import (self, widget) :
@@ -540,11 +524,11 @@ class ConfigGUI (object) :
 		if self.cimport.dir :
 			os.chdir(self.cimport.dir)
 			self.execute("cd", self.cimport.dir)
-			self.execute("ptxplus", "import", self.cimport.archive)
+			self.execute("tipe", "import", self.cimport.archive)
 			self.wTree.get_widget('menu_reload').emit('activate')
 
 	def m_archive (self, widget) :
-		fcd = gtk.FileChooserDialog("ptxplus: Name Archive File", None,
+		fcd = gtk.FileChooserDialog("tipe: Name Archive File", None,
 				gtk.FILE_CHOOSER_ACTION_SAVE,
 				(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
 				 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
@@ -555,19 +539,19 @@ class ConfigGUI (object) :
 			return
 		newdir = fcd.get_filename()
 		fcd.destroy()
-		self.execute("ptxplus", "archive", newdir)
+		self.execute("tipe", "archive", newdir)
 
 	def m_restore (self, widget) :
-		self.execute("ptxplus", "restore")
+		self.execute("tipe", "restore")
 
 	def m_backup (self, widget) :
-		self.execute("ptxplus", "backup")
+		self.execute("tipe", "backup")
 
 	def m_reload (self, widget) :
 		self.init_dir(self.bkid)
 
 	def m_reset (self, widget) :
-		self.execute("ptxplus", "reset")
+		self.execute("tipe", "reset")
 
 	def m_quit (self, widget) :
 		self.quit()
@@ -603,146 +587,146 @@ class ConfigGUI (object) :
 	##### Menu - Setup
 
 	def m_make_piclist_current (self, widget) :
-		self.execute("ptxplus", "piclist-make-" + self.bkid)
+		self.execute("tipe", "piclist-make-" + self.bkid)
 
 	def m_make_piclist_all (self, widget) :
-		self.execute("ptxplus", "piclist-make-all")
+		self.execute("tipe", "piclist-make-all")
 
 	def m_remove_piclist_current (self, widget) :
-		self.execute("ptxplus", "piclist-remove-" + self.bkid)
+		self.execute("tipe", "piclist-remove-" + self.bkid)
 
 	def m_remove_piclist_all (self, widget) :
-		self.execute("ptxplus", "piclist-remove-all")
+		self.execute("tipe", "piclist-remove-all")
 
 	def m_make_adjlist_current (self, widget) :
-		self.execute("ptxplus", "adjlist-make-" + self.bkid)
+		self.execute("tipe", "adjlist-make-" + self.bkid)
 
 	def m_make_adjlist_all (self, widget) :
-		self.execute("ptxplus", "adjlist-make-all")
+		self.execute("tipe", "adjlist-make-all")
 
 	def m_remove_adjlist_current (self, widget) :
-		self.execute("ptxplus", "adjlist-remove-" + self.bkid)
+		self.execute("tipe", "adjlist-remove-" + self.bkid)
 
 	def m_remove_adjlist_all (self, widget) :
-		self.execute("ptxplus", "adjlist-remove-all")
+		self.execute("tipe", "adjlist-remove-all")
 
 	def m_wordlist (self, widget) :
-		self.execute('ptxplus', 'make-master-wordlist')
+		self.execute('tipe', 'make-master-wordlist')
 
 	def m_hyphenlist (self, widget) :
-		self.execute('ptxplus', 'make-hyphen-wordlist')
+		self.execute('tipe', 'make-hyphen-wordlist')
 
 	def m_tex_hyphen (self, widget) :
-		self.execute('ptxplus', 'make-tex-hyphens')
+		self.execute('tipe', 'make-tex-hyphens')
 
 	def m_tex_hyphen_overwrite (self, widget) :
-		self.execute('ptxplus', 'overwrite-tex-hyphens')
+		self.execute('tipe', 'overwrite-tex-hyphens')
 
 	##### Menu - Process
 
 
 	def m_remove_pdf_current (self, widget) :
-		self.execute("ptxplus", "pdf-remove-" + self.bkid)
+		self.execute("tipe", "pdf-remove-" + self.bkid)
 
 
 
 
 
 	def m_preprocess_all (self, widget) :
-		self.execute("ptxplus", "preprocess-content")
+		self.execute("tipe", "preprocess-content")
 
 	def m_preprocess_current (self, widget) :
-		self.execute("ptxplus", "preprocess-" + self.bkid)
+		self.execute("tipe", "preprocess-" + self.bkid)
 
 	def m_postprocess_all (self, widget) :
-		self.execute("ptxplus", "postprocess-content")
+		self.execute("tipe", "postprocess-content")
 
 	def m_postprocess_current (self, widget) :
-		self.execute("ptxplus", "postprocess-" + self.bkid)
+		self.execute("tipe", "postprocess-" + self.bkid)
 
 	# Menu - Benchmark
 
 	def m_benchmark_text_current (self, widget) :
-		self.execute("ptxplus", "benchmark-text-" + self.bkid)
+		self.execute("tipe", "benchmark-text-" + self.bkid)
 
 	def m_benchmark_text_current_set (self, widget) :
-		self.execute("ptxplus", "benchmark-text-set-" + self.bkid)
+		self.execute("tipe", "benchmark-text-set-" + self.bkid)
 
 	def m_benchmark_text_all (self, widget) :
-		self.execute("ptxplus", "benchmark-text-all")
+		self.execute("tipe", "benchmark-text-all")
 
 	def m_benchmark_wordlist_current (self, widget) :
-		self.execute("ptxplus", "benchmark-wordlist-" + self.bkid)
+		self.execute("tipe", "benchmark-wordlist-" + self.bkid)
 
 	def m_benchmark_wordlist_set_current (self, widget) :
-		self.execute("ptxplus", "benchmark-wordlist-set-" + self.bkid)
+		self.execute("tipe", "benchmark-wordlist-set-" + self.bkid)
 
 	def m_benchmark_wordlist_master (self, widget) :
-		self.execute("ptxplus", "benchmark-wordlist-master")
+		self.execute("tipe", "benchmark-wordlist-master")
 
 	def m_benchmark_wordlist_set_master (self, widget) :
-		self.execute("ptxplus", "benchmark-wordlist-set-master")
+		self.execute("tipe", "benchmark-wordlist-set-master")
 
 	def m_benchmark_wordlist_all (self, widget) :
-		self.execute("ptxplus", "benchmark-wordlist-all")
+		self.execute("tipe", "benchmark-wordlist-all")
 
 	def m_benchmark_hyphen_tex (self, widget) :
-		self.execute("ptxplus", "benchmark-hyphen-tex")
+		self.execute("tipe", "benchmark-hyphen-tex")
 
 	def m_benchmark_hyphen_set_tex (self, widget) :
-		self.execute("ptxplus", "benchmark-hyphen-set-tex")
+		self.execute("tipe", "benchmark-hyphen-set-tex")
 
 	def m_benchmark_hyphen_txt (self, widget) :
-		self.execute("ptxplus", "benchmark-hyphen-txt")
+		self.execute("tipe", "benchmark-hyphen-txt")
 
 	def m_benchmark_hyphen_set_txt (self, widget) :
-		self.execute("ptxplus", "benchmark-hyphen-set-txt")
+		self.execute("tipe", "benchmark-hyphen-set-txt")
 
 	def m_benchmark_hyphen_all (self, widget) :
-		self.execute("ptxplus", "benchmark-hyphen-all")
+		self.execute("tipe", "benchmark-hyphen-all")
 
 	##### Menu - Maps
 
 	def m_map_view_model (self, widget) :
-		self.execute("ptxplus", "view-map-model-" + self.bkid)
+		self.execute("tipe", "view-map-model-" + self.bkid)
 
 	def m_map_edit_data (self, widget) :
-		self.execute("ptxplus", "edit-map-data-" + self.bkid)
+		self.execute("tipe", "edit-map-data-" + self.bkid)
 
 	def m_map_view_template (self, widget) :
-		self.execute("ptxplus", "view-map-template-" + self.bkid)
+		self.execute("tipe", "view-map-template-" + self.bkid)
 
 	def m_map_edit_styles (self, widget) :
-		self.execute("ptxplus", "edit-map-styles-" + self.bkid)
+		self.execute("tipe", "edit-map-styles-" + self.bkid)
 
 	def m_map_merge_data (self, widget) :
-		self.execute("ptxplus", "preprocess-map-" + self.bkid)
+		self.execute("tipe", "preprocess-map-" + self.bkid)
 
 	def m_map_create_rgb (self, widget) :
-		self.execute("ptxplus", "view-map-" + self.bkid)
+		self.execute("tipe", "view-map-" + self.bkid)
 
 	def m_map_create_cmyk (self, widget) :
-		self.execute("ptxplus", "cmyk-map-" + self.bkid)
+		self.execute("tipe", "cmyk-map-" + self.bkid)
 
 	def m_map_delete_current (self, widget) :
-		self.execute("ptxplus", "delete-map-" + self.bkid)
+		self.execute("tipe", "delete-map-" + self.bkid)
 
 	def m_map_bind_maps_rgb (self, widget) :
-		self.execute("ptxplus", "view-rgb-maps")
+		self.execute("tipe", "view-rgb-maps")
 
 	def m_map_bind_maps_cmyk (self, widget) :
-		self.execute("ptxplus", "view-cmyk-maps")
+		self.execute("tipe", "view-cmyk-maps")
 
 	def m_map_remove_pdf (self, widget) :
-		self.execute("ptxplus", "remove-maps")
+		self.execute("tipe", "remove-maps")
 
 	def m_map_remove_all (self, widget) :
-		self.execute("ptxplus", "clean-maps")
+		self.execute("tipe", "clean-maps")
 
 	##### Menu - Help
 
 	def m_help (self, widget) :
-		self.execute('ptxplus', 'help')
+		self.execute('tipe', 'help')
 
 	def m_example (self, widget) :
 		'''This will install the example project to where the user
@@ -752,45 +736,45 @@ class ConfigGUI (object) :
 		# FIXME: The following code runs the dialog box. It should be made more
 		# generic and moved into a seperate function as it is used by several
 		# other functions.
-		dialog = gtk.FileChooserDialog("ptxplus: Install Example Project", None,
+		dialog = gtk.FileChooserDialog("tipe: Install Example Project", None,
 			  gtk.FILE_CHOOSER_ACTION_SAVE,
 				(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
 				 gtk.STOCK_OPEN, gtk.RESPONSE_OK))
 		dialog.set_default_response(gtk.RESPONSE_OK)
-		dialog.set_current_name("ptxplus-example")
+		dialog.set_current_name("tipe-example")
 		res = dialog.run()
 		if res == gtk.RESPONSE_CANCEL :
 			dialog.destroy()
 			return
 		newdir = dialog.get_filename()
 		dialog.destroy()
-		self.execute("ptxplus", "example", newdir)
+		self.execute("tipe", "example", newdir)
 
 	def m_about (self, widget) :
-			self.execute('ptxplus', 'about')
+			self.execute('tipe', 'about')
 
 	########## Buttons ##########
 
 	def b_check_clicked (self, widget) :
-		self.execute("ptxplus", "preprocess-" + self.bkid)
+		self.execute("tipe", "preprocess-" + self.bkid)
 #        self.set_component(self.bkid)
 
 	def b_wiki_clicked (self, widget) :
-		self.execute("ptxplus", "wiki")
+		self.execute("tipe", "wiki")
 
 	def b_note_clicked (self, widget) :
-		self.execute("ptxplus", "note")
+		self.execute("tipe", "note")
 
 	def b_issue_clicked (self, widget) :
-		self.execute("ptxplus", "issue")
+		self.execute("tipe", "issue")
 
 	def b_backup_clicked (self, widget) :
-		self.execute("ptxplus", "backup")
+		self.execute("tipe", "backup")
 
 	########## Shared Functions ##########
 
 	def view_current (self, widget) :
-		self.execute("ptxplus", "view-" + self.bkid)
+		self.execute("tipe", "view-" + self.bkid)
 #        self.set_component(self.bkid)
 
 

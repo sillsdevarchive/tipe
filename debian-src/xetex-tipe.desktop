@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TIPE Manager
+Comment=GUI to control TIPE
+Exec=tipe-manager
+Icon=xetex-tipe.png
+TryExec=tipe-manager
+Terminal=false
+Type=Application
+Categories=Application;Office

@@ -159,7 +159,7 @@ def restoreFromBackup () :
 		mod = __import__("restore_project")
 		mod.doIt()
 	else :
-		tools.userMessage("ERROR: This project could not be restored from backup. No backup file found or project does not exist.")
+		tools.userMessage("ERRR: This project could not be restored from backup. No backup file found or project does not exist.")
 
 
 def importProject () :
@@ -243,7 +243,7 @@ elif command == "set-user" :
 		if sys.argv[2] :
 			tools.setSystemUser(sys.argv[2])
 	except :
-		tools.userMessage('ERROR: No user name given, try again.')
+		tools.userMessage('ERRR: No user name given, try again.')
 
 elif command == "set-source-home" :
 	# Set the source home folder
@@ -251,7 +251,7 @@ elif command == "set-source-home" :
 		tools.setSystemSourceHome(sys.argv[2])
 
 	except :
-		tools.userMessage('ERROR: Problem setting source path, please try again.')
+		tools.userMessage('ERRR: Problem setting source path, please try again.')
 
 elif command == "example" :
 	# This is a special instance of the import function to facilitate
@@ -267,7 +267,7 @@ elif command == "example" :
 
 	except :
 		os.mkdir("tipe-example")
-		os.chdir("TIPE_BASE-example")
+		os.chdir("tipe-example")
 
 
 	mod = __import__("import_project")
@@ -292,7 +292,7 @@ else :
 		elif command == "open" :
 			openProject()
 		elif command == "import" or command == "setup" :
-			tools.userMessage('ERROR: Sorry, that command cannot be used in this location.')
+			tools.userMessage('ERRR: Sorry, that command cannot be used in this location.')
 
 		else :
 
@@ -301,41 +301,28 @@ else :
 
 			# Right off we need to tell the user if the project is locked (only if it is locked)
 
-			# Update the .project.conf file if it needs it
+			# Update the project configuration file if it needs it
 			mod = __import__("update_project_settings")
 			mod.doIt()
 
-			# Next look to see if the fonts.conf file needs localizing
-			from font_manager import *
-			font_manager    = FontManager()
-			font_manager.localiseFontsConf()
+			# Get rid of the old error log files.
+			error_manager.deleteErrorLogs()
 
 			# Check the project assets
 			log_manager.initializeLog("check_assets", "SYS", "", "", "basic")
 			tools.taskRunner(log_manager, "check_assets")
 			log_manager.closeOutSessionLog()
 
-			# Look for all the global processes that need to be run
-			taskList = []
-			taskList = log_manager._settings['System']['Processes']['globalProcesses']
-			# Get rid of the old error log files.
-			error_manager.deleteErrorLogs()
-			for thisTask in taskList :
-
-				# Initialize the log manager to do its thing
-				log_manager.initializeLog(thisTask, "SYS", "", "", "")
-
-				# For running each process we use one centralized task runner in tools.
-				tools.taskRunner(log_manager, thisTask)
-
-				# Close out the process by reporting to the log file
-				log_manager.closeOutSessionLog()
+			# Make the makefile
+			log_manager.initializeLog("make_make", "SYS", "", "", "")
+			tools.taskRunner(log_manager, "make_make")
+			log_manager.closeOutSessionLog()
 
 			# Anounce any errors we have found
 			warn = ""
 			if log_manager._warningCount > 0 or log_manager._errorCount > 0 :
 				warn = " (Warnings = " + str(log_manager._warningCount) + ")"
-				tools.userMessage("ERROR: " + thisTask + " completed with " + str(log_manager._errorCount) + " errors" + warn)
+				tools.userMessage("ERRR: Task completed with " + str(log_manager._errorCount) + " errors" + warn)
 
 			# At this point we want to check to see if a few certain switches
 			# are set to false. If they are, we will run a couple makefile
@@ -359,7 +346,7 @@ else :
 			errorCode = tools.makefileCommand(command)
 
 			if errorCode != 0 :
-				tools.userMessage("ERROR: Makefile process failed. (Error code: " + str(errorCode) + ")")
+				tools.userMessage("ERRR: Makefile process failed. (Error code: " + str(errorCode) + ")")
 			else :
 				# If all went well with the makefile process, report any
 				# other errors we might have to the terminal
@@ -373,9 +360,9 @@ else :
 		elif command == "import" :
 			importProject()
 		else :
-			tools.userMessage("ERROR: There does not seem to be a valid project in this location and the [" + command + "] command is not recognized in this context.")
+			tools.userMessage("ERRR: There does not seem to be a valid project in this location and the [" + command + "] command is not recognized in this context.")
 	else :
-		tools.userMessage('ERROR: ' + noCommandMsg)
+		tools.userMessage('ERRR: ' + noCommandMsg)
 
 
 # All done

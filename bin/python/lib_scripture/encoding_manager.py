@@ -633,3 +633,4 @@ class EncodingManager (object) :
 			return True
 		else :
 			return False
+

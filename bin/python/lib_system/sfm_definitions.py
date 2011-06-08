@@ -298,3 +298,6 @@ def init_mdf () :
 		res[s] = parse.SFM()
 
 	return res
+
+
+

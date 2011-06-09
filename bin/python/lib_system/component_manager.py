@@ -50,3 +50,5 @@ class ComponentManager (object) :
 		if os.path.isfile(os.getcwd() + "/.source") :
 			# Load in the source object from our project
 			return ConfigObj(os.getcwd() + "/.source", encoding='utf_8')
+
+

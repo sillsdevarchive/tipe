@@ -51,7 +51,7 @@ import tools
 
 class MakeTexControlFile (object) :
 
-	def main (self, log_manager) :
+	def main (self, log_manager, component_manager) :
 		'''This part is all about direction.  In this function we will figure
 		out what kind of settings file needs to be made and then call the right
 		function to do it.'''
@@ -841,10 +841,10 @@ class MakeTexControlFileHandler (parse_sfm.Handler) :
 
 
 # This starts the whole process going
-def doIt (log_manager) :
+def doIt (log_manager, component_manager) :
 
 	thisModule = MakeTexControlFile()
 
-	return thisModule.main(log_manager)
+	return thisModule.main(log_manager, component_manager)
 
 

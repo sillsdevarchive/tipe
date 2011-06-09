@@ -52,7 +52,7 @@ class CheckAssets (object) :
 		if self._mode == '' :
 			self._mode = 'basic'
 
-
+#FIXME: There should be some reference to the .source file added
 
 		# Gather up the initial settings
 		basePath                = os.environ.get('TIPE_BASE')
@@ -96,14 +96,16 @@ class CheckAssets (object) :
 
 
 		# Check/install folders we might need
-		if not os.path.isdir(pathSource) :
-			os.mkdir(pathSource)
-			self._log_manager.log('INFO', 'Added Source folder', 'true')
+#FIXME
+# These next two we are going to comment out for now, don't need them
+#        if not os.path.isdir(pathSource) :
+#            os.mkdir(pathSource)
+#            self._log_manager.log('INFO', 'Added Source folder', 'true')
 
-		# Make the peripheral folder inside Source
-		if not os.path.isdir(pathPeripheral) :
-			os.mkdir(pathPeripheral)
-			self._log_manager.log('INFO', 'Added Peripheral matter folder (in Source):', 'true')
+#        # Make the peripheral folder inside Source
+#        if not os.path.isdir(pathPeripheral) :
+#            os.mkdir(pathPeripheral)
+#            self._log_manager.log('INFO', 'Added Peripheral matter folder (in Source):', 'true')
 
 		# Make the Process folder, we will always need that
 		if not os.path.isdir(pathProcess) :
@@ -113,12 +115,12 @@ class CheckAssets (object) :
 			self._log_manager.log('INFO', 'Copied new process files to project', 'true')
 
 		# If there are no map components then there is no need to make the folder
-		if len(self._log_manager._settings['Format']['BindingGroups']['GROUP_MAPS']) > 0 :
-			if not os.path.isdir(pathMaps) :
-				os.mkdir(pathMaps)
-				self._log_manager.log('INFO', 'Added Maps folder', 'true')
+#        if len(self._log_manager._settings['Format']['BindingGroups']['GROUP_MAPS']) > 0 :
+#            if not os.path.isdir(pathMaps) :
+#                os.mkdir(pathMaps)
+#                self._log_manager.log('INFO', 'Added Maps folder', 'true')
 
-		# Make the illustrations folder inside Source
+		# Make the illustrations folder inside project folder
 		if not os.path.isdir(pathIllustrations) :
 			os.mkdir(pathIllustrations)
 			self._log_manager.log('INFO', 'Added shared Illustrations folder (in Source)', 'true')
@@ -308,7 +310,8 @@ class CheckAssets (object) :
 
 
 # This starts the whole process going
-def doIt(log_manager):
+def doIt(log_manager, component_manager):
 
 	thisModule = CheckAssets()
 	return thisModule.main(log_manager)
+

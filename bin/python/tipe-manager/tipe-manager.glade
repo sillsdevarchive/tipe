@@ -4,7 +4,9 @@
   <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="w_main">
 	<property name="visible">True</property>
-	<property name="title" translatable="yes">TIPE-Manager</property>
+	<property name="title" translatable="yes">TIPE-manager</property>
+	<property name="default_width">600</property>
+	<property name="default_height">600</property>
 	<signal name="delete_event" handler="on_w_main_delete_event"/>
 	<child>
 	  <widget class="GtkVBox" id="vbox1">
@@ -116,7 +118,7 @@
 					  <widget class="GtkImageMenuItem" id="menu_quit">
 						<property name="label">gtk-quit</property>
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Quite tipe manager</property>
+						<property name="tooltip" translatable="yes">Quite TIPE manager</property>
 						<property name="use_underline">True</property>
 						<property name="use_stock">True</property>
 						<property name="always_show_image">True</property>
@@ -446,12 +448,21 @@
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_wordlist">
+					  <widget class="GtkMenuItem" id="menu_wordlist_make_current">
+						<property name="visible">True</property>
+						<property name="has_tooltip">True</property>
+						<property name="tooltip" translatable="yes">Create a word list from the current component in the Report folder</property>
+						<property name="label" translatable="yes">Make Word List (Current)</property>
+						<signal name="activate" handler="on_menu_wordlist_make_current_activate"/>
+					  </widget>
+					</child>
+					<child>
+					  <widget class="GtkMenuItem" id="menu_wordlist_make_master">
 						<property name="visible">True</property>
 						<property name="has_tooltip">True</property>
 						<property name="tooltip" translatable="yes">Create a master word list in the Report folder</property>
-						<property name="label" translatable="yes">Make Master Word List</property>
-						<signal name="activate" handler="on_menu_wordlist_activate"/>
+						<property name="label" translatable="yes">Make Word List (Master)</property>
+						<signal name="activate" handler="on_menu_wordlist_make_master_activate"/>
 					  </widget>
 					</child>
 					<child>
@@ -570,6 +581,15 @@
 						<accelerator key="Delete" signal="activate" modifiers="GDK_SHIFT_MASK"/>
 					  </widget>
 					</child>
+					<child>
+					  <widget class="GtkMenuItem" id="menu_remove_pdf_all">
+						<property name="visible">True</property>
+						<property name="tooltip" translatable="yes">Remove all the PDF files in the Process folder</property>
+						<property name="label" translatable="yes">Remove PDF (All)</property>
+						<signal name="activate" handler="on_menu_remove_pdf_all_activate"/>
+						<accelerator key="Delete" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+					  </widget>
+					</child>
 				  </widget>
 				</child>
 			  </widget>
@@ -582,130 +602,139 @@
 				  <widget class="GtkMenu" id="regression">
 					<property name="visible">True</property>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_text_current">
+					  <widget class="GtkMenuItem" id="regression_component_current">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Do a benchmark test on the current text component</property>
-						<property name="label" translatable="yes">Text (Current)</property>
+						<property name="tooltip" translatable="yes">Do a regression test on the current text component</property>
+						<property name="label" translatable="yes">Component (Current)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_text_current"/>
+						<signal name="activate" handler="on_menu_regression_component_current"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_text_current_set">
+					  <widget class="GtkMenuItem" id="regression_component_current_set">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Set the current text object to be the benchmark</property>
-						<property name="label" translatable="yes">Text - Set (Current)</property>
+						<property name="tooltip" translatable="yes">Set the current text component to be the regression base file</property>
+						<property name="label" translatable="yes">Component - Set (Current)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_text_current_set"/>
+						<signal name="activate" handler="on_menu_regression_component_current_set"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_text_all">
+					  <widget class="GtkMenuItem" id="regression_component_current_group_set">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Run benchmark tests on all text components</property>
-						<property name="label" translatable="yes">Text (All)</property>
+						<property name="tooltip" translatable="yes">Set the current component group file set to be the regression base</property>
+						<property name="label" translatable="yes">Component Group - Set (Current)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_text_all"/>
+						<signal name="activate" handler="on_menu_regression_component_current_group_set"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkSeparatorMenuItem" id="benchmarkseparatormenuitem1">
+					  <widget class="GtkMenuItem" id="regression_component_all">
 						<property name="visible">True</property>
-					  </widget>
-					</child>
-					<child>
-					  <widget class="GtkMenuItem" id="benchmark_wordlist_current">
-						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Run benchmark test on current component wordlist</property>
-						<property name="label" translatable="yes">Wordlists (Current)</property>
+						<property name="tooltip" translatable="yes">Run regression tests on all text components</property>
+						<property name="label" translatable="yes">Component (All)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_wordlist_current"/>
+						<signal name="activate" handler="on_menu_regression_component_all"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_wordlist_set_current">
+					  <widget class="GtkSeparatorMenuItem" id="regressionseparatormenuitem1">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Set current component wordlist as benchmark</property>
-						<property name="label" translatable="yes">Wordlist - Set (Current)</property>
+					  </widget>
+					</child>
+					<child>
+					  <widget class="GtkMenuItem" id="regression_wordlist_current">
+						<property name="visible">True</property>
+						<property name="tooltip" translatable="yes">Run regression test on current component wordlist</property>
+						<property name="label" translatable="yes">Wordlist (Current)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_wordlist_set_current"/>
+						<signal name="activate" handler="on_menu_regression_wordlist_current"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_wordlist_master">
+					  <widget class="GtkMenuItem" id="regression_wordlist_set_current">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Run benchmark tests on master wordlist</property>
-						<property name="label" translatable="yes">Wordlist Master</property>
+						<property name="tooltip" translatable="yes">Set current component wordlist as regression base file</property>
+						<property name="label" translatable="yes">Wordlist Set (Current)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_wordlist_master"/>
+						<signal name="activate" handler="on_menu_regression_wordlist_set_current"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_wordlist_set_master">
+					  <widget class="GtkMenuItem" id="regression_wordlist_master">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Set current master wordlist as the benchmark</property>
-						<property name="label" translatable="yes">Wordlist Master - Set</property>
+						<property name="tooltip" translatable="yes">Run a regression test on master wordlist</property>
+						<property name="label" translatable="yes">Wordlist (Master)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_wordlist_set_master"/>
+						<signal name="activate" handler="on_menu_regression_wordlist_master"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_wordlist_all">
+					  <widget class="GtkMenuItem" id="regression_wordlist_set_master">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Run benchmark tests on all wordlists</property>
+						<property name="tooltip" translatable="yes">Set current master wordlist as the regression base file</property>
+						<property name="label" translatable="yes">Wordlist Set (Master)</property>
+						<property name="use_underline">True</property>
+						<signal name="activate" handler="on_menu_regression_wordlist_set_master"/>
+					  </widget>
+					</child>
+					<child>
+					  <widget class="GtkMenuItem" id="regression_wordlist_all">
+						<property name="visible">True</property>
+						<property name="tooltip" translatable="yes">Run regression tests on all wordlists</property>
 						<property name="label" translatable="yes">Wordlists (All)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_wordlist_all"/>
+						<signal name="activate" handler="on_menu_regression_wordlist_all"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkSeparatorMenuItem" id="benchmarkseparatormenuitem2">
+					  <widget class="GtkSeparatorMenuItem" id="regressionseparatormenuitem2">
 						<property name="visible">True</property>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_hyphen_tex">
+					  <widget class="GtkMenuItem" id="regression_hyphen_tex">
 						<property name="visible">True</property>
 						<property name="tooltip" translatable="yes">Test TeX hypheation file only</property>
 						<property name="label" translatable="yes">TeX Hyphenation</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_hyphen_tex"/>
+						<signal name="activate" handler="on_menu_regression_hyphen_tex"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_hyphen_set_tex">
+					  <widget class="GtkMenuItem" id="regression_hyphen_set_tex">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Set current TeX hypheation file as benchmark</property>
+						<property name="tooltip" translatable="yes">Set current TeX hypheation file as regression base file</property>
 						<property name="label" translatable="yes">TeX Hyphenation - Set</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_hyphen_set_tex"/>
+						<signal name="activate" handler="on_menu_regression_hyphen_set_tex"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_hyphen_txt">
+					  <widget class="GtkMenuItem" id="regression_hyphen_txt">
 						<property name="visible">True</property>
 						<property name="tooltip" translatable="yes">Test hypheation wordlist only</property>
 						<property name="label" translatable="yes">Hyphenation Words</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_hyphen_txt"/>
+						<signal name="activate" handler="on_menu_regression_hyphen_txt"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_hyphen_set_txt">
+					  <widget class="GtkMenuItem" id="regression_hyphen_set_txt">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Set current hypheation wordlist file as benchmark</property>
+						<property name="tooltip" translatable="yes">Set current hypheation wordlist file as regression base file</property>
 						<property name="label" translatable="yes">Hyphenation Words - Set</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_hyphen_set_txt"/>
+						<signal name="activate" handler="on_menu_regression_hyphen_set_txt"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="benchmark_hyphen_all">
+					  <widget class="GtkMenuItem" id="regression_hyphen_all">
 						<property name="visible">True</property>
 						<property name="tooltip" translatable="yes">Test hypheation folder</property>
 						<property name="label" translatable="yes">Hyphenation (All)</property>
 						<property name="use_underline">True</property>
-						<signal name="activate" handler="on_menu_benchmark_hyphen_all"/>
+						<signal name="activate" handler="on_menu_regression_hyphen_all"/>
 					  </widget>
 					</child>
 				  </widget>
@@ -723,78 +752,64 @@
 					  <widget class="GtkMenuItem" id="menu_map_view_model">
 						<property name="visible">True</property>
 						<property name="tooltip" translatable="yes">View the original map graphic</property>
-						<property name="label" translatable="yes">View Model</property>
+						<property name="label" translatable="yes">View Model (Current)</property>
 						<signal name="activate" handler="on_menu_map_view_model"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_edit_data">
+					  <widget class="GtkMenuItem" id="menu_map_remove_pdf">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Edit the map translation data</property>
-						<property name="label" translatable="yes">Edit Data</property>
-						<signal name="activate" handler="on_menu_map_edit_data"/>
+						<property name="tooltip" translatable="yes">Remove current component PDF file</property>
+						<property name="label" translatable="yes">Remove PDF (Current)</property>
+						<signal name="activate" handler="on_menu_map_remove_pdf"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_view_template">
+					  <widget class="GtkMenuItem" id="menu_map_remove_svg">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">View the original map template</property>
-						<property name="label" translatable="yes">View Template</property>
-						<signal name="activate" handler="on_menu_map_view_template"/>
+						<property name="tooltip" translatable="yes">Remove current component SVG file</property>
+						<property name="label" translatable="yes">Remove SVG (Current)</property>
+						<signal name="activate" handler="on_menu_map_remove_svg"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_edit_styles">
+					  <widget class="GtkMenuItem" id="menu_map_remove_csv_data">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Edit the text styles for this map</property>
-						<property name="label" translatable="yes">Edit Styles</property>
-						<signal name="activate" handler="on_menu_map_edit_styles"/>
+						<property name="tooltip" translatable="yes">Remove current component CSV data file</property>
+						<property name="label" translatable="yes">Remove CSV-Data (Current)</property>
+						<signal name="activate" handler="on_menu_map_remove_csv_data"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_merge_data">
+					  <widget class="GtkMenuItem" id="menu_map_remove_csv_sty">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Merge the map data with the SVG template</property>
-						<property name="label" translatable="yes">Merge Data</property>
-						<signal name="activate" handler="on_menu_map_merge_data"/>
+						<property name="tooltip" translatable="yes">Remove current component CSV style file</property>
+						<property name="label" translatable="yes">Remove CSV-Style (Current)</property>
+						<signal name="activate" handler="on_menu_map_remove_csv_sty"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_create_rgb_pdf">
+					  <widget class="GtkMenuItem" id="menu_map_remove_png">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Create an RGB/PDF version of the map</property>
-						<property name="label" translatable="yes">Create RGB PDF</property>
-						<signal name="activate" handler="on_menu_map_create_rgb"/>
+						<property name="tooltip" translatable="yes">Remove current component intermediate PNG file</property>
+						<property name="label" translatable="yes">Remove PNG (Current)</property>
+						<signal name="activate" handler="on_menu_map_remove_png"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_create_cmyk_pdf">
+					  <widget class="GtkMenuItem" id="menu_map_remove_work">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Create a CMYK/PDF version of this map</property>
-						<property name="label" translatable="yes">Create CMYK PDF</property>
-						<signal name="activate" handler="on_menu_map_create_cmyk"/>
+						<property name="tooltip" translatable="yes">Remove current component USFM file </property>
+						<property name="label" translatable="yes">Remove USFM (Current)</property>
+						<signal name="activate" handler="on_menu_map_remove_work"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkImageMenuItem" id="menu_map_delete_current">
-						<property name="label">Reset Map</property>
+					  <widget class="GtkMenuItem" id="menu_map_remove_all">
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Delete the current set of project files for this map set</property>
-						<property name="use_stock">False</property>
-						<property name="always_show_image">True</property>
-						<signal name="activate" handler="on_menu_map_delete_current"/>
-						<child internal-child="image">
-						  <widget class="GtkImage" id="image101">
-							<property name="visible">True</property>
-							<property name="stock">gtk-dialog-warning</property>
-						  </widget>
-						</child>
+						<property name="tooltip" translatable="yes">Remove all current map components</property>
+						<property name="label" translatable="yes">Remove All (Current)</property>
+						<signal name="activate" handler="on_menu_map_remove_all"/>
 					  </widget>
 					</child>
 					<child>
@@ -803,51 +818,35 @@
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_bind_maps_rgb">
+					  <widget class="GtkMenuItem" id="menu_map_remove_group_pdf">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Bind project RGB maps together in one PDF file</property>
-						<property name="label" translatable="yes">Bind RGB Maps</property>
-						<signal name="activate" handler="on_menu_map_bind_maps_rgb"/>
+						<property name="tooltip" translatable="yes">Remove map group PDF file</property>
+						<property name="label" translatable="yes">Remove PDF (Group)</property>
+						<signal name="activate" handler="on_menu_map_remove_group_pdf"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_bind_maps_cmyk">
+					  <widget class="GtkMenuItem" id="menu_map_remove_group_tex">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Bind project CMYK maps together in one PDF file</property>
-						<property name="label" translatable="yes">Bind CMYK Maps</property>
-						<signal name="activate" handler="on_menu_map_bind_maps_cmyk"/>
+						<property name="tooltip" translatable="yes">Remove map group TeX control file</property>
+						<property name="label" translatable="yes">Remove TeX (Group)</property>
+						<signal name="activate" handler="on_menu_map_remove_group_tex"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkMenuItem" id="menu_map_remove_pdf">
+					  <widget class="GtkMenuItem" id="menu_map_remove_group_sty">
 						<property name="visible">True</property>
-						<property name="has_tooltip">True</property>
-						<property name="tooltip" translatable="yes">Delete both RGB and CMYK bound map files</property>
-						<property name="label" translatable="yes">Remove PDF</property>
-						<signal name="activate" handler="on_menu_map_remove_pdf"/>
+						<property name="tooltip" translatable="yes">Remove map group style file</property>
+						<property name="label" translatable="yes">Remove Style (Group)</property>
+						<signal name="activate" handler="on_menu_map_remove_group_sty"/>
 					  </widget>
 					</child>
 					<child>
-					  <widget class="GtkSeparatorMenuItem" id="separatormenuitem_maps2">
+					  <widget class="GtkMenuItem" id="menu_map_remove_group_all">
 						<property name="visible">True</property>
-					  </widget>
-					</child>
-					<child>
-					  <widget class="GtkImageMenuItem" id="menu_map_remove_all">
-						<property name="label" translatable="yes">Remove Everything!</property>
-						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">Remove all the files for all the maps (Caution!)</property>
-						<property name="use_stock">False</property>
-						<property name="always_show_image">True</property>
-						<signal name="activate" handler="on_menu_map_remove_all"/>
-						<child internal-child="image">
-						  <widget class="GtkImage" id="image102">
-							<property name="visible">True</property>
-							<property name="stock">gtk-dialog-warning</property>
-						  </widget>
-						</child>
+						<property name="tooltip" translatable="yes">Remove all map group files</property>
+						<property name="label" translatable="yes">Remove All (Group)</property>
+						<signal name="activate" handler="on_menu_map_remove_group_all"/>
 					  </widget>
 					</child>
 				  </widget>
@@ -893,7 +892,7 @@
 					  <widget class="GtkImageMenuItem" id="menu_about">
 						<property name="label">gtk-about</property>
 						<property name="visible">True</property>
-						<property name="tooltip" translatable="yes">About XeTeX-tipe Manager</property>
+						<property name="tooltip" translatable="yes">About XeTeX-TIPE Manager</property>
 						<property name="use_underline">True</property>
 						<property name="use_stock">True</property>
 						<property name="always_show_image">True</property>
@@ -1144,8 +1143,11 @@
 				  <widget class="GtkHPaned" id="sc_system">
 					<property name="visible">True</property>
 					<property name="can_focus">True</property>
+					<property name="position">200</property>
+					<property name="position_set">True</property>
 					<child>
 					  <widget class="GtkScrolledWindow" id="scrolledwindow1">
+						<property name="width_request">100</property>
 						<property name="visible">True</property>
 						<property name="can_focus">True</property>
 						<property name="hscrollbar_policy">automatic</property>
@@ -1174,6 +1176,7 @@
 						  <widget class="GtkScrolledWindow" id="scrolledwindow2">
 							<property name="visible">True</property>
 							<property name="can_focus">True</property>
+							<property name="vadjustment">0 0 102 10.200000000000001 91.799999999999997 102</property>
 							<property name="hscrollbar_policy">automatic</property>
 							<property name="vscrollbar_policy">automatic</property>
 							<child>
@@ -1214,19 +1217,30 @@
 							  </packing>
 							</child>
 							<child>
-							  <widget class="GtkLabel" id="lab_desc">
-								<property name="height_request">150</property>
+							  <widget class="GtkScrolledWindow" id="scrolledwindow3">
 								<property name="visible">True</property>
-								<property name="xalign">0</property>
-								<property name="yalign">0</property>
-								<property name="xpad">20</property>
-								<property name="label" translatable="yes">Description</property>
-								<property name="use_markup">True</property>
-								<property name="wrap">True</property>
-								<property name="wrap_mode">word-char</property>
-								<property name="selectable">True</property>
-								<property name="width_chars">50</property>
-								<property name="max_width_chars">40</property>
+								<property name="can_focus">True</property>
+								<property name="vadjustment">0 0 106 10.600000000000001 95.400000000000006 106</property>
+								<property name="hscrollbar_policy">automatic</property>
+								<property name="vscrollbar_policy">automatic</property>
+								<child>
+								  <widget class="GtkViewport" id="viewport1">
+									<property name="visible">True</property>
+									<property name="resize_mode">queue</property>
+									<child>
+									  <widget class="GtkLabel" id="lab_desc">
+										<property name="visible">True</property>
+										<property name="xalign">0</property>
+										<property name="yalign">0</property>
+										<property name="xpad">10</property>
+										<property name="ypad">10</property>
+										<property name="use_markup">True</property>
+										<property name="wrap">True</property>
+										<property name="selectable">True</property>
+									  </widget>
+									</child>
+								  </widget>
+								</child>
 							  </widget>
 							  <packing>
 								<property name="position">1</property>
@@ -1254,7 +1268,7 @@
 				  <widget class="GtkLabel" id="tab_system">
 					<property name="visible">True</property>
 					<property name="tooltip" translatable="yes">Main system settings configuration tab</property>
-					<property name="label" translatable="yes">System</property>
+					<property name="label" translatable="yes">Settings</property>
 				  </widget>
 				  <packing>
 					<property name="position">3</property>

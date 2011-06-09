@@ -83,6 +83,8 @@ if projectType in tools.getSystemSettingsObject()['System']['pubTypeList'] :
 	log_manager = LogManager()
 	from error_manager import *
 	error_manage = ErrorManager()
+	from component_manager import *
+	component_manager = ComponentManager()
 
 # We want to see one valid arguments given. However, that
 # may not happen so this script is all about testing the
@@ -310,12 +312,12 @@ else :
 
 			# Check the project assets
 			log_manager.initializeLog("check_assets", "SYS", "", "", "basic")
-			tools.taskRunner(log_manager, "check_assets")
+			tools.taskRunner(log_manager, component_manager, "check_assets")
 			log_manager.closeOutSessionLog()
 
 			# Make the makefile
 			log_manager.initializeLog("make_make", "SYS", "", "", "")
-			tools.taskRunner(log_manager, "make_make")
+			tools.taskRunner(log_manager, component_manager, "make_make")
 			log_manager.closeOutSessionLog()
 
 			# Anounce any errors we have found

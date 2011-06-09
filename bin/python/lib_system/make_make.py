@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- coding: utf_8 -*-
-# version: 20080423
+# version: 20110608
 # By Dennis Drescher (dennis_drescher at sil.org)
 
 # This script has been tested on Python 2.5.1 (Ubuntu)
@@ -16,7 +16,8 @@
 # with valid commands.
 
 # History:
-# 20100823 - djd - Initial draft (Started with make_scripture.py)
+# 20110608 - djd - Initial refactoring from ptxplus
+# 20110609 - djd - Started adding component management functions
 
 
 ###############################################################################
@@ -38,10 +39,11 @@ class MakeMakefile (object) :
 # to be replaced so this module will work with any recognized type in the
 # system.
 
-	def main (self, log_manager) :
+	def main (self, log_manager, component_manager) :
 		'''This is the main process function for generating the makefile.'''
 
 		self._log_manager = log_manager
+		self._component_manager = component_manager
 		basePath = os.environ.get('TIPE_BASE')
 		sourcePath = os.path.abspath(self._log_manager._settings['System']['Paths'].get('PATH_SOURCE', '../Source'))
 
@@ -314,6 +316,20 @@ class MakeMakefile (object) :
 				self._log_manager.log('ERRR', 'Component: [' + cID + '] is not known to the system', 'true')
 
 
+
+
+
+		# FIXME: Working here!
+		# TIPE does away with the group concept and works instead with just
+		# components and their binding order.  This section will insert these
+		# settings into the makefile.
+		for key, value in self._component_manager._sources['ComponentSourceLink'].iteritems() :
+			makefileSettings += "SOURCE_" + key.upper() + "=" + value + '\n'
+
+
+
+
+
 		# Create the final key/values for the file
 		makefileFinal = ""
 
@@ -338,6 +354,6 @@ class MakeMakefile (object) :
 
 
 # This starts the whole process going
-def doIt(log_manager):
+def doIt(log_manager, component_manager):
 	thisModule = MakeMakefile()
-	return thisModule.main(log_manager)
+	return thisModule.main(log_manager, component_manager)

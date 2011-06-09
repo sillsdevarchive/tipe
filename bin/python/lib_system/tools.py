@@ -29,7 +29,7 @@ from functools import partial
 from itertools import imap
 
 
-def taskRunner (log_manager, thisTask) :
+def taskRunner (log_manager, component_manager, thisTask) :
 	'''This is the final function used for running all system tasks.
 		All calls from the system to run a task or process should
 		end up here.'''
@@ -42,7 +42,7 @@ def taskRunner (log_manager, thisTask) :
 		module = __import__(thisTask, globals(), locals(), [])
 		log_manager.log("DBUG", "Imported module: " + thisTask)
 		# Run the module
-		module.doIt(log_manager)
+		module.doIt(log_manager, component_manager)
 		log_manager.log("DBUG", "Completed: " + thisTask)
 
 	else :

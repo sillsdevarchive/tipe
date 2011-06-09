@@ -54,9 +54,11 @@ sys.setdefaultencoding("utf-8")
 # Import supporting local classes
 import tools
 from log_manager import *
+from component_manager import *
 
 # Instantiate local classes
-log_manager    = LogManager()
+log_manager         = LogManager()
+component_manager   = ComponentManager()
 
 basePath = os.environ.get('TIPE_BASE')
 if not basePath :
@@ -170,7 +172,7 @@ class RunProcess (object) :
 		log_manager.initializeLog(thisTask, self._typeID, self._inputFile, self._outputFile, self._optionalPassedVariable)
 
 		# For running each process we use one centralized task runner in tools.
-		tools.taskRunner(log_manager, thisTask)
+		tools.taskRunner(log_manager, component_manager, thisTask)
 
 		# Close out the process by reporting to the log file
 		log_manager.closeOutSessionLog()

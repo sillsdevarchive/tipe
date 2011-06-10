@@ -249,7 +249,7 @@ class ConfigGUI (object) :
 
 		# Get our title
 		try :
-			title = self.ceditor.config['Project']['ProjectInformation'].get('projectName')
+			title = "TIPE - " + self.ceditor.config['Project']['ProjectInformation'].get('projectName')
 		except :
 			title = os.getcwd()
 

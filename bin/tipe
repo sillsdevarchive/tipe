@@ -38,6 +38,21 @@ if not basePath :
 sys.path.insert(0, basePath + '/bin/python')
 sys.path.insert(0, basePath + '/bin/python/lib_system')
 
+# Import local modules
+from report import *
+report = Report()
+from configure import *
+configure = Configure()
+from component import *
+component = Component()
+
+
+# Give a welcome message
+sysConfig = configure.getSystem()
+version = sysConfig['System']['systemVersion']
+
+report.terminal('\n\t\tWelcome to TIPE ' + version + '\n')
+
 # Examine our command line.  The command line will have no more than three
 # parameters.  The script name, which is always "tipe", followed by the command
 # and then the component code, if a component is to be processed.  Otherwise,
@@ -45,19 +60,20 @@ sys.path.insert(0, basePath + '/bin/python/lib_system')
 # attempt to parse if the command is expecting more than one parameter.
 
 command = ""
-component = ""
+thisComponent = ""
 
 if len(sys.argv) > 3 :
-	print "Dude, you messed up your command line. Try again!"
+	report.terminal('Dude, you messed up your command line. Try again!')
 
 elif len(sys.argv) > 1 :
 	command = sys.argv[1]
 	try :
-		component = sys.argv[2]
+		thisComponent = sys.argv[2]
 	except :
-		error = "bla bla bla"
+		thisComponent = ""
 
 else :
+	# If there isn't anything then we'll just go to the projects manager
 	command = "projects"
 
 
@@ -68,7 +84,10 @@ else :
 def newProject () :
 	'''Setup a new project'''
 
-	project.makeProject(os.getcwd())
+	if project.makeProject(os.getcwd()) :
+		report.writeToLog('MSG', 'Created new project at: ' + os.getcwd())
+	else :
+		report.writeToLog('ERR', 'tipe.newProject: Failed to created new project at: ' + os.getcwd())
 
 
 def render () :
@@ -77,16 +96,14 @@ def render () :
 	# First check our project setup and try to auto correct any problems that
 	# might be caused from missing project assets.  This can include files
 	# like.sty, .tex, .usfm, and folders, etc.
-	if project.checkProject(os.getcwd()) :
-		print "We have a project here"
-	else :
-		print "No project found"
-
+	if not project.checkProject(os.getcwd()) :
+		report.writeToLog('ERR', 'tipe.render: No project found!')
+		return
 
 	# Create the makefile for processing this particular component.  This is
 	# done every time TIPE is run.
 
-
+	component.createMakefile(thisComponent, command)
 
 
 	# Run the makefile command to do the process.
@@ -102,7 +119,7 @@ def render () :
 	# If the process was successful we can do a little clean up.  Otherwise keep
 	# the crime scene intact.
 
-
+	return
 
 
 
@@ -125,6 +142,6 @@ if command == 'new_project' :
 
 
 # All done
-
-print "\n\t\tThank you, please come again!\n"
+report.trimLog()
+report.terminal('\n\t\tThank you, please come again!\n')
 

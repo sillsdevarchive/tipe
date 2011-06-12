@@ -20,14 +20,21 @@
 # this process
 
 import codecs, os
+from datetime import *
+from configure import *
+configure = Configure()
 
+# Local classes
+from report import *
+report = Report()
 
 class Project (object) :
 
-	def __init__(self) : pass
+	def __init__(self) :
 
-#        self._placeholder = ""
-#        self._processLogObject = []
+		self._sysConfig = configure.getSystem()
+		self._version = self._sysConfig['System']['systemVersion']
+		self._projectFile = self._sysConfig['System']['projectFile']
 
 
 	def checkProject (self, here) :
@@ -36,29 +43,46 @@ class Project (object) :
 		return Null if that is not found.'''
 
 		# First check for a .project.conf file
-		if not os.path.isfile(here + "/.project.conf") :
+		if not os.path.isfile(here + "/" + self._projectFile) :
 			return
 
 		# From this point we will check for and add all the necessary project
 		# assets.  Anything that is missing will be replaced by a default
 		# version of the asset.
 
+		# Check for the base set of folders
+
+		# Check for key settings files
+
 		return True
 
 
-	def makeProject (self, here) :
+	def makeProject (self, here, settings="") :
 		'''Create a new publishing project.'''
 
-		self.makeProjectConfigFile(here)
+		# A new project only needs to have a project.conf file.  The rest is
+		# made with the check project file the first time a component is
+		# processed.  However, if the project.conf file already exists we will
+		# abandon the process
+		if not os.path.isfile(here + "/" + self._projectFile) :
+			if self.makeProjectConfigFile(here, settings) :
+				return True
+		else :
+			report.writeToLog('ERR', 'report.makeProject: project.conf file already exists')
 
 
-	def makeProjectConfigFile (self, here) :
+	def makeProjectConfigFile (self, here, settings="") :
 		'''Create a fresh, default project configuration file wherever "here"
 		is.'''
 
-		writeObject = codecs.open(here + "/.project.conf", "w", encoding='utf_8')
-
+		date_time, secs = str(datetime.now()).split(".")
+		writeObject = codecs.open(here + "/" + self._projectFile, "w", encoding='utf_8')
 		writeObject.write('[TIPE]\n')
-		writeObject.write('version = 0.0.1\n')
+		writeObject.write('version = ' + self._version + '\n')
+		writeObject.write('created = ' + date_time + '\n')
 		writeObject.close()
+
+		return True
+
+
 

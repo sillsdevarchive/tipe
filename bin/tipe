@@ -38,13 +38,13 @@ if not basePath :
 sys.path.insert(0, basePath + '/bin/python')
 sys.path.insert(0, basePath + '/bin/python/lib_system')
 
-# Import local modules
+# Load the local classes
 from report import *
 report = Report()
 from configure import *
 configure = Configure()
-from component import *
-component = Component()
+from document import *
+document = Document()
 
 
 # Give a welcome message
@@ -87,7 +87,13 @@ def newProject () :
 	if project.makeProject(os.getcwd()) :
 		report.writeToLog('MSG', 'Created new project at: ' + os.getcwd())
 	else :
-		report.writeToLog('ERR', 'tipe.newProject: Failed to created new project at: ' + os.getcwd())
+		report.terminal('ERROR: tipe.newProject: Failed to created new project at: ' + os.getcwd())
+
+
+def addComponent () :
+	'''Add a new component to the project.'''
+
+	component.addComponent(thisComponent)
 
 
 def render () :
@@ -97,29 +103,39 @@ def render () :
 	# might be caused from missing project assets.  This can include files
 	# like.sty, .tex, .usfm, and folders, etc.
 	if not project.checkProject(os.getcwd()) :
-		report.writeToLog('ERR', 'tipe.render: No project found!')
+		report.terminal('ERROR: tipe.render: No project found!')
+		return
+
+	# Now see if this component exists
+	if not component.checkComponent(thisComponent) :
+		report.writeToLog('ERR', 'tipe.render: Component not found in project.')
 		return
 
 	# Create the makefile for processing this particular component.  This is
 	# done every time TIPE is run.
-
-	component.createMakefile(thisComponent, command)
-
-
-	# Run the makefile command to do the process.
-
-
-
+	if document.createMakefile(thisComponent, command) :
+		if runMake() :
+			report.writeToLog('MSG', 'Process completed successful!')
+		else :
+			report.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.')
 
 	# Collect the results and report them in the log
 
-
-
-
-	# If the process was successful we can do a little clean up.  Otherwise keep
-	# the crime scene intact.
-
 	return
+
+
+def runMake () :
+	'''All component processes are expected to be run via makefile.  This is a
+	generic makefile running function.'''
+
+	# Send off the command return error code
+	error = os.system(sysConfig['System']['makeStartParams'] + os.getcwd() + '/' + sysConfig['System']['makefileFile'])
+
+	if error == 0 :
+		return True
+	else :
+		report.terminal('ERROR: tipe.runMake: ' + str(error))
+		return
 
 
 
@@ -136,9 +152,12 @@ project = Project()
 
 if command == 'render' :
 	render()
-
-if command == 'new_project' :
+elif command == 'new_project' :
 	newProject()
+elif command == 'add_component' :
+	addComponent()
+else :
+	report.terminal('ERROR: This command does not exist: ' + command)
 
 
 # All done

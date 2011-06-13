@@ -25,10 +25,9 @@ from configobj import ConfigObj
 
 class Configure (object) :
 
-	def __init__(self) : pass
+	def __init__(self) :
 
-#        self._placeholder = ""
-#        self._processLogObject = []
+		self._home              = os.getcwd()
 
 
 	def getObject (self, configFile) :
@@ -41,3 +40,12 @@ class Configure (object) :
 		'''Return the system settings object'''
 
 		return self.getObject(os.environ.get('TIPE_BASE') + "/bin/tipe.conf")
+
+
+	def getSource (self) :
+		'''Return the source settings object'''
+
+		return self.getObject(self._home + '/' + self.getSystem()['System']['sourceFile'])
+
+
+

@@ -38,12 +38,13 @@ class Report (object) :
 			self._basePath = "/usr/share/xetex-tipe"
 			os.environ['TIPE_BASE'] = self._basePath
 
-		self._debugging = False
-		self._sysConfig = configure.getSystem()
-		self._home = os.getcwd()
-		self._logFile = self._sysConfig['System']['logFile']
+		self._debugging         = False
+		self._sysConfig         = configure.getSystem()
+		self._home              = os.getcwd()
+		self._logFile           = self._home + '/' + self._sysConfig['System']['logFile']
+		self._errorLogFile      = self._home + '/' + self._sysConfig['System']['errorLogFile']
 		if self._sysConfig['System']['debugging'].lower() == 'true' :
-			self._debugging = True
+			self._debugging     = True
 
 
 	def terminal (self, msg) :
@@ -131,15 +132,45 @@ class Report (object) :
 			writeObject.close()
 
 		# Now log the event to the top of the file using preAppend()
-		if self._debugging :
+		if code == 'MSG' :
 			self.preAppend(eventLine, self._logFile)
 			self.terminal(code + ' - ' + msg)
-		else :
-			if code == 'MSG' or code == 'ERR' :
-				self.preAppend(eventLine, self._logFile)
+		elif code == 'LOG' :
+			self.preAppend(eventLine, self._logFile)
+			if self._debugging :
 				self.terminal(code + ' - ' + msg)
-			else :
-				self.preAppend(eventLine, self._logFile)
+		elif code == 'WRN' :
+			self.preAppend(eventLine, self._logFile)
+			self.terminal(code + ' - ' + msg)
+			if self._debugging :
+				self.writeToErrorLog(eventLine)
+		elif code == 'ERR' :
+			self.preAppend(eventLine, self._logFile)
+			self.writeToErrorLog(eventLine)
+			self.terminal(code + ' - ' + msg)
+		else :
+			self.preAppend(eventLine, self._logFile)
+			self.terminal('report.writeToLog: WARNING! log code: ' + code + ' not recognized. BTW, the message is: (' + msg + ')')
+
+		return
+
+
+	def writeToErrorLog (self, eventLine) :
+		'''In a perfect world there would be no errors, but alas there are and
+		we need to put them in a special file that can be accessed after the
+		process is run.  The error file from the previous session is deleted at
+		the begining of each new run.'''
+
+		# Because we want to read errors from top to bottom, we don't pre append
+		# them to the error log file.
+		if not os.path.isfile(self._errorLogFile) :
+			writeObject = codecs.open(self._errorLogFile, "w", encoding='utf_8')
+		else :
+			writeObject = codecs.open(self._errorLogFile, "a", encoding='utf_8')
+
+		# Write and close
+		writeObject.write(eventLine)
+		writeObject.close()
 
 		return
 
@@ -148,23 +179,25 @@ class Report (object) :
 		'''Trim the system log file.  This will take an existing log file and
 		trim it to the amount specified in the system file.'''
 
-		lineLimit = int(self._sysConfig['System']['logLines'])
+		# Of course this isn't needed if there isn't even a log file
+		if os.path.isfile(self._logFile) :
+			lineLimit = int(self._sysConfig['System']['logLines'])
 
-		# Read in the existing log file
-		readObject = codecs.open(self._logFile, "r", encoding='utf_8')
-		lines = readObject.readlines()
-		readObject.close()
+			# Read in the existing log file
+			readObject = codecs.open(self._logFile, "r", encoding='utf_8')
+			lines = readObject.readlines()
+			readObject.close()
 
-		# Process only if we have enough lines
-		if len(lines) > lineLimit :
-			writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
-			lineCount = 0
-			for line in lines :
-				if lineLimit > lineCount :
-					writeObject.write(line)
-					lineCount +=1
+			# Process only if we have enough lines
+			if len(lines) > lineLimit :
+				writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
+				lineCount = 0
+				for line in lines :
+					if lineLimit > lineCount :
+						writeObject.write(line)
+						lineCount +=1
 
-			writeObject.close()
+				writeObject.close()
 
 		return
 
@@ -180,3 +213,6 @@ class Report (object) :
 			sys.stdout.write("%s" % line)
 
 		fobj.close()
+
+
+

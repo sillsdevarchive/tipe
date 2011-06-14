@@ -39,19 +39,11 @@ sys.path.insert(0, basePath + '/bin/python')
 sys.path.insert(0, basePath + '/bin/python/lib_system')
 
 # Load the local classes
-from report import *
-report = Report()
-from configure import *
-configure = Configure()
-from document import *
-document = Document()
-
+from project import Project
 
 # Give a welcome message
-sysConfig = configure.getSystem()
-version = sysConfig['System']['systemVersion']
-
-report.terminal('\n\t\tWelcome to TIPE ' + version + '\n')
+aProject = Project(os.getcwd())
+aProject.terminal('\n\t\tWelcome to TIPE ' + version + '\n')
 
 # Examine our command line.  The command line will have no more than three
 # parameters.  The script name, which is always "tipe", followed by the command
@@ -60,55 +52,61 @@ report.terminal('\n\t\tWelcome to TIPE ' + version + '\n')
 # attempt to parse if the command is expecting more than one parameter.
 
 command = ""
-thisComponent = ""
+opts = []
 
-if len(sys.argv) > 3 :
-	report.terminal('Dude, you messed up your command line. Try again!')
-
-elif len(sys.argv) > 1 :
+if len(sys.argv) > 1 :
 	command = sys.argv[1]
-	try :
-		thisComponent = sys.argv[2]
-	except :
-		thisComponent = ""
-
+	opts = sys.argv[2:]
 else :
 	# If there isn't anything then we'll just go to the projects manager
-	command = "projects"
+	command = "manage"
 
 
 ###############################################################################
 ########################## Define Script functions ############################
 ###############################################################################
 
-def newProject () :
+def tipeManger (aProject, argv) :
+	'''Start the TIPE Manager GUI'''
+
+	aProject.terminal('SORRY: This feature has not been implemented yet.')
+
+
+def newProject (aProject, argv) :
 	'''Setup a new project'''
 
-	if project.makeProject(os.getcwd()) :
-		report.writeToLog('MSG', 'Created new project at: ' + os.getcwd())
+	if aProject.makeProject(os.getcwd()) :
+		aProject.writeToLog('MSG', 'Created new project at: ' + os.getcwd())
 	else :
-		report.terminal('ERROR: tipe.newProject: Failed to created new project at: ' + os.getcwd())
+		aProject.terminal('ERROR: tipe.newProject: Failed to created new project at: ' + os.getcwd())
 
 
-def addComponent () :
+def addComponent (aProject, argv) :
 	'''Add a new component to the project.'''
 
-	component.addComponent(thisComponent)
+	aProject.addComponent(argv[0])
 
-
-def render () :
+def render (aProject, argv) :
 	'''Render the current component.'''
 
 	# First check our project setup and try to auto correct any problems that
 	# might be caused from missing project assets.  This can include files
 	# like.sty, .tex, .usfm, and folders, etc.
-	if not project.checkProject(os.getcwd()) :
-		report.terminal('ERROR: tipe.render: No project found!')
+	if not aProject.checkProject() :
+		aProject.terminal('ERROR: tipe.render: No project found!')
 		return
+
+	aDoc = aProject.createDoc(argv[0])
+	if not aDoc :
+		aProject.writeToLog('ERR', 'tipe render: Component not found in project')
+		return
+	aDoc.render()
+
+
 
 	# Now see if this component exists
 	if not component.checkComponent(thisComponent) :
-		report.writeToLog('ERR', 'tipe.render: Component not found in project.')
+		report.writeToLog('ERR', 'tipe.render: Component not found in project. Double check the ID used or use the add_component command to fix this.')
 		return
 
 	# Create the makefile for processing this particular component.  This is
@@ -146,21 +144,20 @@ def runMake () :
 ###############################################################################
 
 # Load up the shared modules we're going to need for all the commands
-from project import *
-project = Project()
-
 
 if command == 'render' :
-	render()
+	render(aProject, opts)
 elif command == 'new_project' :
-	newProject()
+	newProject(aProject, opts)
 elif command == 'add_component' :
-	addComponent()
+	addComponent(aProject, opts)
+elif command == 'manage' :
+	tipeManger(aProject, opts)
 else :
-	report.terminal('ERROR: This command does not exist: ' + command)
+	aProject.terminal('ERROR: This command does not exist: ' + command)
 
 
 # All done
-report.trimLog()
-report.terminal('\n\t\tThank you, please come again!\n')
+aProject.trimLog()
+aProject.terminal('\n\t\tThank you, please come again!\n')
 

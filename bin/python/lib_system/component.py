@@ -19,7 +19,7 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os
+import codecs, os, inspect
 
 # Load the local classes
 from configure import *
@@ -28,15 +28,14 @@ from report import *
 report = Report()
 
 
-class Component (object) :
+class Component (Document) :
 
 	# Intitate the whole class
-	def __init__(self) :
+	def __init__(self, aProject, compconfig) :
+		super(Component, self).init(sysconfig)
 
-		self._home              = os.getcwd()
-		self._sysConfig         = configure.getSystem()
-		self._sourceFile        = self._home + '/' + self._sysConfig['System']['sourceFile']
-		self._sourceConfig      = configure.getSource()
+		self._sourceConfig      = compconfig
+		self._sourceFile        = self._home + '/' + self._sourceConfig['sourceFile']
 
 
 	def checkComponent (self, thisComponent) :
@@ -45,7 +44,7 @@ class Component (object) :
 		# Fist see if it exists in the project .source file.  All components
 		# should be found there.
 		if not os.path.isfile(self._sourceFile) :
-			report.writeToLog('ERR', 'component.checkComponent: No source file found for this project.')
+			report.writeToLog('ERR', 'component.checkComponent: No source configuration file found for this project.')
 			report.writeToLog('ERR', 'component.checkComponent: This component does not exist: ' + thisComponent)
 			return False
 		else :
@@ -83,12 +82,13 @@ class Component (object) :
 		privateObject = configure.getSource()
 		try :
 			if privateObject['ComponentSourceLink'][thisComponent] :
-				report.writeToLog('ERR', 'component.addComponentSourceLink: Component already exists: ' + thisComponent)
+				report.writeToLog('WRN', 'component.addComponentSourceLink: Component already exists: ' + thisComponent)
 				return False
 		except :
 			# Write out the component code to source file
 			privateObject['ComponentSourceLink'][thisComponent] = thisComponent
 			privateObject.write()
+			report.writeToLog('LOG', 'component.addComponent: Added source link list: ' + thisComponent)
 			return True
 
 

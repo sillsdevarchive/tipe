@@ -28,23 +28,38 @@ configure = Configure()
 from report import *
 report = Report()
 
+def safeConfig(dir, fname) :
+	f = os.path.join(dir, fname)
+	if os.path.exists(f) :
+		return ConfigObj(f, encoding="utf_8")
+	else :
+		return None
+
 class Project (object) :
 
-	def __init__(self) :
+	def __init__(self, dir) :
 
-		self._home              = os.getcwd()
-		self._sysConfig         = configure.getSystem()
-		self._version           = self._home + '/' + self._sysConfig['System']['systemVersion']
-		self._projectFile       = self._home + '/' + self._sysConfig['System']['projectFile']
-		self._errorLogFile      = self._home + '/' + self._sysConfig['System']['errorLogFile']
-		self._textFolder        = self._home + '/' + self._sysConfig['System']['textFolder']
-		self._processFolder     = self._home + '/' + self._sysConfig['System']['processFolder']
-		self._reportFolder      = self._home + '/' + self._sysConfig['System']['reportFolder']
+		self.home              = dir
+		self._sysConfig = safeConfig(dir, "tipe.conf")
+		self._bookConfig = safeConfig(dir, "books.conf")
+		self._compsConfig = safeConfig(dif, "components.conf")
+
+		if self._sysConfig :
+			self.version           = self._sysConfig['System']['systemVersion']
+			self.projectFile       = os.path.join(self._home, self._sysConfig['System']['projectFile'])
+			self.errorLogFile      = self._home + '/' + self._sysConfig['System']['errorLogFile']
+			self.textFolder        = self._home + '/' + self._sysConfig['System']['textFolder']
+			self.processFolder     = self._home + '/' + self._sysConfig['System']['processFolder']
+			self.reportFolder      = self._home + '/' + self._sysConfig['System']['reportFolder']
 
 	def checkProject (self, home) :
 		'''Check to see if all the project assets are present wherever "home"
 		is.  At a bare minimum we must have a project.conf file.  This will
 		return Null if that is not found.'''
+		if not self._sysConfig : return False
+		if not self._bookConfig : return False
+		if not self._compsConfig : return False
+		return True
 
 		# First check for a .project.conf file
 		if not os.path.isfile(self._projectFile) :
@@ -101,5 +116,9 @@ class Project (object) :
 
 		return True
 
-
-
+	def createDoc(name) :
+		if self._bookConfig :
+			if name in self._bookConfig : return Book(self, self._bookConfig[name])
+		if self._compsConfig :
+			if name in self._compsConfig : return Component(self, self._compsConfig[name])
+		return None

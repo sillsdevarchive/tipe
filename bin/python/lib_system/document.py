@@ -33,13 +33,9 @@ component = Component()
 class Document (object) :
 
 	# Intitate the whole class
-	def __init__(self) :
+	def __init__(self, aProject) :
 
-		self._home          = os.getcwd()
-		self._sysConfig     = configure.getSystem()
-		self._makefileFile  = self._home + '/' + self._sysConfig['System']['makefileFile']
-		self._textFolder    = self._home + '/' + self._sysConfig['System']['textFolder']
-		self._processFolder = self._home + '/' + self._sysConfig['System']['processFolder']
+		self._project       = aProject
 
 
 	def createMakefile (self, compID, process) :
@@ -51,7 +47,12 @@ class Document (object) :
 
 		# Build the makefile commands
 		makefileCommand = compUSFM + ' : ' + compTEX + '\n' + \
-			'\t@echo INFO: Creating: ' + compUSFM
+			'\t@echo INFO: Creating: ' + compUSFM + '\n' + \
+			'\ttouch ' + compUSFM + '\n\n'
+
+		makefileCommand += compTEX + ' :' + '\n' + \
+			'\ttouch ' + compTEX + '\n\n'
+
 
 		writeObject = codecs.open(self._makefileFile, "w", encoding='utf_8')
 		writeObject.write(makefileCommand)
@@ -64,9 +65,6 @@ class Document (object) :
 #$(PATH_PROCESS)/$(1).$(EXT_TEX) : $(PATH_PROCESS)/$(FILE_TEX_SETTINGS)
 #	@echo INFO: Creating: $(1).$(EXT_TEX)
 #	@$(MOD_RUN_PROCESS) "$(MOD_MAKE_TEX)" "$(1)" "$(1).$(EXT_WORK)" "$$@" ""
-
-
-
 
 
 

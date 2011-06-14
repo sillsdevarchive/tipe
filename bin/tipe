@@ -93,12 +93,12 @@ def render (aProject, argv) :
 	# might be caused from missing project assets.  This can include files
 	# like.sty, .tex, .usfm, and folders, etc.
 	if not aProject.checkProject() :
-		aProject.terminal('ERROR: tipe.render: No project found!')
+		aProject.terminal('ERROR: render(): No project found!')
 		return
 
 	aDoc = aProject.createDoc(argv[0])
 	if not aDoc :
-		aProject.writeToLog('ERR', 'tipe render: Component not found in project')
+		aProject.writeToLog('ERR', 'render(): Component not found in project')
 		return
 	aDoc.render()
 
@@ -106,16 +106,16 @@ def render (aProject, argv) :
 
 	# Now see if this component exists
 	if not component.checkComponent(thisComponent) :
-		report.writeToLog('ERR', 'tipe.render: Component not found in project. Double check the ID used or use the add_component command to fix this.')
+		aProject.writeToLog('ERR', 'render(): Component not found in project. Double check the ID used or use the add_component command to fix this.')
 		return
 
 	# Create the makefile for processing this particular component.  This is
 	# done every time TIPE is run.
 	if document.createMakefile(thisComponent, command) :
 		if runMake() :
-			report.writeToLog('MSG', 'Process completed successful!')
+			aProject.writeToLog('MSG', 'Process completed successful!')
 		else :
-			report.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.')
+			aProject.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.')
 
 	# Collect the results and report them in the log
 

@@ -14,7 +14,7 @@
 
 
 ###############################################################################
-################################### Shell Class ###############################
+################################ Component Class ##############################
 ###############################################################################
 # Firstly, import all the standard Python modules we need for
 # this process
@@ -22,10 +22,6 @@
 import codecs, os, inspect
 
 # Load the local classes
-from configure import *
-configure = Configure()
-from report import *
-report = Report()
 
 
 class Component (Document) :
@@ -44,12 +40,12 @@ class Component (Document) :
 		# Fist see if it exists in the project .source file.  All components
 		# should be found there.
 		if not os.path.isfile(self._sourceFile) :
-			report.writeToLog('ERR', 'component.checkComponent: No source configuration file found for this project.')
-			report.writeToLog('ERR', 'component.checkComponent: This component does not exist: ' + thisComponent)
+			aProject.writeToLog('ERR', 'checkComponent(): No source configuration file found for this project.')
+			aProject.writeToLog('ERR', 'checkComponent(): This component does not exist: ' + thisComponent)
 			return False
 		else :
 			if not self.doesExist(thisComponent) :
-				report.writeToLog('ERR', 'component.checkComponent: This component not in source list: ' + thisComponent)
+				aProject.writeToLog('ERR', 'checkComponent(): This component not in source list: ' + thisComponent)
 				return False
 
 		return True
@@ -82,13 +78,13 @@ class Component (Document) :
 		privateObject = configure.getSource()
 		try :
 			if privateObject['ComponentSourceLink'][thisComponent] :
-				report.writeToLog('WRN', 'component.addComponentSourceLink: Component already exists: ' + thisComponent)
+				aProject.writeToLog('WRN', 'addComponentSourceLink(): Component already exists: ' + thisComponent)
 				return False
 		except :
 			# Write out the component code to source file
 			privateObject['ComponentSourceLink'][thisComponent] = thisComponent
 			privateObject.write()
-			report.writeToLog('LOG', 'component.addComponent: Added source link list: ' + thisComponent)
+			aProject.writeToLog('LOG', 'addComponent(): Added source link list: ' + thisComponent)
 			return True
 
 
@@ -108,7 +104,7 @@ class Component (Document) :
 		oldOrder.append(thisComponent)
 		privateObject['BindingOrder']['order'] = oldOrder
 		privateObject.write()
-		report.writeToLog('LOG', 'component.addComponent: Added to binding order: ' + thisComponent)
+		aProject.writeToLog('LOG', 'addComponent(): Added to binding order: ' + thisComponent)
 
 		return
 

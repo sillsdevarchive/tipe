@@ -22,10 +22,6 @@
 import codecs, os
 
 # Load the local classes
-from configure import *
-configure = Configure()
-from report import *
-report = Report()
 from component import *
 component = Component()
 
@@ -56,7 +52,7 @@ class Document (object) :
 
 		writeObject = codecs.open(self._makefileFile, "w", encoding='utf_8')
 		writeObject.write(makefileCommand)
-		report.writeToLog('LOG', 'document.createMakefile: Created ' + process + ' makefile for ' + compID)
+		aProject.writeToLog('LOG', 'createMakefile(): Created ' + process + ' makefile for ' + compID)
 		writeObject.close()
 
 		return True

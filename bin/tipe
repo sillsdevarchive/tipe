@@ -13,7 +13,7 @@
 # project log in each respective project.
 
 # History:
-# 20110610 - djd - Initial draft
+# 20110610 - djd - Start initial draft
 
 
 ###############################################################################
@@ -40,7 +40,6 @@ sys.path.insert(0, basePath + '/bin/python/lib_system')
 
 # Load the local classes
 from project import Project
-from project import Report
 
 # Give a welcome message
 aProject = Project(os.getcwd())

@@ -24,10 +24,16 @@ from datetime import *
 from configobj import ConfigObj
 
 # Load the local classes
+from config_template import ConfigTemplate
 
 
 def safeConfig(dir, fname) :
 	f = os.path.join(dir, fname)
+	basePath = os.environ.get('TIPE_BASE')
+	tp = os.path.join(basePath, 'bin', 'tipe.xml')
+	confTemp = ConfigTemplate()
+	x = confTemp.readTemplate(tp)
+	print x
 	if os.path.exists(f) :
 		return ConfigObj(f, encoding="utf_8")
 	else :

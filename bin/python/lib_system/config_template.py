@@ -20,6 +20,8 @@
 # this process
 
 import codecs, os
+from xml.etree.ElementTree import XMLID, ElementTree
+tree = ElementTree()
 
 # Load the local classes
 
@@ -29,12 +31,16 @@ class ConfigTemplate (object) :
 	# Intitate the whole class
 	def __init__(self) : pass
 
+		#self.home              = dir
 
 
 	def readTemplate (self, template) :
 		'''Read in default settings from TIPE system'''
 
-		pass
+		tree.parse(template)
+		p = tree.find('section/setting')
+
+		return p
 
 
 	def writeDefaultConfig (self, template) :
@@ -42,3 +48,7 @@ class ConfigTemplate (object) :
 		parent XML file.'''
 
 		pass
+
+
+
+

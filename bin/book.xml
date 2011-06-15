@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section>
+    <name>Book1</name>
+    <setting>
+        <name>Book Type</name>
+        <caller>bookType</caller>
+        <description>The type of publication this will be.</description>
+        <type>option</type>
+            <opt1>Scripture</opt1>
+            <opt2>Dictionary</opt2>
+        <default>Scripture</default>
+    </setting>
+    <description>Book definition section.</description>
+    <section>
+        <name>Binding</name>
+        <caller>Binding</caller>
+        <description>Settings having to do with the binding of components in this publication.</description>
+        <setting>
+            <name>Order</name>
+            <caller>order</caller>
+            <description>The order in which the components will be bound.</description>
+            <type>list</type>
+            <default>pti</default>
+        </setting>
+    </section>
+    <section>
+        <name>Format</name>
+        <caller>Format</caller>
+        <description>Settings having to do with the formating of this publication.</description>
+        <setting>
+            <name>Page Width</name>
+            <caller>pageWidth</caller>
+            <description>The trimmed width of the page.</description>
+            <type>integer</type>
+            <default>150</default>
+        </setting>
+        <setting>
+            <name>Page Height</name>
+            <caller>pageHeight</caller>
+            <description>The trimmed height of the page.</description>
+            <type>integer</type>
+            <default>210</default>
+        </setting>
+    </section>
+</section>
+
+

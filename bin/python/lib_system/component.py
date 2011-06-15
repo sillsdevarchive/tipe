@@ -31,7 +31,7 @@ class Component (Document) :
 		super(Component, self).init(sysconfig)
 
 		self._sourceConfig      = compconfig
-		self._sourceFile        = self._home + '/' + self._sourceConfig['sourceFile']
+		self._sourceFile        = os.path.join(self._home, self._sourceConfig['sourceFile'])
 
 
 	def checkComponent (self, thisComponent) :

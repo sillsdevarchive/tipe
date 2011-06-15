@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section>
+    <name>Component ID</name>
+    <description>A publication component.</description>
+    <setting>
+        <name>Component Type</name>
+        <caller>componentType</caller>
+        <description>The name of the style file for this component.</description>
+        <type>option</type>
+            <opt1>Scripture</opt1>
+            <opt2>Dictionary</opt2>
+        <default>Scripture</default>
+    </setting>
+    <setting>
+        <name>Component File Name</name>
+        <caller>componentFileName</caller>
+        <description>The name of this component file.</description>
+        <type>string</type>
+        <default>[comp].usfm</default>
+    </setting>
+    <setting>
+        <name>Style File Name</name>
+        <caller>styleFileName</caller>
+        <description>The name of the style file for this component.</description>
+        <type>string</type>
+        <default>[comp].sty</default>
+    </setting>
+    <setting>
+        <name>TeX File Name</name>
+        <caller>texFileName</caller>
+        <description>The name of the TeX file for this component.</description>
+        <type>string</type>
+        <default>[comp].tex</default>
+    </setting>
+</section>
+
+

@@ -21,6 +21,7 @@
 
 import codecs, os
 from datetime import *
+from configobj import ConfigObj
 
 # Load the local classes
 
@@ -38,48 +39,65 @@ class Project (object) :
 	def __init__(self, dir) :
 
 		self.home              = dir
-		self._sysConfig = safeConfig(dir, "tipe.conf")
-		self._bookConfig = safeConfig(dir, "books.conf")
-		self._compsConfig = safeConfig(dif, "components.conf")
-
+		self._sysConfig = safeConfig(dir, ".tipe.conf")
+		self._bookConfig = safeConfig(dir, ".books.conf")
+		self._compsConfig = safeConfig(dir, ".components.conf")
 		if self._sysConfig :
-			self.version           = self._sysConfig['System']['systemVersion']
-			self.projectFile       = os.path.join(self._home, self._sysConfig['System']['projectFile'])
-			self.errorLogFile      = self._home + '/' + self._sysConfig['System']['errorLogFile']
-			self.textFolder        = self._home + '/' + self._sysConfig['System']['textFolder']
-			self.processFolder     = self._home + '/' + self._sysConfig['System']['processFolder']
-			self.reportFolder      = self._home + '/' + self._sysConfig['System']['reportFolder']
+			self.report = Report(
+					logfile = os.path.join(dir, self._sysConfig['System']['FileNames']['logFile']) if self._sysConfig else None,
+					errfile = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile']) if self._sysConfig else None,
+					debug = self._sysConfig and self._sysConfig['System']['debugging'])
+
+		# Create system params
+		if self._sysConfig :
+			self.version            = self._sysConfig['System']['systemVersion']
+			self.projectFile        = os.path.join(self.home, self._sysConfig['System']['FileNames']['projectFile'])
+			self.errorLogFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['errorLogFile'])
+			self.textFolder         = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
+			self.processFolder      = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
+			self.reportFolder       = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
+
+		# Create book params
+		if self._bookConfig :
+			self.bindingOrder       = self._bookConfig['BindingOrder']['order']
+
+		# Create component params
+		if self._compsConfig :
+			self.extSty              = self._compsConfig['ScriptureBook']['extStyle']
+
+
 
 	def checkProject (self, home) :
 		'''Check to see if all the project assets are present wherever "home"
 		is.  At a bare minimum we must have a project.conf file.  This will
 		return Null if that is not found.'''
+
 		if not self._sysConfig : return False
 		if not self._bookConfig : return False
 		if not self._compsConfig : return False
 		return True
 
 		# First check for a .project.conf file
-		if not os.path.isfile(self._projectFile) :
-			return
+#        if not os.path.isfile(self._projectFile) :
+#            return
 
 		# Do some cleanup like getting rid of the last sessions error log file.
-		if os.path.isfile(self._errorLogFile) :
-			os.remove(self._errorLogFile)
+		if os.path.isfile(self.errorLogFile) :
+			os.remove(self.errorLogFile)
 
 		# From this point we will check for and add all the necessary project
 		# assets.  Anything that is missing will be replaced by a default
 		# version of the asset.
 
 		# Check for the base set of folders
-		if not os.path.isdir(self._textFolder) :
+		if not os.path.isdir(self.textFolder) :
 			os.mkdir(self._textFolder)
 			aProject.writeToLog('LOG', 'checkProject(): Created Text folder')
-		if not os.path.isdir(self._processFolder) :
+		if not os.path.isdir(self.processFolder) :
 			os.mkdir(self._processFolder)
 			aProject.writeToLog('LOG', 'checkProject(): Created Process folder')
-		if not os.path.isdir(self._reportFolder) :
-			os.mkdir(self._reportFolder)
+		if not os.path.isdir(self.reportFolder) :
+			os.mkdir(self.reportFolder)
 			aProject.writeToLog('LOG', 'checkProject(): Created Reports folder')
 
 		# Check for key settings files
@@ -90,27 +108,33 @@ class Project (object) :
 	def makeProject (self, home, settings="") :
 		'''Create a new publishing project.'''
 
-		# A new project only needs to have a project.conf file.  The rest is
-		# made with the check project file the first time a component is
-		# processed.  However, if the project.conf file already exists we will
-		# abandon the process
-		if not os.path.isfile(self._projectFile) :
-			if self.makeProjectConfigFile(home, settings) :
+		# A new project only needs to have the necessary configuration files.
+		# The rest is made with the check project file the first time a
+		# component is processed.  However, if these files already exists we
+		# will abandon the process
+		if not self._sysConfig and not self._bookConfig and not self._compsConfig :
+			if self.makeProjectConfigFiles(home, settings) :
 				return True
 		else :
-			aProject.writeToLog('ERR', 'makeProject(): project.conf file already exists')
+			aProject.writeToLog('ERR', 'makeProject(): conf files already exists')
+			return False
 
 
-	def makeProjectConfigFile (self, home, settings="") :
-		'''Create a fresh, default project configuration file wherever "here"
-		is.'''
+	def makeProjectConfigFiles (self, home, settings="") :
+		'''Create a fresh, default project.  The project configuration files are
+		made from default configuration files found in TIPE.'''
+
+		# Copy in the files
+
+
+		# Insert some initial settings
 
 		date_time, secs = str(datetime.now()).split(".")
-		writeObject = codecs.open(self._projectFile, "w", encoding='utf_8')
-		writeObject.write('[TIPE]\n')
-		writeObject.write('version = ' + self._version + '\n')
-		writeObject.write('created = ' + date_time + '\n')
-		writeObject.close()
+#        writeObject = codecs.open(self._projectFile, "w", encoding='utf_8')
+#        writeObject.write('[TIPE]\n')
+#        writeObject.write('version = ' + self._version + '\n')
+#        writeObject.write('created = ' + date_time + '\n')
+#        writeObject.close()
 
 		return True
 
@@ -121,6 +145,11 @@ class Project (object) :
 			if name in self._compsConfig : return Component(self, self._compsConfig[name])
 		return None
 
+	# These are functions that are exposed to the project class
+	def terminal(self, msg) : self.report.terminal(msg)
+	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
+	def writeToLog(self, code, msg) : self.report.writeToLog(code, msg)
+	def trimLog(self) : self.report.trimLog()
 
 ###############################################################################
 ############################### Reporting Class ###############################
@@ -130,20 +159,12 @@ class Project (object) :
 class Report (object) :
 
 	# Intitate the whole class
-	def __init__(self) :
-
-		self._basePath = os.environ.get('TIPE_BASE')
-		if not self._basePath :
-			self._basePath = "/usr/share/xetex-tipe"
-			os.environ['TIPE_BASE'] = self._basePath
+	def __init__(self, logfile = None, errfile = None, debug = False) :
 
 		self._debugging         = False
-		self._sysConfig         = configure.getSystem()
-		self._home              = os.getcwd()
-		self._logFile           = self._home + '/' + self._sysConfig['System']['logFile']
-		self._errorLogFile      = self._home + '/' + self._sysConfig['System']['errorLogFile']
-		if self._sysConfig['System']['debugging'].lower() == 'true' :
-			self._debugging     = True
+		self._logFile           = logfile
+		self._errorLogFile      = errfile
+		self._debugging = debug
 
 
 	def terminal (self, msg) :

@@ -40,10 +40,11 @@ sys.path.insert(0, basePath + '/bin/python/lib_system')
 
 # Load the local classes
 from project import Project
+from project import Report
 
 # Give a welcome message
 aProject = Project(os.getcwd())
-aProject.terminal('\n\t\tWelcome to TIPE ' + version + '\n')
+aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version + '\n')
 
 # Examine our command line.  The command line will have no more than three
 # parameters.  The script name, which is always "tipe", followed by the command

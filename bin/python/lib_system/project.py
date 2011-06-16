@@ -25,15 +25,11 @@ from configobj import ConfigObj
 
 # Load the local classes
 from config_template import ConfigTemplate
+confTemp = ConfigTemplate()
 
 
 def safeConfig(dir, fname) :
 	f = os.path.join(dir, fname)
-	basePath = os.environ.get('TIPE_BASE')
-	tp = os.path.join(basePath, 'bin', 'tipe.xml')
-	confTemp = ConfigTemplate()
-	x = confTemp.readTemplate(tp)
-	print x
 	if os.path.exists(f) :
 		return ConfigObj(f, encoding="utf_8")
 	else :
@@ -44,10 +40,18 @@ class Project (object) :
 
 	def __init__(self, dir) :
 
-		self.home              = dir
+		self.home               = dir
+
+		# Load system setting default files
+		self._sysDefaults      = confTemp.readTemplate('tipe.xml')
+		self._bookDefaults     = confTemp.readTemplate('book.xml')
+		self._compDefaults     = confTemp.readTemplate('component.xml')
+
+		# Load project config files
 		self._sysConfig = safeConfig(dir, ".tipe.conf")
-		self._bookConfig = safeConfig(dir, ".books.conf")
+		self._bookConfig = safeConfig(dir, ".book.conf")
 		self._compsConfig = safeConfig(dir, ".components.conf")
+
 		if self._sysConfig :
 			self.report = Report(
 					logfile = os.path.join(dir, self._sysConfig['System']['FileNames']['logFile']) if self._sysConfig else None,
@@ -55,6 +59,20 @@ class Project (object) :
 					debug = self._sysConfig and self._sysConfig['System']['debugging'])
 
 		# Create system params
+# NOTE: For merging settings we want to do something like this:
+# if sysConfig:
+#   merge sys defaults with project sys settings
+#       Insert any new params that might apear in the system defaults
+#       Eliminate any project params that are not present in the system defaults
+#           and write them out to the log file as a warning so the user has a
+#           chance to know about it.
+#       Preserve any existing params in the project that match in the defaults
+# Otherwise:
+#   Write out the default settings to a new sysConfig file.
+#
+# Repete this for all the rest of the config files
+
+
 		if self._sysConfig :
 			self.version            = self._sysConfig['System']['systemVersion']
 			self.projectFile        = os.path.join(self.home, self._sysConfig['System']['FileNames']['projectFile'])
@@ -70,7 +88,6 @@ class Project (object) :
 		# Create component params
 		if self._compsConfig :
 			self.extSty              = self._compsConfig['ScriptureBook']['extStyle']
-
 
 
 	def checkProject (self, home) :

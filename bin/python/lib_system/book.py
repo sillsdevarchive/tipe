@@ -19,13 +19,35 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os
+# import codecs, os
+from document import Document
 
 
-class Book (object) :
+class Book (Document) :
 
 	# Intitate the whole class
-	def __init__(self) : pass
+	def __init__(self, aProject, bookConfig) :
+		super(Book, self).__init__(aProject, bookConfig)
 
-#        self._placeholder = ""
-#        self._processLogObject = []
+		self._components = []
+		if bookConfig['Binding']['order'] :
+			for c in bookConfig['Binding']['order'].split(' ') :
+				aProject.addComponent(c)
+
+
+	def createMakefile(self, fh) :
+		'''Create a makefile that contains rules for all the components listed
+		in the project.  This could be a very large makefile.'''
+		for c in self._components :
+			c.createMakefile(fh)
+
+
+	def addComponent(self, aComp) :
+		'''Add a component to the book component order list.'''
+		self._components.append(aComp)
+		return aComp
+
+
+
+
+

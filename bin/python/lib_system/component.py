@@ -19,7 +19,8 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os, inspect
+import codecs, os
+from document import Document
 
 # Load the local classes
 
@@ -27,11 +28,40 @@ import codecs, os, inspect
 class Component (Document) :
 
 	# Intitate the whole class
-	def __init__(self, aProject, compconfig) :
-		super(Component, self).init(sysconfig)
+	def __init__(self, name, aProject, compConfig) :
+		super(Component, self).init(aProject, compConfig)
 
-		self._sourceConfig      = compconfig
+		self.name = name
+		self._sourceConfig      = compConfig
 		self._sourceFile        = os.path.join(self._home, self._sourceConfig['sourceFile'])
+		self._textFolder        = aProject.textFolder
+
+	def createMakefile(self, fh) :
+		'''Create a makefile rule for a specific component and append it to the
+		project makefile.'''
+
+#        compUSFM = self._textFolder + '/' + compID + '.usfm'
+#        compTEX = self._processFolder + '/' + compID + '.tex'
+
+#        # Build the makefile commands
+#        makefileCommand = compUSFM + ' : ' + compTEX + '\n' + \
+#            '\t@echo INFO: Creating: ' + compUSFM + '\n' + \
+#            '\ttouch ' + compUSFM + '\n\n'
+
+#        makefileCommand += compTEX + ' :' + '\n' + \
+#            '\ttouch ' + compTEX + '\n\n'
+
+
+#        writeObject = codecs.open(self._makefileFile, "w", encoding='utf_8')
+#        writeObject.write(makefileCommand)
+#        aProject.writeToLog('LOG', 'createMakefile(): Created ' + process + ' makefile for ' + compID)
+#        writeObject.close()
+
+#$(PATH_PROCESS)/$(1).$(EXT_TEX) : $(PATH_PROCESS)/$(FILE_TEX_SETTINGS)
+#	@echo INFO: Creating: $(1).$(EXT_TEX)
+#	@$(MOD_RUN_PROCESS) "$(MOD_MAKE_TEX)" "$(1)" "$(1).$(EXT_WORK)" "$$@" ""
+
+		return True
 
 
 	def checkComponent (self, thisComponent) :
@@ -56,14 +86,24 @@ class Component (Document) :
 		in several places and several dependent objects need to be created as
 		well.'''
 
-		# First check to see if the source file is there.
-		if not os.path.isfile(self._sourceFile) :
-			self.makeSourceList()
+		# FIXME: This will be a fairly complex proceedure for now, we'll just
+		# make a simple file as a place holder.
 
-		# Try adding to the source link list
-		if self.addComponentSourceLink(thisComponent) :
-			# If that worked we'll add it to the binding list
-			self.addComponentToBindingOrder(thisComponent)
+		workFile = os.path.join(self._textFolder, thisComponent + '.usfm')
+
+		writeObject = codecs.open(workFile, "w", encoding='utf_8')
+		writeObject.write('\\id ' + thisComponent.upper() + '\n')
+		writeObject.write('\\p This is just a placeholder file.\n')
+		writeObject.close()
+
+#        # First check to see if the source file is there.
+#        if not os.path.isfile(self._sourceFile) :
+#            self.makeSourceList()
+
+#        # Try adding to the source link list
+#        if self.addComponentSourceLink(thisComponent) :
+#            # If that worked we'll add it to the binding list
+#            self.addComponentToBindingOrder(thisComponent)
 
 		return
 

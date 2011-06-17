@@ -1,41 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<section id='Book'>
-    <name>Book</name>
-    <description>Book definition section.</description>
-    <setting id='bookType'>
-        <name>Book Type</name>
-        <description>The type of publication this will be.</description>
-        <type>option</type>
-            <opt1>Scripture</opt1>
-            <opt2>Dictionary</opt2>
-        <default>Scripture</default>
-    </setting>
-    <section id='Binding'>
-        <name>Binding</name>
-        <description>Settings having to do with the binding of components in this publication.</description>
-        <setting id='order'>
-            <name>Order</name>
-            <description>The order in which the components will be bound.</description>
-            <type>list</type>
-            <default>pti</default>
+<root>
+        <setting id='bookType'>
+            <name>Book Type</name>
+            <description>The type of publication this will be.</description>
+            <type>option</type>
+                <opt1>Scripture</opt1>
+                <opt2>Dictionary</opt2>
+            <default>Scripture</default>
         </setting>
-    </section>
-    <section id='Format'>
-        <name>Format</name>
-        <description>Settings having to do with the formating of this publication.</description>
-        <setting id='pageWidth'>
-            <name>Page Width</name>
-            <description>The trimmed width of the page.</description>
-            <type>integer</type>
-            <default>150</default>
-        </setting>
-        <setting id='pageHeight'>
-            <name>Page Height</name>
-            <description>The trimmed height of the page.</description>
-            <type>integer</type>
-            <default>210</default>
-        </setting>
-    </section>
-</section>
-
+        <section id='Binding'>
+            <name>Binding</name>
+            <description>Settings having to do with the binding of components in this publication.</description>
+            <setting id='order'>
+                <name>Order</name>
+                <description>The order in which the components will be bound.</description>
+                <type>list</type>
+                <default></default>
+            </setting>
+        </section>
+        <section id='Format'>
+            <name>Format</name>
+            <description>Settings having to do with the formating of this publication.</description>
+            <setting id='pageWidth'>
+                <name>Page Width</name>
+                <description>The trimmed width of the page.</description>
+                <type>integer</type>
+                <default>150</default>
+            </setting>
+            <setting id='pageHeight'>
+                <name>Page Height</name>
+                <description>The trimmed height of the page.</description>
+                <type>integer</type>
+                <default>210</default>
+            </setting>
+        </section>
+</root>
 

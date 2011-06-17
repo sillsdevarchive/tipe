@@ -40,16 +40,26 @@ class ConfigTemplate (object) :
 
 		template       = os.path.join(self.base, 'bin', target)
 
-		# Open and read XML file
-		fhXML = file(template)
-		txtXML = ''.join(fhXML)
-		fhXML.close
-		(eXML, dXML) = XMLID(txtXML)
+		try:
+			tree = ET.parse(template)
+		except Exception, inst:
+			# FIXME: How do we write to the log file when this mod is dependent on the project mod?
+			# aProject.writeToLog('ERR', mod, "Unexpected error opening %s: %s" % (xml_file_in, inst))
+			return
 
-		print dXML.has_key('system')
-		print dXML.keys()
-		for key in dXML.keys() :
-			print dXML.get(key)
+
+
+
+#        # Open and read XML file
+#        fhXML = file(template)
+#        txtXML = ''.join(fhXML)
+#        fhXML.close
+#        (eXML, dXML) = XMLID(txtXML)
+
+#        print dXML.has_key('system')
+#        print dXML.keys()
+#        for key in dXML.keys() :
+#            print dXML.get(key)
 
 		return True
 

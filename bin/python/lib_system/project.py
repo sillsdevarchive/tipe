@@ -19,38 +19,81 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os
+import codecs, os, sys, fileinput
 from datetime import *
-from configobj import ConfigObj
+from configobj import ConfigObj, Section
 
 # Load the local classes
 from config_template import ConfigTemplate
 confTemp = ConfigTemplate()
+from component import Component
+from book import Book
+from xml.etree import ElementTree
 
 
-def safeConfig(dir, fname) :
-	f = os.path.join(dir, fname)
+def xml_to_section(fname) :
+	doc = ElementTree.parse(fname)
+	data = {}
+	xml_add_section(data, doc)
+	return ConfigObj(data)
+
+def xml_add_section(data, doc) :
+	sets = doc.findall('setting')
+	for s in sets :
+		data[s.attrib['id']] = s.find('default').text
+	sects = doc.findall('section')
+	for s in sects :
+		nd = {}
+		data[s.attrib['id']] = nd
+		xml_add_section(nd, s)
+
+def override(aConfig, fname) :
+	oConfig = ConfigObj(fname)
+	aConfig.override(oConfig)
+
+def override_components(aConfig, fname) :
+	oConfig = ConfigObj(fname)
+	for s, v in oConfig.items() :
+		old = ConfigObj(aConfig['defaults'].dict())
+		old.override(v)
+		aConfig[s] = ConfigObj(old)
+
+def override_section(self, aSection) :
+	for k, v in self.items() :
+		if k in aSection :
+			if isinstance(v, dict) and isinstance(aSection[k], dict) :
+				v.override(aSection[k])
+			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
+				self[k] = v
+
+Section.override = override_section
+
+def safeConfig(dir, fname, tipedir, setting, projconf = None) :
+	f = os.path.join(tipedir, fname + '.xml')
 	if os.path.exists(f) :
-		return ConfigObj(f, encoding="utf_8")
+		res = xml_to_section(f)
 	else :
 		return None
-
+	if not projconf : projconf = res
+	f = projconf['System']['FileNames'][setting]
+	if fname == 'component' and os.path.exists(f) :
+		override_components(res, f)
+	elif os.path.exists(f) :
+		override(res, f)
+	return res
 
 class Project (object) :
 
-	def __init__(self, dir) :
+	def __init__(self, dir, tipedir) :
 
-		self.home               = dir
-
-		# Load system setting default files
-		self._sysDefaults      = confTemp.readTemplate('tipe.xml')
-		self._bookDefaults     = confTemp.readTemplate('book.xml')
-		self._compDefaults     = confTemp.readTemplate('component.xml')
+		self.home = dir
 
 		# Load project config files
-		self._sysConfig = safeConfig(dir, ".tipe.conf")
-		self._bookConfig = safeConfig(dir, ".book.conf")
-		self._compsConfig = safeConfig(dir, ".components.conf")
+		self._sysConfig = safeConfig(dir, "tipe", tipedir, 'projectConf')
+		self._bookConfig = safeConfig(dir, "book", tipedir, 'bookConf', projconf = self._sysConfig)
+		self._compsConfig = safeConfig(dir, "component", tipedir, 'compConf', projconf = self._sysConfig)
+		self._book = Book(self, self._bookConfig)
+		self._components = {}
 
 		if self._sysConfig :
 			self.report = Report(
@@ -72,11 +115,11 @@ class Project (object) :
 #
 # Repete this for all the rest of the config files
 
-
 		if self._sysConfig :
 			self.version            = self._sysConfig['System']['systemVersion']
 			self.projectFile        = os.path.join(self.home, self._sysConfig['System']['FileNames']['projectFile'])
 			self.errorLogFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['errorLogFile'])
+			self.logLineLimit       = self._sysConfig['System']['logLineLimit']
 			self.textFolder         = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
 			self.processFolder      = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
 			self.reportFolder       = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
@@ -97,8 +140,11 @@ class Project (object) :
 
 		if not self._sysConfig : return False
 		if not self._bookConfig : return False
-		if not self._compsConfig : return False
-		return True
+#        if not self._compsConfig : return False
+
+		if not self._sysConfig : print False
+		if not self._bookConfig : print False
+		if not self._compsConfig : print False
 
 		# First check for a .project.conf file
 #        if not os.path.isfile(self._projectFile) :
@@ -114,14 +160,14 @@ class Project (object) :
 
 		# Check for the base set of folders
 		if not os.path.isdir(self.textFolder) :
-			os.mkdir(self._textFolder)
-			aProject.writeToLog('LOG', 'checkProject(): Created Text folder')
+			os.mkdir(self.textFolder)
+			self.writeToLog('LOG', 'checkProject(): Created Text folder')
 		if not os.path.isdir(self.processFolder) :
-			os.mkdir(self._processFolder)
-			aProject.writeToLog('LOG', 'checkProject(): Created Process folder')
+			os.mkdir(self.processFolder)
+			self.writeToLog('LOG', 'checkProject(): Created Process folder')
 		if not os.path.isdir(self.reportFolder) :
 			os.mkdir(self.reportFolder)
-			aProject.writeToLog('LOG', 'checkProject(): Created Reports folder')
+			self.writeToLog('LOG', 'checkProject(): Created Reports folder')
 
 		# Check for key settings files
 
@@ -161,18 +207,32 @@ class Project (object) :
 
 		return True
 
-	def createDoc(name) :
-		if self._bookConfig :
-			if name in self._bookConfig : return Book(self, self._bookConfig[name])
-		if self._compsConfig :
-			if name in self._compsConfig : return Component(self, self._compsConfig[name])
-		return None
+	def getDoc (self, name) :
+		'''Create a document object.'''
+#        # FIXME: This needs more work and thought.
+		if name == "Book" :
+			return self._book
+		try :
+			return self._components[name]
+		except KeyError :
+			return None
 
-	# These are functions that are exposed to the project class
+	def addNewComponent(self, name) :
+		self._compsConfig[name].initialisedefaultcomponentvaluessomehow()
+		aComp = self.addComponent(name)
+		aComp.initFiles()
+
+	def addComponent(self, name) :
+		aComp = Component(self, self._compsConfig[name], name)
+		self._components[aComp.name] = aComp
+		return self._book.addComponent(aComp)
+
+	# These are Report mod functions that are exposed to the project class
 	def terminal(self, msg) : self.report.terminal(msg)
 	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
-	def writeToLog(self, code, msg) : self.report.writeToLog(code, msg)
-	def trimLog(self) : self.report.trimLog()
+	def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
+	def trimLog(self, logLineLimit) : self.report.trimLog(logLineLimit)
+
 
 ###############################################################################
 ############################### Reporting Class ###############################
@@ -259,11 +319,17 @@ class Report (object) :
 #   2) Warning event going to log and terminal if debugging is turned on
 #   3) Error event going to the log and terminal
 
-	def writeToLog (self, code, msg) :
+	def writeToLog (self, code, msg, mod = None) :
 		'''Send an event to the log file. and the terminal if specified.'''
 
 		# When are we doing this?
 		date_time, secs = str(datetime.now()).split(".")
+
+		# Build the mod line
+		if mod :
+			mod = mod + ': '
+		else :
+			mod = ''
 
 		# Build the event line
 		eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg
@@ -274,7 +340,8 @@ class Report (object) :
 			writeObject.write('TIPE event log file created: ' + date_time + '\n')
 			writeObject.close()
 
-		# Now log the event to the top of the file using preAppend()
+		# Now log the event to the top of the file using preAppend().  We will
+		# only report what module it came from when it is a warning or an error.
 		if code == 'MSG' :
 			self.preAppend(eventLine, self._logFile)
 			self.terminal(code + ' - ' + msg)
@@ -284,13 +351,13 @@ class Report (object) :
 				self.terminal(code + ' - ' + msg)
 		elif code == 'WRN' :
 			self.preAppend(eventLine, self._logFile)
-			self.terminal(code + ' - ' + msg)
+			self.terminal(code + ' - ' + mod + msg)
 			if self._debugging :
 				self.writeToErrorLog(eventLine)
 		elif code == 'ERR' :
 			self.preAppend(eventLine, self._logFile)
 			self.writeToErrorLog(eventLine)
-			self.terminal(code + ' - ' + msg)
+			self.terminal(code + ' - ' + mod + msg)
 		else :
 			self.preAppend(eventLine, self._logFile)
 			self.terminal('writeToLog: WARNING! log code: ' + code + ' not recognized. BTW, the message is: (' + msg + ')')
@@ -318,13 +385,12 @@ class Report (object) :
 		return
 
 
-	def trimLog (self) :
+	def trimLog (self, logLineLimit = 1000) :
 		'''Trim the system log file.  This will take an existing log file and
 		trim it to the amount specified in the system file.'''
 
 		# Of course this isn't needed if there isn't even a log file
 		if os.path.isfile(self._logFile) :
-			lineLimit = int(self._sysConfig['System']['logLines'])
 
 			# Read in the existing log file
 			readObject = codecs.open(self._logFile, "r", encoding='utf_8')
@@ -332,11 +398,11 @@ class Report (object) :
 			readObject.close()
 
 			# Process only if we have enough lines
-			if len(lines) > lineLimit :
+			if len(lines) > logLineLimit :
 				writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
 				lineCount = 0
 				for line in lines :
-					if lineLimit > lineCount :
+					if logLineLimit > lineCount :
 						writeObject.write(line)
 						lineCount +=1
 

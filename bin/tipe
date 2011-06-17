@@ -22,7 +22,7 @@
 # Firstly, import all the standard Python modules we need for this process and
 # set the base path
 
-import sys, os, codecs, shutil, operator
+import sys, os, codecs, shutil, operator, dis
 
 
 basePath = os.environ.get('TIPE_BASE')
@@ -42,7 +42,7 @@ sys.path.insert(0, basePath + '/bin/python/lib_system')
 from project import Project
 
 # Give a welcome message
-aProject = Project(os.getcwd())
+aProject = Project(os.getcwd(), os.path.join(basePath, 'bin'))
 aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version + '\n')
 
 # Examine our command line.  The command line will have no more than three
@@ -86,28 +86,25 @@ def addComponent (aProject, argv) :
 
 	aProject.addComponent(argv[0])
 
+
 def render (aProject, argv) :
 	'''Render the current component.'''
+
+	mod = 'tipe.render()'
 
 	# First check our project setup and try to auto correct any problems that
 	# might be caused from missing project assets.  This can include files
 	# like.sty, .tex, .usfm, and folders, etc.
-	if not aProject.checkProject() :
+	if not aProject.checkProject(aProject.home) :
 		aProject.terminal('ERROR: render(): No project found!')
+		aProject.writeToLog('ERR', 'No project found!', mod)
 		return
 
 	aDoc = aProject.createDoc(argv[0])
 	if not aDoc :
-		aProject.writeToLog('ERR', 'render(): Component not found in project')
+		aProject.writeToLog('ERR', 'Component [' + argv[0] + '] not found in project', mod)
 		return
 	aDoc.render()
-
-
-
-	# Now see if this component exists
-	if not component.checkComponent(thisComponent) :
-		aProject.writeToLog('ERR', 'render(): Component not found in project. Double check the ID used or use the add_component command to fix this.')
-		return
 
 	# Create the makefile for processing this particular component.  This is
 	# done every time TIPE is run.
@@ -119,7 +116,7 @@ def render (aProject, argv) :
 
 	# Collect the results and report them in the log
 
-	return
+	return True
 
 
 def runMake () :
@@ -158,6 +155,6 @@ else :
 
 
 # All done
-aProject.trimLog()
+aProject.trimLog(aProject.logLineLimit)
 aProject.terminal('\n\t\tThank you, please come again!\n')
 

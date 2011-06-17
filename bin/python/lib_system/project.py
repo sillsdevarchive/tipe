@@ -82,6 +82,11 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 		override(res, f)
 	return res
 
+
+###############################################################################
+################################## Begin Class ################################
+###############################################################################
+
 class Project (object) :
 
 	def __init__(self, dir, tipedir) :
@@ -101,23 +106,11 @@ class Project (object) :
 					errfile = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile']) if self._sysConfig else None,
 					debug = self._sysConfig and self._sysConfig['System']['debugging'])
 
-		# Create system params
-# NOTE: For merging settings we want to do something like this:
-# if sysConfig:
-#   merge sys defaults with project sys settings
-#       Insert any new params that might apear in the system defaults
-#       Eliminate any project params that are not present in the system defaults
-#           and write them out to the log file as a warning so the user has a
-#           chance to know about it.
-#       Preserve any existing params in the project that match in the defaults
-# Otherwise:
-#   Write out the default settings to a new sysConfig file.
-#
-# Repete this for all the rest of the config files
-
-		if self._sysConfig :
+#        if self._sysConfig :
 			self.version            = self._sysConfig['System']['systemVersion']
-			self.projectFile        = os.path.join(self.home, self._sysConfig['System']['FileNames']['projectFile'])
+			self.projConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['projectConf'])
+			self.bookConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['bookConf'])
+			self.compConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['compConf'])
 			self.errorLogFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['errorLogFile'])
 			self.logLineLimit       = self._sysConfig['System']['logLineLimit']
 			self.textFolder         = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
@@ -126,11 +119,12 @@ class Project (object) :
 
 		# Create book params
 		if self._bookConfig :
-			self.bindingOrder       = self._bookConfig['BindingOrder']['order']
+			self.bindingOrder       = self._bookConfig['Binding']['order']
 
 		# Create component params
-		if self._compsConfig :
-			self.extSty              = self._compsConfig['ScriptureBook']['extStyle']
+		# FIXME: This needs to be thought out a little more
+#        if self._compsConfig :
+#            self.extSty              = self._compsConfig['ScriptureBook']['extStyle']
 
 
 	def checkProject (self, home) :
@@ -145,14 +139,6 @@ class Project (object) :
 		if not self._sysConfig : print False
 		if not self._bookConfig : print False
 		if not self._compsConfig : print False
-
-		# First check for a .project.conf file
-#        if not os.path.isfile(self._projectFile) :
-#            return
-
-		# Do some cleanup like getting rid of the last sessions error log file.
-		if os.path.isfile(self.errorLogFile) :
-			os.remove(self.errorLogFile)
 
 		# From this point we will check for and add all the necessary project
 		# assets.  Anything that is missing will be replaced by a default
@@ -181,11 +167,13 @@ class Project (object) :
 		# The rest is made with the check project file the first time a
 		# component is processed.  However, if these files already exists we
 		# will abandon the process
-		if not self._sysConfig and not self._bookConfig and not self._compsConfig :
+		if not os.path.isfile(self.projConfFile) and \
+			not os.path.isfile(self.bookConfFile) and \
+			not os.path.isfile(self.compConfFile) :
 			if self.makeProjectConfigFiles(home, settings) :
 				return True
 		else :
-			aProject.writeToLog('ERR', 'makeProject(): conf files already exists')
+			self.writeToLog('ERR', 'Conf files already exists', 'project.makeProject()')
 			return False
 
 
@@ -271,9 +259,6 @@ class Report (object) :
 	def error (self, msg, dest='t') :
 		'''Report error to log and/or terminal.'''
 
-		# Output to error log
-
-
 		# Output to terminal if indicated
 		if dest == "t" :
 			self.terminal(msg)
@@ -332,7 +317,10 @@ class Report (object) :
 			mod = ''
 
 		# Build the event line
-		eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg
+		if code == 'ERR' :
+			eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + mod + msg + '\"'
+		else :
+			eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg + '\"'
 
 		# Do we need a log file made?
 		if not os.path.isfile(self._logFile) or os.path.getsize(self._logFile) == 0 :
@@ -379,7 +367,7 @@ class Report (object) :
 			writeObject = codecs.open(self._errorLogFile, "a", encoding='utf_8')
 
 		# Write and close
-		writeObject.write(eventLine)
+		writeObject.write(eventLine + '\n')
 		writeObject.close()
 
 		return

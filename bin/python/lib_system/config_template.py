@@ -47,6 +47,7 @@ class ConfigTemplate (object) :
 			# aProject.writeToLog('ERR', mod, "Unexpected error opening %s: %s" % (xml_file_in, inst))
 			return
 
+		tree = ET.parse(template)
 
 
 

@@ -43,6 +43,11 @@ from project import Project
 
 # Give a welcome message
 aProject = Project(os.getcwd(), os.path.join(basePath, 'bin'))
+
+# Do some cleanup like getting rid of the last sessions error log file.
+if os.path.isfile(aProject.errorLogFile) :
+	os.remove(aProject.errorLogFile)
+
 aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version + '\n')
 
 # Examine our command line.  The command line will have no more than three
@@ -76,9 +81,10 @@ def newProject (aProject, argv) :
 	'''Setup a new project'''
 
 	if aProject.makeProject(os.getcwd()) :
-		aProject.writeToLog('MSG', 'Created new project at: ' + os.getcwd())
+		aProject.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), '')
 	else :
-		aProject.terminal('ERROR: tipe.newProject: Failed to created new project at: ' + os.getcwd())
+		aProject.writeToLog('ERR', 'Failed to created new project at: ' + os.getcwd(), 'tipe.newProject()')
+#        aProject.terminal('ERROR: tipe.newProject: Failed to created new project at: ' + os.getcwd())
 
 
 def addComponent (aProject, argv) :

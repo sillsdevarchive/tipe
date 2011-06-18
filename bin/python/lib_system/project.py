@@ -23,12 +23,20 @@ import codecs, os, sys, fileinput
 from datetime import *
 from configobj import ConfigObj, Section
 
+
 # Load the local classes
-from config_template import ConfigTemplate
-confTemp = ConfigTemplate()
 from component import Component
 from book import Book
 from xml.etree import ElementTree
+
+
+###############################################################################
+############################ Define Global Functions ##########################
+###############################################################################
+
+# FIXME: XML issues
+#   Merge may not be working. When a setting is updated it doesn't seem to want to write out
+#   Lists are not being written to the conf file as lists but as strings
 
 
 def xml_to_section(fname) :
@@ -36,6 +44,7 @@ def xml_to_section(fname) :
 	data = {}
 	xml_add_section(data, doc)
 	return ConfigObj(data)
+
 
 def xml_add_section(data, doc) :
 	sets = doc.findall('setting')
@@ -47,9 +56,11 @@ def xml_add_section(data, doc) :
 		data[s.attrib['id']] = nd
 		xml_add_section(nd, s)
 
+
 def override(aConfig, fname) :
 	oConfig = ConfigObj(fname)
 	aConfig.override(oConfig)
+
 
 def override_components(aConfig, fname) :
 	oConfig = ConfigObj(fname)
@@ -57,6 +68,7 @@ def override_components(aConfig, fname) :
 		old = ConfigObj(aConfig['defaults'].dict())
 		old.override(v)
 		aConfig[s] = ConfigObj(old)
+
 
 def override_section(self, aSection) :
 	for k, v in self.items() :
@@ -66,7 +78,9 @@ def override_section(self, aSection) :
 			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
 				self[k] = v
 
+# This will reasign the standard ConfigObj function.
 Section.override = override_section
+
 
 def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 	f = os.path.join(tipedir, fname + '.xml')
@@ -91,40 +105,32 @@ class Project (object) :
 
 	def __init__(self, dir, tipedir) :
 
-		self.home = dir
+		self.home                   = dir
 
 		# Load project config files
-		self._sysConfig = safeConfig(dir, "tipe", tipedir, 'projectConf')
-		self._bookConfig = safeConfig(dir, "book", tipedir, 'bookConf', projconf = self._sysConfig)
-		self._compsConfig = safeConfig(dir, "component", tipedir, 'compConf', projconf = self._sysConfig)
-		self._book = Book(self, self._bookConfig)
-		self._components = {}
+		self._sysConfig             = safeConfig(dir, "project", tipedir, 'projConfFile')
+		self._components            = {}
 
 		if self._sysConfig :
-			self.report = Report(
-					logfile = os.path.join(dir, self._sysConfig['System']['FileNames']['logFile']) if self._sysConfig else None,
-					errfile = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile']) if self._sysConfig else None,
-					debug = self._sysConfig and self._sysConfig['System']['debugging'])
-
-#        if self._sysConfig :
+			self.initLogging(self.home)
 			self.version            = self._sysConfig['System']['systemVersion']
-			self.projConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['projectConf'])
-			self.bookConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['bookConf'])
-			self.compConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['compConf'])
-			self.errorLogFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['errorLogFile'])
+			self.isProject          = self._sysConfig['System']['isProject']
+			self.projConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
+			self.errorLogFile       = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile'])
 			self.logLineLimit       = self._sysConfig['System']['logLineLimit']
 			self.textFolder         = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
 			self.processFolder      = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
 			self.reportFolder       = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
 
-		# Create book params
-		if self._bookConfig :
-			self.bindingOrder       = self._bookConfig['Binding']['order']
 
-		# Create component params
-		# FIXME: This needs to be thought out a little more
-#        if self._compsConfig :
-#            self.extSty              = self._compsConfig['ScriptureBook']['extStyle']
+	def initLogging (self, dir) :
+		'''Initialize the log file system.'''
+
+		self.report = Report(
+			logFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['logFile']) if self._sysConfig else None,
+			errFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile']) if self._sysConfig else None,
+			debug           = self._sysConfig and self._sysConfig['System']['debugging'],
+			isProject       = self._sysConfig and self._sysConfig['System']['isProject'])
 
 
 	def checkProject (self, home) :
@@ -132,72 +138,54 @@ class Project (object) :
 		is.  At a bare minimum we must have a project.conf file.  This will
 		return Null if that is not found.'''
 
-		if not self._sysConfig : return False
-		if not self._bookConfig : return False
-#        if not self._compsConfig : return False
+		mod = 'project.checkProject()'
 
-		if not self._sysConfig : print False
-		if not self._bookConfig : print False
-		if not self._compsConfig : print False
+		# Look to see if all three conf files exist
+		if os.path.isfile(self.projConfFile) :
+			# From this point we will check for and add all the necessary project
+			# assets.  Anything that is missing will be replaced by a default
+			# version of the asset.
+			self.initProject(home)
 
-		# From this point we will check for and add all the necessary project
-		# assets.  Anything that is missing will be replaced by a default
-		# version of the asset.
+			# Check for key settings files
 
-		# Check for the base set of folders
-		if not os.path.isdir(self.textFolder) :
-			os.mkdir(self.textFolder)
-			self.writeToLog('LOG', 'checkProject(): Created Text folder')
-		if not os.path.isdir(self.processFolder) :
-			os.mkdir(self.processFolder)
-			self.writeToLog('LOG', 'checkProject(): Created Process folder')
-		if not os.path.isdir(self.reportFolder) :
-			os.mkdir(self.reportFolder)
-			self.writeToLog('LOG', 'checkProject(): Created Reports folder')
+			return True
 
-		# Check for key settings files
 
-		return True
+	def initProject (self, home) :
+		'''Initialize a new project by creating all necessary components.'''
+
+		mod = 'project.initProject()'
+		for key, value in self._sysConfig['System']['FolderNames'].iteritems() :
+			thisFolder = os.path.join(home, value)
+			if not os.path.isdir(thisFolder) :
+				os.mkdir(thisFolder)
+				self.writeToLog('LOG', 'Created folder: ' + value, mod)
 
 
 	def makeProject (self, home, settings="") :
 		'''Create a new publishing project.'''
 
+		mod = 'project.makeProject()'
 		# A new project only needs to have the necessary configuration files.
 		# The rest is made with the check project file the first time a
 		# component is processed.  However, if these files already exists we
 		# will abandon the process
-		if not os.path.isfile(self.projConfFile) and \
-			not os.path.isfile(self.bookConfFile) and \
-			not os.path.isfile(self.compConfFile) :
-			if self.makeProjectConfigFiles(home, settings) :
-				return True
+		if not os.path.isfile(self.projConfFile) :
+			date_time, secs = str(datetime.now()).split(".")
+			self._sysConfig['System']['isProject'] = True
+			self._sysConfig['System']['projCreateDate'] = date_time
+			self.initLogging(home)
+			self.initProject(home)
+			return True
 		else :
-			self.writeToLog('ERR', 'Conf files already exists', 'project.makeProject()')
+			self.writeToLog('ERR', 'Conf files already exists', mod)
 			return False
 
 
-	def makeProjectConfigFiles (self, home, settings="") :
-		'''Create a fresh, default project.  The project configuration files are
-		made from default configuration files found in TIPE.'''
-
-		# Copy in the files
-
-
-		# Insert some initial settings
-
-		date_time, secs = str(datetime.now()).split(".")
-#        writeObject = codecs.open(self._projectFile, "w", encoding='utf_8')
-#        writeObject.write('[TIPE]\n')
-#        writeObject.write('version = ' + self._version + '\n')
-#        writeObject.write('created = ' + date_time + '\n')
-#        writeObject.close()
-
-		return True
-
 	def getDoc (self, name) :
 		'''Create a document object.'''
-#        # FIXME: This needs more work and thought.
+#        # FIXME: I think this needs more work and thought.
 		if name == "Book" :
 			return self._book
 		try :
@@ -205,15 +193,32 @@ class Project (object) :
 		except KeyError :
 			return None
 
+
+	def initFiles (self, idCode) :
+		'''Initialize all the necessary files for a given component.'''
+
+		# Discover the type of component it is
+
+		# Loop through all the component files in the projectConf file.
+
+		pass
+
+
 	def addNewComponent(self, name) :
+		'''Add a new component to the project.'''
+
 		self._compsConfig[name].initialisedefaultcomponentvaluessomehow()
 		aComp = self.addComponent(name)
 		aComp.initFiles()
 
+
 	def addComponent(self, name) :
+		'''Append a component to the bindingOrder list and add it to the
+		project.conf file, often called by addNewComponent().'''
+
 		aComp = Component(self, self._compsConfig[name], name)
 		self._components[aComp.name] = aComp
-		return self._book.addComponent(aComp)
+		return self._sysConfig.addComponent(aComp)
 
 	# These are Report mod functions that are exposed to the project class
 	def terminal(self, msg) : self.report.terminal(msg)
@@ -230,12 +235,13 @@ class Project (object) :
 class Report (object) :
 
 	# Intitate the whole class
-	def __init__(self, logfile = None, errfile = None, debug = False) :
+	def __init__(self, logFile = None, errFile = None, debug = False, isProject = True) :
 
 		self._debugging         = False
-		self._logFile           = logfile
-		self._errorLogFile      = errfile
-		self._debugging = debug
+		self._logFile           = logFile
+		self._errorLogFile      = errFile
+		self._debugging         = debug
+		self._isProject         = isProject
 
 
 	def terminal (self, msg) :
@@ -307,48 +313,51 @@ class Report (object) :
 	def writeToLog (self, code, msg, mod = None) :
 		'''Send an event to the log file. and the terminal if specified.'''
 
-		# When are we doing this?
-		date_time, secs = str(datetime.now()).split(".")
+		# FIXME: If there is not project, we still want messages going to the terminal
+		# If there is not project, why bother?
+		if self._isProject :
+			# When are we doing this?
+			date_time, secs = str(datetime.now()).split(".")
 
-		# Build the mod line
-		if mod :
-			mod = mod + ': '
-		else :
-			mod = ''
+			# Build the mod line
+			if mod :
+				mod = mod + ': '
+			else :
+				mod = ''
 
-		# Build the event line
-		if code == 'ERR' :
-			eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + mod + msg + '\"'
-		else :
-			eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg + '\"'
+			# Build the event line
+			if code == 'ERR' :
+				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + mod + msg + '\"'
+			else :
+				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg + '\"'
 
-		# Do we need a log file made?
-		if not os.path.isfile(self._logFile) or os.path.getsize(self._logFile) == 0 :
-			writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
-			writeObject.write('TIPE event log file created: ' + date_time + '\n')
-			writeObject.close()
+			# Do we need a log file made?
+			if not os.path.isfile(self._logFile) or os.path.getsize(self._logFile) == 0 :
+				writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
+				writeObject.write('TIPE event log file created: ' + date_time + '\n')
+				writeObject.close()
 
-		# Now log the event to the top of the file using preAppend().  We will
-		# only report what module it came from when it is a warning or an error.
-		if code == 'MSG' :
-			self.preAppend(eventLine, self._logFile)
-			self.terminal(code + ' - ' + msg)
-		elif code == 'LOG' :
-			self.preAppend(eventLine, self._logFile)
-			if self._debugging :
+			# Now log the event to the top of the file using preAppend().  We will
+			# only report what module it came from when it is a warning or an error.
+			if code == 'MSG' :
+				self.preAppend(eventLine, self._logFile)
 				self.terminal(code + ' - ' + msg)
-		elif code == 'WRN' :
-			self.preAppend(eventLine, self._logFile)
-			self.terminal(code + ' - ' + mod + msg)
-			if self._debugging :
+			elif code == 'LOG' :
+				self.preAppend(eventLine, self._logFile)
+				if self._debugging :
+					self.terminal(code + ' - ' + msg)
+			elif code == 'WRN' :
+				self.preAppend(eventLine, self._logFile)
+				self.terminal(code + ' - ' + mod + msg)
+				if self._debugging :
+					self.writeToErrorLog(eventLine)
+			elif code == 'ERR' :
+				self.preAppend(eventLine, self._logFile)
 				self.writeToErrorLog(eventLine)
-		elif code == 'ERR' :
-			self.preAppend(eventLine, self._logFile)
-			self.writeToErrorLog(eventLine)
-			self.terminal(code + ' - ' + mod + msg)
-		else :
-			self.preAppend(eventLine, self._logFile)
-			self.terminal('writeToLog: WARNING! log code: ' + code + ' not recognized. BTW, the message is: (' + msg + ')')
+				self.terminal(code + ' - ' + mod + msg)
+			else :
+				self.preAppend(eventLine, self._logFile)
+				self.terminal('writeToLog: WARNING! log code: ' + code + ' not recognized. BTW, the message is: (' + msg + ')')
 
 		return
 

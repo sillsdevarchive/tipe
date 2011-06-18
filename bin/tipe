@@ -22,7 +22,9 @@
 # Firstly, import all the standard Python modules we need for this process and
 # set the base path
 
-import sys, os, codecs, shutil, operator, dis
+import sys, os, codecs, shutil, operator
+from datetime import *
+from configobj import ConfigObj
 
 
 basePath = os.environ.get('TIPE_BASE')
@@ -74,23 +76,25 @@ else :
 def tipeManger (aProject, argv) :
 	'''Start the TIPE Manager GUI'''
 
-	aProject.terminal('SORRY: This feature has not been implemented yet.')
+	aProject.terminal('SORRY: Manager GUI has not been implemented yet.')
 
 
 def newProject (aProject, argv) :
 	'''Setup a new project'''
 
 	if aProject.makeProject(os.getcwd()) :
-		aProject.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), '')
+		aProject.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'tipe.newProject()')
 	else :
 		aProject.writeToLog('ERR', 'Failed to created new project at: ' + os.getcwd(), 'tipe.newProject()')
-#        aProject.terminal('ERROR: tipe.newProject: Failed to created new project at: ' + os.getcwd())
 
 
 def addComponent (aProject, argv) :
 	'''Add a new component to the project.'''
 
-	aProject.addComponent(argv[0])
+	try :
+		aProject.addNewComponent(argv[0])
+	except :
+		aProject.writeToLog('ERR', 'Failed to created new component, no ID code given', 'tipe.addComponent()')
 
 
 def render (aProject, argv) :
@@ -102,23 +106,24 @@ def render (aProject, argv) :
 	# might be caused from missing project assets.  This can include files
 	# like.sty, .tex, .usfm, and folders, etc.
 	if not aProject.checkProject(aProject.home) :
-		aProject.terminal('ERROR: render(): No project found!')
 		aProject.writeToLog('ERR', 'No project found!', mod)
 		return
 
-	aDoc = aProject.createDoc(argv[0])
+	aDoc = aProject.getDoc(argv[0])
 	if not aDoc :
 		aProject.writeToLog('ERR', 'Component [' + argv[0] + '] not found in project', mod)
 		return
+
+	#FIXME: What does this next line do?
 	aDoc.render()
 
 	# Create the makefile for processing this particular component.  This is
 	# done every time TIPE is run.
 	if document.createMakefile(thisComponent, command) :
 		if runMake() :
-			aProject.writeToLog('MSG', 'Process completed successful!')
+			aProject.writeToLog('MSG', 'Process completed successful!', mod)
 		else :
-			aProject.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.')
+			aProject.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.', mod)
 
 	# Collect the results and report them in the log
 
@@ -160,7 +165,16 @@ else :
 	aProject.terminal('ERROR: This command does not exist: ' + command)
 
 
-# All done
+# Write out all the current settings
+if aProject._sysConfig['System']['isProject'] :
+	aProject._sysConfig.filename = aProject.projConfFile
+	date_time, secs = str(datetime.now()).split(".")
+	aProject._sysConfig['System']['projEditDate'] = date_time
+	aProject._sysConfig.write()
+
+# Trim the project log file if needed
 aProject.trimLog(aProject.logLineLimit)
+
+# Politely say good bye
 aProject.terminal('\n\t\tThank you, please come again!\n')
 

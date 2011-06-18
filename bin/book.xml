@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
+    <section id='Book'>
+        <name>Book</name>
+        <description>The book is container for all the project components. The settings in thei section describe the book object.</description>
         <setting id='bookType'>
             <name>Book Type</name>
             <description>The type of publication this will be.</description>
@@ -8,16 +11,12 @@
                 <opt2>Dictionary</opt2>
             <default>Scripture</default>
         </setting>
-        <section id='Binding'>
-            <name>Binding</name>
-            <description>Settings having to do with the binding of components in this publication.</description>
-            <setting id='order'>
-                <name>Order</name>
-                <description>The order in which the components will be bound.</description>
-                <type>list</type>
-                <default></default>
-            </setting>
-        </section>
+        <setting id='bindingOrder'>
+            <name>Binding Order</name>
+            <description>The order that the project components will be in.</description>
+            <type>list</type>
+            <default></default>
+        </setting>
         <section id='Format'>
             <name>Format</name>
             <description>Settings having to do with the formating of this publication.</description>
@@ -34,5 +33,6 @@
                 <default>210</default>
             </setting>
         </section>
+    </section>
 </root>
 

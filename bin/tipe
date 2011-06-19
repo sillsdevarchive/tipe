@@ -167,9 +167,9 @@ else :
 
 # Write out all the current settings
 if aProject._sysConfig['System']['isProject'] :
-	aProject._sysConfig.filename = aProject.projConfFile
 	date_time, secs = str(datetime.now()).split(".")
 	aProject._sysConfig['System']['projEditDate'] = date_time
+	aProject._sysConfig.filename = aProject.projConfFile
 	aProject._sysConfig.write()
 
 # Trim the project log file if needed

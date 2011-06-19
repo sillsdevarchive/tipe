@@ -35,11 +35,15 @@ from xml.etree import ElementTree
 ###############################################################################
 
 # FIXME: XML issues
-#   Merge may not be working. When a setting is updated it doesn't seem to want to write out
-#   Lists are not being written to the conf file as lists but as strings
+#   1) Merge may not be working.  When a setting is updated it doesn't seem to
+#   want to write out
+#   2) Lists are not being written to the conf file as lists but as strings
+#   3) Settings found in the conf file are not overriding the defaults in some cases.
 
 
 def xml_to_section(fname) :
+	'''Read in our default settings from the XML system settings file'''
+
 	doc = ElementTree.parse(fname)
 	data = {}
 	xml_add_section(data, doc)
@@ -47,6 +51,9 @@ def xml_to_section(fname) :
 
 
 def xml_add_section(data, doc) :
+	'''Subprocess of xml_to_section().  Adds sections in the XML to conf
+	object.'''
+
 	sets = doc.findall('setting')
 	for s in sets :
 		data[s.attrib['id']] = s.find('default').text
@@ -57,17 +64,30 @@ def xml_add_section(data, doc) :
 		xml_add_section(nd, s)
 
 
-def override(aConfig, fname) :
-	oConfig = ConfigObj(fname)
-	aConfig.override(oConfig)
+def override(sysConfig, fname) :
+	'''Subprocess of override_components().  The purpose is to override default
+	settings taken from the TIPE system (sysConfig) file with those found in the
+	project.conf file (projConfig).'''
+
+	# Read in the project.conf file and create an object
+	projConfig = ConfigObj(fname)
+
+	# Recall this function to override the default settings
+	sysConfig.override(projConfig)
+
+	# How does this work? Really, how the changed object get passed back?
 
 
 def override_components(aConfig, fname) :
-	oConfig = ConfigObj(fname)
-	for s, v in oConfig.items() :
+	'''Overrides component settings that we got from the default XML system
+	settings file.'''
+	projConfig = ConfigObj(fname)
+	for s, v in projConfig.items() :
 		old = ConfigObj(aConfig['defaults'].dict())
 		old.override(v)
 		aConfig[s] = ConfigObj(old)
+
+	# Do we want to pass aConfig back to something?
 
 
 def override_section(self, aSection) :
@@ -78,18 +98,32 @@ def override_section(self, aSection) :
 			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
 				self[k] = v
 
+
 # This will reasign the standard ConfigObj function.
 Section.override = override_section
 
 
 def safeConfig(dir, fname, tipedir, setting, projconf = None) :
+	'''This is the main function for reading in the XML data and overriding
+	default settings with the current project settings.'''
+
+	# Check to see if the file is there, then read it in and break it into
+	# sections. If it fails, return None
 	f = os.path.join(tipedir, fname + '.xml')
 	if os.path.exists(f) :
 		res = xml_to_section(f)
 	else :
 		return None
+
+	# If this is a live project it should have been passed a valid project.conf
+	# object.  Otherwise, the default settings from the XML will be good enough
+	# to get going.
 	if not projconf : projconf = res
 	f = projconf['System']['FileNames'][setting]
+
+# I think the above needs to change as we only have one xml and conf file to deal with.
+
+	#
 	if fname == 'component' and os.path.exists(f) :
 		override_components(res, f)
 	elif os.path.exists(f) :
@@ -311,19 +345,29 @@ class Report (object) :
 #   3) Error event going to the log and terminal
 
 	def writeToLog (self, code, msg, mod = None) :
-		'''Send an event to the log file. and the terminal if specified.'''
+		'''Send an event to the log file. and the terminal if specified.
+		Everything gets written to the log.  Whether a message gets written to
+		the terminal or not depends on what type (code) it is.  There are four
+		codes:
+			MSG = General messages go to both the terminal and log file
+			LOG = Messages that go only to the log file
+			WRN = Warnings that go to the terminal and log file
+			ERR = Errors that go to both the terminal and log file.'''
 
-		# FIXME: If there is not project, we still want messages going to the terminal
+		# Build the mod line
+		if mod :
+			mod = mod + ': '
+		else :
+			mod = ''
+
+		# Write out everything but LOG messages to the terminal
+		if code != 'LOG' :
+			self.terminal(code + ' - ' + msg)
+
 		# If there is not project, why bother?
 		if self._isProject :
 			# When are we doing this?
 			date_time, secs = str(datetime.now()).split(".")
-
-			# Build the mod line
-			if mod :
-				mod = mod + ': '
-			else :
-				mod = ''
 
 			# Build the event line
 			if code == 'ERR' :
@@ -337,27 +381,15 @@ class Report (object) :
 				writeObject.write('TIPE event log file created: ' + date_time + '\n')
 				writeObject.close()
 
-			# Now log the event to the top of the file using preAppend().  We will
-			# only report what module it came from when it is a warning or an error.
-			if code == 'MSG' :
-				self.preAppend(eventLine, self._logFile)
-				self.terminal(code + ' - ' + msg)
-			elif code == 'LOG' :
-				self.preAppend(eventLine, self._logFile)
-				if self._debugging :
-					self.terminal(code + ' - ' + msg)
-			elif code == 'WRN' :
-				self.preAppend(eventLine, self._logFile)
-				self.terminal(code + ' - ' + mod + msg)
-				if self._debugging :
-					self.writeToErrorLog(eventLine)
-			elif code == 'ERR' :
-				self.preAppend(eventLine, self._logFile)
+			# Now log the event to the top of the log file using preAppend().
+			self.preAppend(eventLine, self._logFile)
+
+			# Write errors and warnings to the error log file
+			if code == 'WRN' and self._debugging :
 				self.writeToErrorLog(eventLine)
-				self.terminal(code + ' - ' + mod + msg)
-			else :
-				self.preAppend(eventLine, self._logFile)
-				self.terminal('writeToLog: WARNING! log code: ' + code + ' not recognized. BTW, the message is: (' + msg + ')')
+
+			if code == 'ERR' :
+				self.writeToErrorLog(eventLine)
 
 		return
 

@@ -29,11 +29,11 @@ class Component (Document) :
 
 	# Intitate the whole class
 	def __init__(self, name, aProject, compConfig) :
-		super(Component, self).init(aProject, compConfig)
+		super(Component, self).__init__(aProject, compConfig)
 
 		self.name = name
 		self._sourceConfig      = compConfig
-		self._sourceFile        = os.path.join(self._home, self._sourceConfig['sourceFile'])
+		self._sourceFile        = os.path.join(aProject.home, self._sourceConfig['sourceFile'])
 		self._textFolder        = aProject.textFolder
 
 	def createMakefile(self, fh) :
@@ -107,6 +107,8 @@ class Component (Document) :
 
 		return
 
+	def initFiles(self) :
+		pass
 
 	def addComponentSourceLink (self, thisComponent) :
 		'''Called on from addComponent() this will add component ID to the

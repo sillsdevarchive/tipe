@@ -90,12 +90,7 @@ def newProject (aProject, argv) :
 
 def addComponent (aProject, argv) :
 	'''Add a new component to the project.'''
-
-	try :
-		aProject.addNewComponent(argv[0])
-	except :
-		aProject.writeToLog('ERR', 'Failed to created new component, no ID code given', 'tipe.addComponent()')
-
+	aProject.addNewComponent(argv[0], argv[1])
 
 def render (aProject, argv) :
 	'''Render the current component.'''
@@ -166,11 +161,7 @@ else :
 
 
 # Write out all the current settings
-if aProject._sysConfig['System']['isProject'] :
-	date_time, secs = str(datetime.now()).split(".")
-	aProject._sysConfig['System']['projEditDate'] = date_time
-	aProject._sysConfig.filename = aProject.projConfFile
-	aProject._sysConfig.write()
+aProject.writeConfFiles()
 
 # Trim the project log file if needed
 aProject.trimLog(aProject.logLineLimit)

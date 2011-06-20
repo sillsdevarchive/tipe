@@ -56,7 +56,14 @@ def xml_add_section(data, doc) :
 
 	sets = doc.findall('setting')
 	for s in sets :
-		data[s.attrib['id']] = s.find('default').text
+		val = s.find('default').text
+		if s.find('type').text == 'list' :
+			if val :
+				data[s.attrib['id']] = [val.split(',')]
+			else :
+				data[s.attrib['id']] = []
+		else :
+			data[s.attrib['id']] = val
 	sects = doc.findall('section')
 	for s in sects :
 		nd = {}
@@ -71,23 +78,27 @@ def override(sysConfig, fname) :
 
 	# Read in the project.conf file and create an object
 	projConfig = ConfigObj(fname)
+	res = ConfigObj(sysConfig.dict())
 
 	# Recall this function to override the default settings
-	sysConfig.override(projConfig)
-
-	# How does this work? Really, how the changed object get passed back?
+	res.override(projConfig)
+	return res
 
 
 def override_components(aConfig, fname) :
 	'''Overrides component settings that we got from the default XML system
 	settings file.'''
+	res = ConfigObj()
 	projConfig = ConfigObj(fname)
 	for s, v in projConfig.items() :
-		old = ConfigObj(aConfig['defaults'].dict())
+		newtype = v['Type']
+		old = ConfigObj(aConfig['Defaults'].dict())
 		old.override(v)
-		aConfig[s] = ConfigObj(old)
-
-	# Do we want to pass aConfig back to something?
+		oldtype = ConfigObj(aConfig[v['compType']].dict())
+		oldtype.override(newtype)
+		res[s] = ConfigObj(old)
+		res[s]['Type'] = ConfigObj(oldtype)
+	return res
 
 
 def override_section(self, aSection) :
@@ -96,7 +107,7 @@ def override_section(self, aSection) :
 			if isinstance(v, dict) and isinstance(aSection[k], dict) :
 				v.override(aSection[k])
 			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
-				self[k] = v
+				self[k] = aSection[k]
 
 
 # This will reasign the standard ConfigObj function.
@@ -109,7 +120,7 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 
 	# Check to see if the file is there, then read it in and break it into
 	# sections. If it fails, return None
-	f = os.path.join(tipedir, fname + '.xml')
+	f = os.path.join(tipedir, fname)
 	if os.path.exists(f) :
 		res = xml_to_section(f)
 	else :
@@ -124,11 +135,13 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 # I think the above needs to change as we only have one xml and conf file to deal with.
 
 	#
-	if fname == 'component' and os.path.exists(f) :
-		override_components(res, f)
+	if fname == 'components.xml' and os.path.exists(f) :
+		conf = override_components(res, f)
 	elif os.path.exists(f) :
-		override(res, f)
-	return res
+		conf = override(res, f)
+	else :
+		conf = ConfigObj()
+	return (conf, res)
 
 
 ###############################################################################
@@ -142,8 +155,10 @@ class Project (object) :
 		self.home                   = dir
 
 		# Load project config files
-		self._sysConfig             = safeConfig(dir, "project", tipedir, 'projConfFile')
+		self._sysConfig             = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
+		self._compConf, self._compMaster = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
 		self._components            = {}
+		self._book = Book(self, self._sysConfig['Book'])
 
 		if self._sysConfig :
 			self.initLogging(self.home)
@@ -155,6 +170,15 @@ class Project (object) :
 			self.textFolder         = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
 			self.processFolder      = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
 			self.reportFolder       = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
+
+	def writeConfFiles(self) :
+		if self._sysConfig['System']['isProject'] :
+			date_time, secs = str(datetime.now()).split(".")
+			self._sysConfig['System']['projEditDate'] = date_time   # bad for VCS
+			self._sysConfig.filename = self._sysConfig['System']['FileNames']['projConfFile']
+			self._sysConfig.write()
+			self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
+			self._compConf.write()
 
 
 	def initLogging (self, dir) :
@@ -238,10 +262,11 @@ class Project (object) :
 		pass
 
 
-	def addNewComponent(self, name) :
+	def addNewComponent(self, name, comptype) :
 		'''Add a new component to the project.'''
 
-		self._compsConfig[name].initialisedefaultcomponentvaluessomehow()
+		self._compConf[name] = Section(self._compConf, 1, self._compConf, indict = self._compMaster['Defaults'].dict())
+		self._compConf[name]['Type'] = Section(self._compConf[name], 2, self._compConf, indict = self._compMaster[comptype].dict())
 		aComp = self.addComponent(name)
 		aComp.initFiles()
 
@@ -250,9 +275,9 @@ class Project (object) :
 		'''Append a component to the bindingOrder list and add it to the
 		project.conf file, often called by addNewComponent().'''
 
-		aComp = Component(self, self._compsConfig[name], name)
+		aComp = Component(name, self, self._compConf[name])
 		self._components[aComp.name] = aComp
-		return self._sysConfig.addComponent(aComp)
+		return self._book.addComponent(aComp)
 
 	# These are Report mod functions that are exposed to the project class
 	def terminal(self, msg) : self.report.terminal(msg)
@@ -365,6 +390,7 @@ class Report (object) :
 			self.terminal(code + ' - ' + msg)
 
 		# If there is not project, why bother?
+		print self._isProject
 		if self._isProject :
 			# When are we doing this?
 			date_time, secs = str(datetime.now()).split(".")
@@ -451,3 +477,7 @@ class Report (object) :
 			sys.stdout.write("%s" % line)
 
 		fobj.close()
+
+
+
+

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <section id='Defaults'>
+        <name>Shared Component Settings</name>
+        <description>The default component settings shared by all publication project components.</description>
+        <setting id='componentType'>
+            <name>Publication Component Types</name>
+            <description>The name of the type of component this is.</description>
+            <type>option</type>
+                <opt1 value='Scripture'>Scripture</opt1>
+                <opt2 value='Peripheral'>peripheral</opt2>
+                <opt3 value='Dictionary'>Dictionary</opt3>
+            <default>Scripture</default>
+        </setting>
+        <setting id='outputFile'>
+            <name>Output File Name</name>
+            <description>The name of the file that will be output.</description>
+            <type>string</type>
+            <default>[compID].pdf</default>
+        </setting>
+        <setting id='globalStyleFile'>
+            <name>Global Style File Name</name>
+            <description>The name of the global style file used in the project with folder name preappended.</description>
+            <type>string</type>
+            <default>Process\.project.sty</default>
+        </setting>
+        <setting id='globalTexFile'>
+            <name>Global TeX File Name</name>
+            <description>The name of the global TeX settings file used in the project with folder name preappended.</description>
+            <type>string</type>
+            <default>Process\.project.tex</default>
+        </setting> 
+        <setting id="sourceFile">
+          <name>Source File</name>
+          <type>string</type>
+          <default>[compID].sfm</default>
+        </setting>
+    </section>
+    <section id='TypeScripture'>
+        <name>Scripture Component Type</name>
+        <description>Settings which apply to Scripture components in a publishing project.</description>
+        <setting id='groupType'>
+            <name>Group Type</name>
+            <description>The type of group this Scriputre component is found in.</description>
+            <type>option</type>
+                <opt1 value='ot'>Old Testament</opt1>
+                <opt2 value='nt'>New Testament</opt2>
+                <opt3 value='dc'>Deuterocanonical</opt3>
+            <default>nt</default>
+        </setting>
+        <section id='ScriptureGroups'>
+            <name>Scripture Type Groups</name>
+            <description>Lists of components in the Scripture type group.</description>
+            <setting id='ot'>
+                <name>Old Testament</name>
+                <description>List of ID Codes for Old Testament Scripture components.</description>
+                <type>list</type>
+                <default>gen, exo, lev, num, deu, jos, jdg, rut, 1sa, 2sa, 1ki, 2ki, 1ch, 2ch, ezr, neh, est, job, psa, pro, ecc, sng, isa, jer, lam, ezk, dan, hos, jol, amo, oba, jon, mic, nam, hab, zep, hag, zec, mal</default>
+            </setting>
+            <setting id='nt'>
+                <name>New Testament</name>
+                <description>List of ID Codes for New Testament Scripture components.</description>
+                <type>list</type>
+                <default>mat, mrk, luk, jhn, act, rom, 1co, 2co, gal, eph, php, col, 1th, 2th, 1ti, 2ti, tit, phm, heb, jas, 1pe, 2pe, 1jn, 2jn, 3jn, jud, rev</default>
+            </setting>
+            <setting id='dc'>
+                <name>Deuterocanonical</name>
+                <description>List of ID Codes for Deuterocanonical Scripture components.</description>
+                <type>list</type>
+                <default>tob, jdt, esg, wis, sir, bar, lje, s3y, sus, bel, 1ma, 2ma, 3ma, 4ma, 1es, 2es, man, ps2, oda, pss, jsa, jdb, tbs, sst, dnt, blt</default>
+            </setting>
+        </section>
+    </section>
+    <section id='TypeDictionary'>
+        <name>Dictionary Component Type</name>
+        <description>Settings which apply to Dictionary components in a publishing project.</description>
+        <setting id='groupType'>
+            <name>Group Type</name>
+            <description>The type of group this Scriputre component is found in.</description>
+            <type>option</type>
+                <opt1 value='ct'>Content</opt1>
+                <opt2 value='in'>Indexes</opt2>
+            <default>ct</default>
+        </setting>
+        <section id='DictionaryGroups'>
+            <name>Dictionary Type Groups</name>
+            <description>Lists of components in the Dictionary type group.</description>
+            <setting id='ct'>
+                <name>Dictionary Matter</name>
+                <description>Dictionary content matter ID codes.</description>
+                <type>list</type>
+                <default>dic</default>
+            </setting>
+            <setting id='in'>
+                <name>Indexes Matter</name>
+                <description>Dictionary Indexes matter ID codes.</description>
+                <type>list</type>
+                <default>inr, ing</default>
+            </setting>
+        </section>
+    </section>
+    <section id='TypePeripheral'>
+        <name>Peripheral Component Type</name>
+        <description>Settings which apply to Peripheral components in a publishing project.</description>
+        <setting id='groupType'>
+            <name>Group Type</name>
+            <description>The type of group this Scriputre component is found in.</description>
+            <type>option</type>
+                <opt1 value='fm'>Front Matter</opt1>
+                <opt2 value='bm'>Back Matter</opt2>
+                <opt3 value='om'>Other Matter</opt3>
+            <default>fm</default>
+        </setting>
+        <section id='PeripheralGroups'>
+            <name>Peripheral Type Groups</name>
+            <description>Lists of components in the Peripheral type group.</description>
+            <setting id='fm'>
+                <name>Peripheral Front Matter</name>
+                <description>Publication peripheral matter ID codes used in front matter.</description>
+                <type>list</type>
+                <default>pcv, pti, cop, pre, toc</default>
+            </setting>
+            <setting id='bm'>
+                <name>Peripheral Back Matter</name>
+                <description>Publication peripheral matter ID codes used in back matter.</description>
+                <type>list</type>
+                <default>top, glo, ind</default>
+            </setting>
+            <setting id='om'>
+                <name>Peripheral Other Matter</name>
+                <description>Publication peripheral matter ID codes used any place in a publication.</description>
+                <type>list</type>
+                <default>cov, bnk</default>
+            </setting>
+        </section>
+    </section>
+</root>
+

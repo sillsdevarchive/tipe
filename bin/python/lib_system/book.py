@@ -30,8 +30,8 @@ class Book (Document) :
 		super(Book, self).__init__(aProject, bookConfig)
 
 		self._components = []
-		if bookConfig['Binding']['order'] :
-			for c in bookConfig['Binding']['order'].split(' ') :
+		if bookConfig['bindingOrder'] :
+			for c in bookConfig['bindingOrder'] :
 				aProject.addComponent(c)
 
 

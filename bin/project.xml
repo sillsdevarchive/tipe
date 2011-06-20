@@ -18,7 +18,7 @@
         <setting id='isProject'>
             <name>Live Project</name>
             <description>Indicate if this is a live project or not. If set to True, this data set is tied to a project.</description>
-            <type>bolean</type>
+            <type>boolean</type>
             <default></default>
         </setting>
         <setting id='projCreateDate'>
@@ -91,9 +91,11 @@
                 <default>.project.conf</default>
             </setting>
             <setting id='bookConfFile'>
+                <type>string</type>
                 <default>.book.conf</default>
             </setting>
             <setting id='compConfFile'>
+                <type>string</type>
                 <default>.component.conf</default>
             </setting>
             <setting id='sourceFile'>

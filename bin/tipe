@@ -69,93 +69,16 @@ else :
 	command = "manage"
 
 
-###############################################################################
-########################## Define Script functions ############################
-###############################################################################
-
-def tipeManger (aProject, argv) :
-	'''Start the TIPE Manager GUI'''
-
-	aProject.terminal('SORRY: Manager GUI has not been implemented yet.')
-
-
-def newProject (aProject, argv) :
-	'''Setup a new project'''
-
-	if aProject.makeProject(os.getcwd()) :
-		aProject.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'tipe.newProject()')
-	else :
-		aProject.writeToLog('ERR', 'Failed to created new project at: ' + os.getcwd(), 'tipe.newProject()')
-
-
-def addComponent (aProject, argv) :
-	'''Add a new component to the project.'''
-	aProject.addNewComponent(argv[0], argv[1])
-
-def render (aProject, argv) :
-	'''Render the current component.'''
-
-	mod = 'tipe.render()'
-
-	# First check our project setup and try to auto correct any problems that
-	# might be caused from missing project assets.  This can include files
-	# like.sty, .tex, .usfm, and folders, etc.
-	if not aProject.checkProject(aProject.home) :
-		aProject.writeToLog('ERR', 'No project found!', mod)
-		return
-
-	aDoc = aProject.getDoc(argv[0])
-	if not aDoc :
-		aProject.writeToLog('ERR', 'Component [' + argv[0] + '] not found in project', mod)
-		return
-
-	#FIXME: What does this next line do?
-	aDoc.render()
-
-	# Create the makefile for processing this particular component.  This is
-	# done every time TIPE is run.
-	if document.createMakefile(thisComponent, command) :
-		if runMake() :
-			aProject.writeToLog('MSG', 'Process completed successful!', mod)
-		else :
-			aProject.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.', mod)
-
-	# Collect the results and report them in the log
-
-	return True
-
-
-def runMake () :
-	'''All component processes are expected to be run via makefile.  This is a
-	generic makefile running function.'''
-
-	# Send off the command return error code
-	error = os.system(sysConfig['System']['makeStartParams'] + os.getcwd() + '/' + sysConfig['System']['makefileFile'])
-
-	if error == 0 :
-		return True
-	else :
-		report.terminal('ERROR: tipe.runMake: ' + str(error))
-		return
-
-
-
-# Define more script functions here
 
 ###############################################################################
 ########################## Main Body of the Script ############################
 ###############################################################################
 
-# Load up the shared modules we're going to need for all the commands
 
-if command == 'render' :
-	render(aProject, opts)
-elif command == 'new_project' :
-	newProject(aProject, opts)
-elif command == 'add_component' :
-	addComponent(aProject, opts)
-elif command == 'manage' :
-	tipeManger(aProject, opts)
+if command == 'help' and hasattr(aProject, "_command_" + opts[0]) :
+	print getattr(aProject, "_command_" + opts[0]).__doc__
+elif hasattr(aProject, "_command_" + command) :
+	getattr(aProject, "_command_" + command)(opts)
 else :
 	aProject.terminal('ERROR: This command does not exist: ' + command)
 

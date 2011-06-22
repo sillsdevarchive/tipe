@@ -34,11 +34,7 @@ from xml.etree import ElementTree
 ############################ Define Global Functions ##########################
 ###############################################################################
 
-# FIXME: XML issues
-#   1) Merge may not be working.  When a setting is updated it doesn't seem to
-#   want to write out
-#   2) Lists are not being written to the conf file as lists but as strings
-#   3) Settings found in the conf file are not overriding the defaults in some cases.
+# These root level functions work at a fundamental level of the system
 
 
 def xml_to_section(fname) :
@@ -92,16 +88,18 @@ def override_components(aConfig, fname) :
 	projConfig = ConfigObj(fname)
 	for s, v in projConfig.items() :
 		newtype = v['Type']
-		old = ConfigObj(aConfig['Defaults'].dict())
+		old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
 		old.override(v)
-		oldtype = ConfigObj(aConfig[v['compType']].dict())
+		oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
 		oldtype.override(newtype)
-		res[s] = ConfigObj(old)
-		res[s]['Type'] = ConfigObj(oldtype)
+		res[s] = old
+		res[s]['Type'] = oldtype
 	return res
 
 
 def override_section(self, aSection) :
+	'''Overrides an entire setting section.'''
+
 	for k, v in self.items() :
 		if k in aSection :
 			if isinstance(v, dict) and isinstance(aSection[k], dict) :
@@ -110,21 +108,23 @@ def override_section(self, aSection) :
 				self[k] = aSection[k]
 
 
-# This will reasign the standard ConfigObj function.
+# This will reasign the standard ConfigObj function that works much like ours
+# but not quite what we need for working with XML as one of the inputs.
 Section.override = override_section
 
 
 def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 	'''This is the main function for reading in the XML data and overriding
-	default settings with the current project settings.'''
+	default settings with the current project settings.  This works with both
+	the project.conf file and the components.conf files.'''
 
 	# Check to see if the file is there, then read it in and break it into
-	# sections. If it fails, return None
+	# sections. If it fails, scream really loud!
 	f = os.path.join(tipedir, fname)
 	if os.path.exists(f) :
 		res = xml_to_section(f)
 	else :
-		return None
+		raise IOError, "Can't open " + f
 
 	# If this is a live project it should have been passed a valid project.conf
 	# object.  Otherwise, the default settings from the XML will be good enough
@@ -132,15 +132,20 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 	if not projconf : projconf = res
 	f = projconf['System']['FileNames'][setting]
 
-# I think the above needs to change as we only have one xml and conf file to deal with.
-
-	#
-	if fname == 'components.xml' and os.path.exists(f) :
-		conf = override_components(res, f)
-	elif os.path.exists(f) :
-		conf = override(res, f)
+	# If dealing with a components we'll use the same process but just create an
+	# empty object if no components have been defined for the project or a
+	# project doesn't exist.
+	if fname == 'components.xml' :
+		if os.path.exists(f) :
+			conf = override_components(res, f)
+		else :
+			conf = ConfigObj()
 	else :
-		conf = ConfigObj()
+		if os.path.exists(f) :
+			conf = override(res, f)
+		else :
+			conf = res
+
 	return (conf, res)
 
 
@@ -152,13 +157,13 @@ class Project (object) :
 
 	def __init__(self, dir, tipedir) :
 
-		self.home                   = dir
+		self.home                           = dir
 
 		# Load project config files
-		self._sysConfig             = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
-		self._compConf, self._compMaster = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
-		self._components            = {}
-		self._book = Book(self, self._sysConfig['Book'])
+		self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
+		self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
+		self._components                    = {}
+		self._book                          = Book(self, self._sysConfig['Book'])
 
 		if self._sysConfig :
 			self.initLogging(self.home)
@@ -170,6 +175,7 @@ class Project (object) :
 			self.textFolder         = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
 			self.processFolder      = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
 			self.reportFolder       = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
+
 
 	def writeConfFiles(self) :
 		if self._sysConfig['System']['isProject'] :
@@ -211,7 +217,8 @@ class Project (object) :
 
 
 	def initProject (self, home) :
-		'''Initialize a new project by creating all necessary components.'''
+		'''Initialize a new project by creating all necessary global items like
+		folders, etc.'''
 
 		mod = 'project.initProject()'
 		for key, value in self._sysConfig['System']['FolderNames'].iteritems() :
@@ -237,7 +244,7 @@ class Project (object) :
 			self.initProject(home)
 			return True
 		else :
-			self.writeToLog('ERR', 'Conf files already exists', mod)
+			self.writeToLog('ERR', 'Project already exists here!', mod)
 			return False
 
 
@@ -252,23 +259,47 @@ class Project (object) :
 			return None
 
 
-	def initFiles (self, idCode) :
+	def initComponentFiles (self, idCode, compType) :
 		'''Initialize all the necessary files for a given component.'''
 
 		# Discover the type of component it is
 
 		# Loop through all the component files in the projectConf file.
 
-		pass
+		print idCode, compType
 
 
-	def addNewComponent(self, name, comptype) :
-		'''Add a new component to the project.'''
+	def addNewComponent(self, idCode, compType) :
+		'''Add a new component to the project (compConfFile).  Replace the
+		[compID] placeholder anywhere it is found with the actual comp ID
+		code.'''
 
-		self._compConf[name] = Section(self._compConf, 1, self._compConf, indict = self._compMaster['Defaults'].dict())
-		self._compConf[name]['Type'] = Section(self._compConf[name], 2, self._compConf, indict = self._compMaster[comptype].dict())
-		aComp = self.addComponent(name)
-		aComp.initFiles()
+		# We don't want to do this is the component already exists
+		if not idCode in self._compConf :
+			self._compConf[idCode] = Section(self._compConf, 1, self._compConf, indict = self._compMaster['Defaults'].dict())
+			for k, v in self._compConf[idCode].items() :
+				self._compConf[idCode][k] = v.replace('[compID]', idCode)
+			self._compConf[idCode]['Type'] = Section(self._compConf[idCode], 2, self._compConf, indict = self._compMaster[compType].dict())
+			#FIXME: aComp = self.addComponent(idCode)
+
+			# Init the comp files if necessary
+			self.initComponentFiles(idCode, compType)
+
+			return True
+
+		else :
+			return False
+
+
+	def removeComponent (self, idCode) :
+		'''Remove a component from the project.'''
+
+		# We want to do this only if the component already exists
+		if idCode in self._compConf :
+			del(self._compConf[idCode])
+			return True
+		else :
+			return False
 
 
 	def addComponent(self, name) :
@@ -279,11 +310,120 @@ class Project (object) :
 		self._components[aComp.name] = aComp
 		return self._book.addComponent(aComp)
 
+
 	# These are Report mod functions that are exposed to the project class
 	def terminal(self, msg) : self.report.terminal(msg)
 	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
 	def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
 	def trimLog(self, logLineLimit) : self.report.trimLog(logLineLimit)
+
+
+###############################################################################
+########################### TIPE System Commands ##############################
+###############################################################################
+
+# Here go all the commands that TIPE knows how to use.  If it isn't defined
+# here, it will not work.  The documentation for each command goes in the
+# command so when the user types 'help' followed by the command they will get
+# whatever documentation there is for that command.  Each command funtion must
+# be prefixed by '_command_'.  After that goes the actual command.
+
+
+	def _command_render(self, argv) :
+		'''render [compID] = Render the current component.'''
+
+		mod = 'tipe.render()'
+
+		# First check our project setup and try to auto correct any problems that
+		# might be caused from missing project assets.  This can include files
+		# like.sty, .tex, .usfm, and folders, etc.
+		if not self.checkProject(aProject.self) :
+			self.writeToLog('ERR', 'No project found!', mod)
+			return
+
+		aDoc = self.getDoc(argv[0])
+		if not aDoc :
+			self.writeToLog('ERR', 'Component [' + argv[0] + '] not found in project', mod)
+			return
+
+		#FIXME: What does this next line do?
+		aDoc.render()
+
+		# Create the makefile for processing this particular component.  This is
+		# done every time TIPE is run.
+		if aDoc.createMakefile(thisComponent, command) :
+			if runMake() :
+				self.writeToLog('MSG', 'Process completed successful!', mod)
+			else :
+				self.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.', mod)
+
+		# Collect the results and report them in the log
+
+		return True
+
+
+	def _command_addComponent (self, argv) :
+		'''Add a new component to the project.'''
+
+		# FIXME: Should add some code to catch bad params
+
+		if self.addNewComponent(argv[0], argv[1]) :
+			self.writeToLog('MSG', 'Added component: ' + argv[0] + ' Type = ' + argv[1], 'tipe.addComponent()')
+		else :
+			if self._compConf[argv[0]] :
+				self.writeToLog('ERR', 'Component: ' + argv[0] + ' already exists.', 'tipe.addComponent()')
+
+
+	def _command_removeComponent (self, argv) :
+		'''Remove a component from the project.'''
+
+		if argv[0] in self._compConf :
+			if self.removeComponent(argv[0]) :
+				self.writeToLog('MSG', 'Removed component: ' + argv[0], 'tipe.removeComponent()')
+			else :
+				self.writeToLog('WRN', 'Component: ' + argv[0] + ' cannot be removed.', 'tipe.removeComponent()')
+		else :
+			self.writeToLog('WRN', 'Component: ' + argv[0] + ' not found.', 'tipe.removeComponent()')
+
+
+	def _command_tipeManager (self, argv) :
+		'''Start the TIPE Manager GUI'''
+
+		self.terminal('SORRY: Manager GUI has not been implemented yet.')
+
+
+	def _command_newProject (self, argv) :
+		'''Setup a new project'''
+
+		if self.makeProject(os.getcwd()) :
+			self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'tipe.newProject()')
+
+
+	def _command_reInitComponentFiles (self, argv) :
+		'''This is a way to call initComponentFiles to replace any missing component
+		files.'''
+
+		self.initComponentFiles(argv[0], argv[1])
+
+
+
+	def _command_runMake () :
+		'''All component processes are expected to be run via makefile.  This is a
+		generic makefile running function.'''
+
+		# Send off the command return error code
+		error = os.system(sysConfig['System']['makeStartParams'] + os.getcwd() + '/' + sysConfig['System']['makefileFile'])
+
+		if error == 0 :
+			return True
+		else :
+			report.terminal('ERROR: tipe.runMake: ' + str(error))
+			return
+
+
+
+
+
 
 
 ###############################################################################
@@ -390,7 +530,6 @@ class Report (object) :
 			self.terminal(code + ' - ' + msg)
 
 		# If there is not project, why bother?
-		print self._isProject
 		if self._isProject :
 			# When are we doing this?
 			date_time, secs = str(datetime.now()).split(".")
@@ -447,6 +586,9 @@ class Report (object) :
 		# Of course this isn't needed if there isn't even a log file
 		if os.path.isfile(self._logFile) :
 
+			# Change this to an int()
+			logLineLimit = int(logLineLimit)
+
 			# Read in the existing log file
 			readObject = codecs.open(self._logFile, "r", encoding='utf_8')
 			lines = readObject.readlines()
@@ -454,6 +596,7 @@ class Report (object) :
 
 			# Process only if we have enough lines
 			if len(lines) > logLineLimit :
+
 				writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
 				lineCount = 0
 				for line in lines :

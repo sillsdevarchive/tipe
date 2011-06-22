@@ -76,49 +76,64 @@
                 <name>Log File Name</name>
                 <description>The name of the project log file.</description>
                 <type>string</type>
+                <version>False</version>
                 <default>.tipe.log</default>
             </setting>
             <setting id='errorLogFile'>
                 <name>Error Log File Name</name>
                 <description>The name of the project error log file where errors are collected from a single session.</description>
                 <type>string</type>
+                <version>False</version>
                 <default>.error.log</default>
             </setting>
             <setting id='projConfFile'>
-                <name>Project File Name</name>
+                <name>Project Configuration File Name</name>
                 <description>The name of the project configuration file.</description>
                 <type>string</type>
+                <version>True</version>
                 <default>.project.conf</default>
             </setting>
-            <setting id='bookConfFile'>
-                <type>string</type>
-                <default>.book.conf</default>
-            </setting>
             <setting id='compConfFile'>
+                <name>Components Configuration File Name</name>
+                <description>The name of the project components configuration file.</description>
                 <type>string</type>
+                <version>True</version>
                 <default>.component.conf</default>
-            </setting>
-            <setting id='sourceFile'>
-                <name>Source File Name</name>
-                <description>The name of the project source file which points to all the sources of all project components.</description>
-                <type>string</type>
-                <default>.source</default>
             </setting>
             <setting id='makefileFile'>
                 <name>MAKEFILE NAME</name>
                 <description>The name of the makefile file that will be run.  Normally that would be '.makefile' but for various reasons it may need to be changed.</description>
                 <type>string</type>
+                <version>False</version>
                 <default>.makefile</default>
             </setting>
         </section>
         <section id='FolderNames'>
             <name>System Folder Names</name>
             <description>This section contains the names of all the folders used in the TIPE system.</description>
-            <setting id='textFolder'>
-                <name>Text Folder Name</name>
-                <description>The name of the folder that the working text is stored in.</description>
+            <setting id='adminFolder'>
+                <name>Administrative Folder Name</name>
+                <description>The name of the folder that all project administrative documents will be kept.</description>
                 <type>string</type>
-                <default>Text</default>
+                <default>Admin</default>
+            </setting>
+            <setting id='deliverFolder'>
+                <name>Deliverables Folder Name</name>
+                <description>The name of the folder that all project deliverables will be kept.</description>
+                <type>string</type>
+                <default>Deliverables</default>
+            </setting>
+            <setting id='fontsFolder'>
+                <name>Fonts Folder Name</name>
+                <description>The name of the folder that all project fonts will be kept.</description>
+                <type>string</type>
+                <default>Fonts</default>
+            </setting>
+            <setting id='illustrationsFolder'>
+                <name>Illustrations Folder Name</name>
+                <description>The name of the folder that all project Illustrations will be kept.</description>
+                <type>string</type>
+                <default>Illustrations</default>
             </setting>
             <setting id='processFolder'>
                 <name>Process Folder Name</name>
@@ -131,6 +146,30 @@
                 <description>The name of the folder that reports are kept.</description>
                 <type>string</type>
                 <default>Reports</default>
+            </setting>
+            <setting id='sourceFolder'>
+                <name>Source Text Folder Name</name>
+                <description>The name of the folder that all source text will be kept. Contents can be linked or hard copied into the project.</description>
+                <type>string</type>
+                <default>Source</default>
+            </setting>
+            <setting id='textFolder'>
+                <name>Text Folder Name</name>
+                <description>The name of the folder that the working text is stored in.</description>
+                <type>string</type>
+                <default>Texts</default>
+            </setting>
+            <setting id='regressionFolder'>
+                <name>Regression Testing Folder Name</name>
+                <description>The name of the folder that all project regression base files will be kept.</description>
+                <type>string</type>
+                <default>.regression</default>
+            </setting>
+            <setting id='wikiFolder'>
+                <name>Wiki Notes Folder Name</name>
+                <description>The name of the folder that all project notes will be kept.</description>
+                <type>string</type>
+                <default>.wiki</default>
             </setting>
         </section>
         <section id='Languages'>
@@ -151,8 +190,8 @@
             <name>Book Type</name>
             <description>The type of publication this will be.</description>
             <type>option</type>
-                <opt1>Scripture</opt1>
-                <opt2>Dictionary</opt2>
+                <opt1 value='scripture'>Scripture</opt1>
+                <opt2 value='dictionary'>Dictionary</opt2>
             <default>Scripture</default>
         </setting>
         <setting id='bindingOrder'>
@@ -178,84 +217,68 @@
             </setting>
         </section>
     </section>
-    <section id='Component'>
-        <name>Component</name>
-        <description>A publication component.</description>
-        <setting id='compID'>
-            <name>Component ID</name>
-            <description>The system identifier (ID) for this component.</description>
-            <type>string</type>
-            <default></default>
-        </setting>
-        <setting id='componentType'>
-            <name>Component Type</name>
-            <description>The name of the style file for this component.</description>
-            <type>option</type>
-                <opt1>Scripture</opt1>
-                <opt2>Dictionary</opt2>
-            <default>Scripture</default>
-        </setting>
-        <setting id='componentFileName'>
-            <name>Component File Name</name>
-            <description>The name of this component file.</description>
-            <type>string</type>
-            <default>[comp].usfm</default>
-        </setting>
-        <setting id='styleFileName'>
-            <name>Style File Name</name>
-            <description>The name of the style file for this component.</description>
-            <type>string</type>
-            <default>[comp].sty</default>
-        </setting>
-        <setting id='texFileName'>
-            <name>TeX File Name</name>
-            <description>The name of the TeX file for this component.</description>
-            <type>string</type>
-            <default>[comp].tex</default>
-        </setting>
-        <section id='Types'>
-            <name>Component Type Lists</name>
-            <description>Lists of components by type.</description>
-            <setting id='scripture'>
-                <name>Scripture Matter</name>
-                <description>List of ID Codes for Scripture components.</description>
+    <section id='ComponentInfo'>
+        <name>Component Information</name>
+        <description>General information about publication components.</description>
+        <section id='ScriptureGroups'>
+            <name>Scripture Type Groups</name>
+            <description>Lists of components in the Scripture type group.</description>
+            <setting id='ot'>
+                <name>Old Testament</name>
+                <description>List of ID Codes for Old Testament Scripture components.</description>
                 <type>list</type>
-                <default>gen, exo, lev, num, deu, jos, jdg, rut, 1sa, 2sa, 1ki, 2ki, 1ch, 2ch, ezr, neh, est, job, psa, pro, ecc, sng, isa, jer, lam, ezk, dan, hos, jol, amo, oba, jon, mic, nam, hab, zep, hag, zec, mal, mat, mrk, luk, jhn, act, rom, 1co, 2co, gal, eph, php, col, 1th, 2th, 1ti, 2ti, tit, phm, heb, jas, 1pe, 2pe, 1jn, 2jn, 3jn, jud, rev, tob, jdt, esg, wis, sir, bar, lje, s3y, sus, bel, 1ma, 2ma, 3ma, 4ma, 1es, 2es, man, ps2, oda, pss, jsa, jdb, tbs, sst, dnt, blt</default>
+                <default>gen, exo, lev, num, deu, jos, jdg, rut, 1sa, 2sa, 1ki, 2ki, 1ch, 2ch, ezr, neh, est, job, psa, pro, ecc, sng, isa, jer, lam, ezk, dan, hos, jol, amo, oba, jon, mic, nam, hab, zep, hag, zec, mal</default>
             </setting>
-            <setting id='peripheral'>
-                <name>Peripheral Matter</name>
-                <description>Publication peripheral matter ID codes.</description>
+            <setting id='nt'>
+                <name>New Testament</name>
+                <description>List of ID Codes for New Testament Scripture components.</description>
                 <type>list</type>
-                <default>bnk, pcv, pti, cop, pre, toc. top</default>
+                <default>mat, mrk, luk, jhn, act, rom, 1co, 2co, gal, eph, php, col, 1th, 2th, 1ti, 2ti, tit, phm, heb, jas, 1pe, 2pe, 1jn, 2jn, 3jn, jud, rev</default>
             </setting>
-            <setting id='dictionary'>
+            <setting id='dc'>
+                <name>Deuterocanonical</name>
+                <description>List of ID Codes for Deuterocanonical Scripture components.</description>
+                <type>list</type>
+                <default>tob, jdt, esg, wis, sir, bar, lje, s3y, sus, bel, 1ma, 2ma, 3ma, 4ma, 1es, 2es, man, ps2, oda, pss, jsa, jdb, tbs, sst, dnt, blt</default>
+            </setting>
+        </section>
+        <section id='DictionaryGroups'>
+            <name>Dictionary Type Groups</name>
+            <description>Lists of components in the Dictionary type group.</description>
+            <setting id='ct'>
                 <name>Dictionary Matter</name>
-                <description>Dictionary matter ID codes.</description>
+                <description>Dictionary content matter ID codes.</description>
                 <type>list</type>
                 <default>dic</default>
             </setting>
-            <section id='TypeDependents'>
-                <name>Component Type Dependents</name>
-                <description>List of component dependents.</description>
-                <setting id='scripture'>
-                    <name>Scripture Dependent File Types</name>
-                    <description>Scripture component dependent file types.</description>
-                    <type>list</type>
-                    <default>usfm, sty, tex, pdf</default>
-                </setting>
-                <setting id='peripheral'>
-                    <name>Peripheral Dependent File Types</name>
-                    <description>Peripheral component dependent file types.</description>
-                    <type>list</type>
-                    <default>sfm, sty, tex</default>
-                </setting>
-                <setting id='dictionary'>
-                    <name>Dictionary Dependent File Types</name>
-                    <description>Dictionary component dependent file types.</description>
-                    <type>list</type>
-                    <default>sfm, sty, tex, pdf</default>
-                </setting>
-            </section>
+            <setting id='in'>
+                <name>Indexes Matter</name>
+                <description>Dictionary Indexes matter ID codes.</description>
+                <type>list</type>
+                <default>inr, ing</default>
+            </setting>
+        </section>
+        <section id='PeripheralGroups'>
+            <name>Peripheral Type Groups</name>
+            <description>Lists of components in the Peripheral type group.</description>
+            <setting id='fm'>
+                <name>Peripheral Front Matter</name>
+                <description>Publication peripheral matter ID codes used in front matter.</description>
+                <type>list</type>
+                <default>pcv, pti, cop, pre, toc</default>
+            </setting>
+            <setting id='bm'>
+                <name>Peripheral Back Matter</name>
+                <description>Publication peripheral matter ID codes used in back matter.</description>
+                <type>list</type>
+                <default>top, glo, ind</default>
+            </setting>
+            <setting id='om'>
+                <name>Peripheral Other Matter</name>
+                <description>Publication peripheral matter ID codes used any place in a publication.</description>
+                <type>list</type>
+                <default>cov, bnk</default>
+            </setting>
         </section>
     </section>
 </root>

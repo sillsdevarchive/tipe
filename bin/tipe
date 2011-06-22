@@ -75,8 +75,15 @@ else :
 ###############################################################################
 
 
-if command == 'help' and hasattr(aProject, "_command_" + opts[0]) :
-	print getattr(aProject, "_command_" + opts[0]).__doc__
+# You can get specific help on one command or by just typing help, you can get
+# a listing of all the commands.
+if command == 'help' :
+	try :
+		msg = getattr(aProject, "_command_" + opts[0]).__doc__.split()
+		aProject.terminal(' '.join(msg))
+	except :
+		print 'How can we get a list of commands and iterate over them for this call?'
+
 elif hasattr(aProject, "_command_" + command) :
 	getattr(aProject, "_command_" + command)(opts)
 else :

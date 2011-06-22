@@ -126,6 +126,11 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 	else :
 		raise IOError, "Can't open " + f
 
+# FIXME: We need to store a couple default system settings and override a couple
+# of the projectConf settings. userName would be one of them. The same user would
+# be using the system regardless as long as it is on this machine.
+
+
 	# If this is a live project it should have been passed a valid project.conf
 	# object.  Otherwise, the default settings from the XML will be good enough
 	# to get going.
@@ -259,14 +264,21 @@ class Project (object) :
 			return None
 
 
+###############################################################################
+
+
 	def initComponentFiles (self, idCode, compType) :
 		'''Initialize all the necessary files for a given component.'''
 
 		# Discover the type of component it is
 
+
 		# Loop through all the component files in the projectConf file.
 
-		print idCode, compType
+		print ':::' + idCode, compType
+
+
+################################################################################
 
 
 	def addNewComponent(self, idCode, compType) :
@@ -329,8 +341,24 @@ class Project (object) :
 # be prefixed by '_command_'.  After that goes the actual command.
 
 
+	def _command_changeSetting (self, argv) :
+		'''Usage: changeSetting [section] [key] [value] | Change a system
+		setting.  To use this you need to know exactly what the setting is and
+		where it is located in the configuration object.  Use at your own
+		risk.'''
+
+		mod = 'project._command_changeSetting()'
+		new = argv[2]
+		old = self._sysConfig[argv[0]][argv[1]]
+		if new != old :
+			self._sysConfig[argv[0]][argv[1]] = argv[2]
+			self.writeToLog('MSG', 'Changed ' + argv[1] + ' from [' + old + '] to ' + self._sysConfig[argv[0]][argv[1]], mod)
+		else :
+			self.writeToLog('WRN', 'New setting is the same, no need to change.', mod)
+
+
 	def _command_render(self, argv) :
-		'''render [compID] = Render the current component.'''
+		'''Usage: render [compID] | Render the current component.'''
 
 		mod = 'tipe.render()'
 
@@ -363,7 +391,8 @@ class Project (object) :
 
 
 	def _command_addComponent (self, argv) :
-		'''Add a new component to the project.'''
+		'''Usage: addComponent [CompID] [CompType] | Add a new component to the
+		project.'''
 
 		# FIXME: Should add some code to catch bad params
 
@@ -375,7 +404,8 @@ class Project (object) :
 
 
 	def _command_removeComponent (self, argv) :
-		'''Remove a component from the project.'''
+		'''Usage: removeComponent [CompID] | Remove a component from the
+		project.'''
 
 		if argv[0] in self._compConf :
 			if self.removeComponent(argv[0]) :
@@ -387,29 +417,29 @@ class Project (object) :
 
 
 	def _command_tipeManager (self, argv) :
-		'''Start the TIPE Manager GUI'''
+		'''Usage: tipeManager | Start the TIPE Manager GUI'''
 
 		self.terminal('SORRY: Manager GUI has not been implemented yet.')
 
 
 	def _command_newProject (self, argv) :
-		'''Setup a new project'''
+		'''Usage: newProject [CompID] [CompType] | Setup a new project in the
+		current directory.'''
 
 		if self.makeProject(os.getcwd()) :
 			self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'tipe.newProject()')
 
 
 	def _command_reInitComponentFiles (self, argv) :
-		'''This is a way to call initComponentFiles to replace any missing component
-		files.'''
+		'''Usage: reInitComponentFiles [CompID] [CompType] | This is a way to
+		call initComponentFiles to replace any missing component files.'''
 
 		self.initComponentFiles(argv[0], argv[1])
 
 
-
 	def _command_runMake () :
-		'''All component processes are expected to be run via makefile.  This is a
-		generic makefile running function.'''
+		'''Usage: runMake | All component processes are expected to be run via
+		makefile.  This is a generic makefile running function.'''
 
 		# Send off the command return error code
 		error = os.system(sysConfig['System']['makeStartParams'] + os.getcwd() + '/' + sysConfig['System']['makefileFile'])
@@ -419,10 +449,6 @@ class Project (object) :
 		else :
 			report.terminal('ERROR: tipe.runMake: ' + str(error))
 			return
-
-
-
-
 
 
 

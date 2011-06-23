@@ -69,6 +69,12 @@
             <type>string</type>
             <default>make --makefile=</default>
         </setting>
+        <setting id='writeOutCompConf'>
+            <name>Save Components Flag</name>
+            <description>This flag is set any time a change is made to the components config file. This will enable it to be written out when the TIPE script ends and needs to save settings. If no changes are made, then it stays False and the compConf settings are not written out.</description>
+            <type>boolean</type>
+            <default>False</default>
+        </setting>
         <section id='FileNames'>
             <name>System File Names</name>
             <description>This section contains the names of all the files used in the TIPE system.</description>

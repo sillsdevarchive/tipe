@@ -25,7 +25,7 @@ class Document (object) :
 
 	# Intitate the whole class
 	def __init__(self, aProject, compConfig) :
-		pass
+		self._config = compConfig
 
 	def render(self) :
 		fh = file("Makefile", "w")

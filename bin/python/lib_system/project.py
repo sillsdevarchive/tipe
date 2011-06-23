@@ -168,28 +168,35 @@ class Project (object) :
 		self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
 		self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
 		self._components                    = {}
+
+		# Initialize our book module
 		self._book                          = Book(self, self._sysConfig['Book'])
+		self._book.loadBooks(self)
 
 		if self._sysConfig :
 			self.initLogging(self.home)
-			self.version            = self._sysConfig['System']['systemVersion']
-			self.isProject          = self._sysConfig['System']['isProject']
-			self.projConfFile       = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
-			self.errorLogFile       = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile'])
-			self.logLineLimit       = self._sysConfig['System']['logLineLimit']
-			self.textFolder         = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
-			self.processFolder      = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
-			self.reportFolder       = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
+			self.version                    = self._sysConfig['System']['systemVersion']
+			self.isProject                  = self._sysConfig['System']['isProject']
+			self.projConfFile               = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
+			self.errorLogFile               = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile'])
+			self.logLineLimit               = self._sysConfig['System']['logLineLimit']
+			self.textFolder                 = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
+			self.processFolder              = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
+			self.reportFolder               = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
 
 
 	def writeConfFiles(self) :
 		if self._sysConfig['System']['isProject'] :
 			date_time, secs = str(datetime.now()).split(".")
 			self._sysConfig['System']['projEditDate'] = date_time   # bad for VCS
+			# Write out component config file now only if the save flag has been
+			# set.  Set the flag back to False before we write.
+			if self._sysConfig['System']['writeOutCompConf'] == True :
+				self._sysConfig['System']['writeOutCompConf'] = False
+				self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
+				self._compConf.write()
 			self._sysConfig.filename = self._sysConfig['System']['FileNames']['projConfFile']
 			self._sysConfig.write()
-			self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
-			self._compConf.write()
 
 
 	def initLogging (self, dir) :
@@ -252,6 +259,50 @@ class Project (object) :
 			self.writeToLog('ERR', 'Project already exists here!', mod)
 			return False
 
+	def addNewComponent(self, idCode, compType) :
+		'''Add a new component id to the binding order and create a new component config section for it'''
+
+		# We don't want to do this is the component already exists
+		if not idCode in self._compConf :
+			self._compConf[idCode] = Section(self._compConf, 1, self._compConf, indict = self._compMaster['Defaults'].dict())
+			for k, v in self._compConf[idCode].items() :
+				self._compConf[idCode][k] = v.replace('[compID]', idCode)
+			self._compConf[idCode]['Type'] = Section(self._compConf[idCode], 2, self._compConf, indict = self._compMaster[compType].dict())
+			self._book.addToBinding(idCode)
+
+			# Make the Component object and add to book and us
+			aComp = self.addComponent(idCode)
+
+			# Init the comp files if necessary
+			aComp.initComponentFiles(self)
+
+			# Set the flag for writing out the components config file
+			self._sysConfig['System']['writeOutCompConf'] = True
+			return True
+
+		else :
+			return False
+
+	def addComponent(self, name) :
+		'''Create a component object for an existing component id and add it to everything that needs to know about it'''
+
+		aComp = Component(name, self, self._compConf[name])
+		self._components[aComp.name] = aComp
+		return self._book.addComponent(aComp)
+
+
+	def removeComponent (self, idCode) :
+		'''Remove a component from the project.'''
+
+		# We want to do this only if the component already exists
+		if idCode in self._compConf :
+			del(self._compConf[idCode])
+			# Set the flag for writing out the components config file
+			self._sysConfig['System']['writeOutCompConf'] = True
+			return True
+		else :
+			return False
+
 
 	def getDoc (self, name) :
 		'''Create a document object.'''
@@ -262,65 +313,6 @@ class Project (object) :
 			return self._components[name]
 		except KeyError :
 			return None
-
-
-###############################################################################
-
-
-	def initComponentFiles (self, idCode, compType) :
-		'''Initialize all the necessary files for a given component.'''
-
-		# Discover the type of component it is
-
-
-		# Loop through all the component files in the projectConf file.
-
-		print ':::' + idCode, compType
-
-
-################################################################################
-
-
-	def addNewComponent(self, idCode, compType) :
-		'''Add a new component to the project (compConfFile).  Replace the
-		[compID] placeholder anywhere it is found with the actual comp ID
-		code.'''
-
-		# We don't want to do this is the component already exists
-		if not idCode in self._compConf :
-			self._compConf[idCode] = Section(self._compConf, 1, self._compConf, indict = self._compMaster['Defaults'].dict())
-			for k, v in self._compConf[idCode].items() :
-				self._compConf[idCode][k] = v.replace('[compID]', idCode)
-			self._compConf[idCode]['Type'] = Section(self._compConf[idCode], 2, self._compConf, indict = self._compMaster[compType].dict())
-			#FIXME: aComp = self.addComponent(idCode)
-
-			# Init the comp files if necessary
-			self.initComponentFiles(idCode, compType)
-
-			return True
-
-		else :
-			return False
-
-
-	def removeComponent (self, idCode) :
-		'''Remove a component from the project.'''
-
-		# We want to do this only if the component already exists
-		if idCode in self._compConf :
-			del(self._compConf[idCode])
-			return True
-		else :
-			return False
-
-
-	def addComponent(self, name) :
-		'''Append a component to the bindingOrder list and add it to the
-		project.conf file, often called by addNewComponent().'''
-
-		aComp = Component(name, self, self._compConf[name])
-		self._components[aComp.name] = aComp
-		return self._book.addComponent(aComp)
 
 
 	# These are Report mod functions that are exposed to the project class
@@ -339,6 +331,12 @@ class Project (object) :
 # command so when the user types 'help' followed by the command they will get
 # whatever documentation there is for that command.  Each command funtion must
 # be prefixed by '_command_'.  After that goes the actual command.
+
+
+	def _command_addToBinding (self, argv) :
+
+		self._book.addToBinding(argv[0])
+
 
 
 	def _command_changeSetting (self, argv) :
@@ -397,10 +395,10 @@ class Project (object) :
 		# FIXME: Should add some code to catch bad params
 
 		if self.addNewComponent(argv[0], argv[1]) :
-			self.writeToLog('MSG', 'Added component: ' + argv[0] + ' Type = ' + argv[1], 'tipe.addComponent()')
+			self.writeToLog('MSG', 'Added component: ' + argv[0] + ' | Type = ' + argv[1], 'tipe.addComponent()')
 		else :
 			if self._compConf[argv[0]] :
-				self.writeToLog('ERR', 'Component: ' + argv[0] + ' already exists.', 'tipe.addComponent()')
+				self.writeToLog('WRN', 'Component: [' + argv[0] + '] already exists, no changes made.', 'tipe.addComponent()')
 
 
 	def _command_removeComponent (self, argv) :

@@ -284,7 +284,8 @@ class Project (object) :
 			return False
 
 	def addComponent(self, name) :
-		'''Create a component object for an existing component id and add it to everything that needs to know about it'''
+		'''Create a component object for an existing component id and add it to
+		everything that needs to know about it.'''
 
 		aComp = Component(name, self, self._compConf[name])
 		self._components[aComp.name] = aComp
@@ -297,6 +298,7 @@ class Project (object) :
 		# We want to do this only if the component already exists
 		if idCode in self._compConf :
 			del(self._compConf[idCode])
+			self._book.removeFromBinding(idCode)
 			# Set the flag for writing out the components config file
 			self._sysConfig['System']['writeOutCompConf'] = True
 			return True
@@ -336,6 +338,11 @@ class Project (object) :
 	def _command_addToBinding (self, argv) :
 
 		self._book.addToBinding(argv[0])
+
+
+	def _command_removeFromBinding (self, argv) :
+
+		self._book.removeFromBinding(argv[0])
 
 
 

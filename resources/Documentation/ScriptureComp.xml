@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <section id="Dependents">
+    <file id="target" type="pdf" level="1" process="render">
+      <description>The final file that is the results of the rendering process. This file depends on a TeX controler file.</description>
+    </file>
+    <file id="controlA" type="tex" level="2" process="autoConfigComp">
+      <description>The master contol file that funnels all the information necessary to render this component.</description>
+    </file>
+    <file id="controlB" type="tex" level="3" process="none">
+      <description>The custom contol file that feeds into the the component control file.</description>
+    </file>
+    <file id="controlC" type="tex" level="3" process="autoConfigComp">
+      <description>The group contol file that feeds into the the component control file.</description>
+    </file>
+    <file id="controlD" type="tex" level="4" process="autoConfigProj">
+      <description>The group contol file that feeds into the the component control file.</description>
+    </file>
+    <file id="controlE" type="tex" level="5" process="none">
+      <description>The master TeX macro contol file that feeds into the the global control file.</description>
+    </file>
+    <file id="styleA" type="sty" level="3" process="autoConfigComp">
+      <description>The component style file that feeds into the the component control file. These styles will override any previous styles that are set in dependent style files.</description>
+    </file>
+    <file id="styleB" type="sty" level="4" process="autoConfigComp">
+      <description>The group style file that feeds into the the group control file. These styles will override styles that are set in the global style file.</description>
+    </file>
+    <file id="styleC" type="sty" level="5" process="autoConfigProj">
+      <description>The global style file that feeds into the the global control file. These styles are the top level styles.</description>
+    </file>
+    <file id="confA" type="conf" level="4" process="autoConfigComp">
+      <description>The component configuration file that is created from the component type xml file.</description>
+    </file>
+    <file id="confB" type="conf" level="5" process="autoConfigProj">
+      <description>The project configuration file that is created from the project type xml file.</description>
+    </file>
+    <file id="text" type="usfm" level="3" process="preprocess">
+      <description>The working text file that will be rendered. It is created by pre and post processes run on the source text.</description>
+    </file>
+    <file id="source" type="usfm" level="4" process="none">
+      <description>The source text for the project.</description>
+    </file>
+  </section>
+</root>

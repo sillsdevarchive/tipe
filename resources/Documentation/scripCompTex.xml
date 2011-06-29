@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+
+Add Files:
+.piclist
+.adj
+illustratons
+fonts
+hyphenation
+wordlist
+lccode
+.rpt
+.parlocs
+.log
+.delayed
+
+1) Need to add a process section that has pre and post processes listed that can be run on the source and working text
+2) Add file type section that describes each kind of type of file found in the component
+3) Need a section to describe project folder attributes <location>
+4) We need to embed ptx2pdf right into the project, how do we express that?
+
+-->
+
+<!DOCTYPE root [
+  <!ELEMENT root (section)>
+  <!ELEMENT section (name, description, file+)>
+  <!ELEMENT file (name, type, location, dependents, createdBy, description)>
+  <!ELEMENT type (#PCDATA)>
+  <!ELEMENT location (#PCDATA)>
+  <!ELEMENT dependents (#PCDATA)>
+  <!ELEMENT createdBy (#PCDATA)>
+  <!ELEMENT name (#PCDATA)>
+  <!ELEMENT description (#PCDATA)>
+]>
+
+<root>
+  <section>
+    <name>Dependents</name>
+    <description>Files used in a Scripture component with their dependencies.</description>
+      <file>
+        <name>[comp]</name>
+        <type>pdf</type>
+        <location>Process</location>
+        <dependents>[comp].tex, [comp].adj, [comp].piclist</dependents>
+        <createdBy>texRender</createdBy>
+        <description>The final file that is the results of the rendering process.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>tex</type>
+        <location>Process</location>
+        <dependents>group.tex, [comp].usfm, [comp].sty, custom.tex</dependents>
+        <createdBy>autoConfigComp</createdBy>
+      <description>The master contol file that funnels to the XeTeX rendering engine all the information necessary to render this component.</description>
+      </file>
+      <file>
+        <name>custom</name>
+        <type>tex</type>
+        <location>Process</location>
+        <dependents>none</dependents>
+        <createdBy>readOnly</createdBy>
+        <description>The custom contol file that feeds into the the component control file.</description>
+      </file>
+      <file>
+        <name>group</name>
+        <type>tex</type>
+        <location>Process</location>
+        <dependents>global.tex, [comp].conf, group.sty</dependents>
+        <createdBy>autoConfigComp</createdBy>
+        <description>The group contol file that feeds into the the component control file.</description>
+      </file>
+      <file>
+        <name>global</name>
+        <type>tex</type>
+        <location>Process</location>
+        <dependents>fonts.ttf, ptx2pdf.tex, hyphenation.tex, [type].conf, global.sty</dependents>
+        <createdBy>autoConfigProj</createdBy>
+        <description>The global contol file that feeds into the the component control file.</description>
+      </file>
+      <file>
+        <name>ptx2pdf</name>
+        <type>tex</type>
+        <location>Process</location>
+        <dependents>none</dependents>
+        <createdBy>readOnly</createdBy>
+        <description>The master TeX macro contol file that feeds into the the global control file.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>sty</type>
+        <location>Process</location>
+        <dependents>[comp].conf</dependents>
+        <createdBy>autoConfigComp</createdBy>
+        <description>The component style file that feeds into the the component control file. These styles will override any previous styles that are set in dependent style files.</description>
+      </file>
+      <file>
+        <name>group</name>
+        <type>sty</type>
+        <location>Process</location>
+        <dependents>[type].conf</dependents>
+        <createdBy>autoConfigProj</createdBy>
+        <description>The group style file that feeds into the the group control file. These styles will override styles that are set in the global style file.</description>
+      </file>
+      <file>
+        <name>global</name>
+        <type>sty</type>
+        <location>Process</location>
+        <dependents>.book.conf</dependents>
+        <createdBy>autoConfigProj</createdBy>
+        <description>The global style file that feeds into the the global control file. These styles are the top level project styles.</description>
+      </file>
+      <file>
+        <name>.scriptCompTex</name>
+        <type>conf</type>
+        <location>root</location>
+        <dependents>scripCompTex.xml</dependents>
+        <createdBy>system</createdBy>
+        <description>The TeX Scripture component configuration file that is created by the system from the TeX Scripture component type XML file.</description>
+      </file>
+      <file>
+        <name>.book</name>
+        <type>conf</type>
+        <location>root</location>
+        <dependents>book.xml</dependents>
+        <createdBy>system</createdBy>
+        <description>The project (book) configuration file that is created from the project type xml file.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>usfm</type>
+        <location>Texts</location>
+        <dependents>[comp].usfm</dependents>
+        <createdBy>autoConfigComp</createdBy>
+        <description>The working text file that will be rendered. It is created by pre and post processes run on the source text.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>usfm</type>
+        <location>Source</location>
+        <dependents>none</dependents>
+        <createdBy>import</createdBy>
+        <description>The source text for this Scripture component.</description>
+      </file>
+      <file>
+        <name></name>
+        <type></type>
+        <location></location>
+        <dependents></dependents>
+        <createdBy></createdBy>
+        <description></description>
+      </file>
+  </section>
+</root>
+

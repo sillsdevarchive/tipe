@@ -2,30 +2,16 @@
 
 <!-- 
 
-Add Files:
-.piclist
-.adj
-illustratons
-fonts
-hyphenation
-wordlist
-lccode
-.rpt
-.parlocs
-.log
-.delayed
-
-1) Need to add a process section that has pre and post processes listed that can be run on the source and working text
 2) Add file type section that describes each kind of type of file found in the component
 3) Need a section to describe project folder attributes <location>
-4) We need to embed ptx2pdf right into the project, how do we express that?
 
 -->
 
 <!DOCTYPE root [
-  <!ELEMENT root (section)>
-  <!ELEMENT section (name, description, file+)>
+  <!ELEMENT root (section+)>
+  <!ELEMENT section (name, description, (file | process)+)>
   <!ELEMENT file (name, type, location, dependents, createdBy, description)>
+  <!ELEMENT process (name, type, description)>
   <!ELEMENT type (#PCDATA)>
   <!ELEMENT location (#PCDATA)>
   <!ELEMENT dependents (#PCDATA)>
@@ -35,6 +21,15 @@ lccode
 ]>
 
 <root>
+  <section>
+    <name>Processes</name>
+    <description>This section describes processes that are applied to component files.</description>
+    <process>
+      <name>copySource</name>
+      <type>???</type>
+      <description>???</description>
+    </process>
+  </section>
   <section>
     <name>Dependents</name>
     <description>Files used in a Scripture component with their dependencies.</description>
@@ -66,20 +61,28 @@ lccode
         <name>group</name>
         <type>tex</type>
         <location>Process</location>
-        <dependents>global.tex, [comp].conf, group.sty</dependents>
+        <dependents>global.tex, scripCompTex.tex, .scripCompTex.conf, group.sty</dependents>
         <createdBy>autoConfigComp</createdBy>
         <description>The group contol file that feeds into the the component control file.</description>
+      </file>
+      <file>
+        <name>scripCompTex</name>
+        <type>tex</type>
+        <location>Process</location>
+        <dependents>none</dependents>
+        <createdBy>readOnly</createdBy>
+        <description>This is the main TeX component processing macro file.</description>
       </file>
       <file>
         <name>global</name>
         <type>tex</type>
         <location>Process</location>
-        <dependents>fonts.ttf, ptx2pdf.tex, hyphenation.tex, [type].conf, global.sty</dependents>
+        <dependents>*.ttf, ptx2pdf.tex, hyphenation.tex, .book.conf, global.sty</dependents>
         <createdBy>autoConfigProj</createdBy>
         <description>The global contol file that feeds into the the component control file.</description>
       </file>
       <file>
-        <name>ptx2pdf</name>
+        <name>book</name>
         <type>tex</type>
         <location>Process</location>
         <dependents>none</dependents>
@@ -90,7 +93,7 @@ lccode
         <name>[comp]</name>
         <type>sty</type>
         <location>Process</location>
-        <dependents>[comp].conf</dependents>
+        <dependents>.scripCompTex.conf</dependents>
         <createdBy>autoConfigComp</createdBy>
         <description>The component style file that feeds into the the component control file. These styles will override any previous styles that are set in dependent style files.</description>
       </file>
@@ -98,7 +101,7 @@ lccode
         <name>group</name>
         <type>sty</type>
         <location>Process</location>
-        <dependents>[type].conf</dependents>
+        <dependents>.book.conf</dependents>
         <createdBy>autoConfigProj</createdBy>
         <description>The group style file that feeds into the the group control file. These styles will override styles that are set in the global style file.</description>
       </file>
@@ -111,7 +114,7 @@ lccode
         <description>The global style file that feeds into the the global control file. These styles are the top level project styles.</description>
       </file>
       <file>
-        <name>.scriptCompTex</name>
+        <name>.scripCompTex</name>
         <type>conf</type>
         <location>root</location>
         <dependents>scripCompTex.xml</dependents>
@@ -143,12 +146,108 @@ lccode
         <description>The source text for this Scripture component.</description>
       </file>
       <file>
-        <name></name>
-        <type></type>
-        <location></location>
-        <dependents></dependents>
-        <createdBy></createdBy>
-        <description></description>
+        <name>[comp]</name>
+        <type>piclist</type>
+        <location>Process</location>
+        <dependents>captions.csv, .scripCompTex.conf, *.png</dependents>
+        <createdBy>autoConfigComp</createdBy>
+        <description>This file contains position and location information for illustrations used in this component.</description>
+      </file>
+      <file>
+        <name>captions.csv</name>
+        <type>csv</type>
+        <location>Illustrations</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>This file contains illustration and caption information for all illustrations used in the publication.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>adj</type>
+        <location>Process</location>
+        <dependents>.scripCompTex.conf</dependents>
+        <createdBy>system</createdBy>
+        <description>Component adjustment file which contains location information for where textual adjustments can be made.</description>
+      </file>
+      <file>
+        <name>[illustration]</name>
+        <type>png</type>
+        <location>Illustrations</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>Illustration files used by this component.</description>
+      </file>
+      <file>
+        <name>[font]</name>
+        <type>ttf</type>
+        <location>Fonts</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>Fonts used for rendering all the components in the project.</description>
+      </file>
+      <file>
+        <name>hyphenation</name>
+        <type>tex</type>
+        <location>Hyphenation</location>
+        <dependents>book.conf, wordlist.txt, lccode.tex</dependents>
+        <createdBy>system</createdBy>
+        <description>Hyphenation file for project which is used by the renderer.</description>
+      </file>
+      <file>
+        <name>wordlist</name>
+        <type>txt</type>
+        <location>Hyphenation</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>Wordlist for all components in this project. </description>
+      </file>
+      <file>
+        <name>lccode</name>
+        <type>tex</type>
+        <location>Hyphenation</location>
+        <dependents>.book.conf</dependents>
+        <createdBy>system</createdBy>
+        <description>The lccode is a file used to declair non-word-forming characters.</description>
+      </file>
+      <file>
+        <name>[process]</name>
+        <type>rpt</type>
+        <location>Report</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>Reports made by various processes.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>parlocs</type>
+        <location>Process</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>The parlocs file is created by XeTeX during the rendering process.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>log</type>
+        <location>Process</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>This is the log file created by XeTeX during the rendering process.</description>
+      </file>
+      <file>
+        <name>[comp]</name>
+        <type>delayed</type>
+        <location>Process</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>The delayed file is created by XeTeX during the rendering process.</description>
+      </file>
+      <file>
+        <name>tipe</name>
+        <type>log</type>
+        <location>root</location>
+        <dependents>none</dependents>
+        <createdBy>system</createdBy>
+        <description>This is the main log file that all the processes in the system feed into.</description>
       </file>
   </section>
 </root>

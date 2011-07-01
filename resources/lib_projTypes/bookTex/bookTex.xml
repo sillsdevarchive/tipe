@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+File: bookTex.xml
+Description:
+This is a project or Document type description for a book publication to be rendered
+with TeX. All file relations and processes are described in this file.
+
+Todo:
+1) Add a process section where all processes are described
+2) Add file type section that describes each kind of type of file found in the component
+3) Need a section to describe project folder attributes <location>
+
+-->
+
+<!DOCTYPE root [
+  <!ELEMENT root (section+)>
+  <!ELEMENT section (name, description, (file | process)+)>
+  <!ELEMENT file (name, type, location, dependents, createdBy, description)>
+  <!ELEMENT process (name, type, description)>
+  <!ELEMENT type (#PCDATA)>
+  <!ELEMENT location (#PCDATA)>
+  <!ELEMENT dependents (#PCDATA)>
+  <!ELEMENT createdBy (#PCDATA)>
+  <!ELEMENT name (#PCDATA)>
+  <!ELEMENT description (#PCDATA)>
+]>
+
+<root>
+    <section>
+        <name>Something here</name>
+        <description>Describe this section.</description>
+        <file>
+            <name>global</name>
+            <type>tex</type>
+            <location>Process</location>
+            <dependents>*.ttf, ptx2pdf.tex, hyphenation.tex, .book.conf, global.sty</dependents>
+            <createdBy>autoConfigProj</createdBy>
+            <description>The global contol file that feeds into the the component control file.</description>
+        </file>
+        <file>
+            <name>bookTex</name>
+            <type>tex</type>
+            <location>Process</location>
+            <dependents>none</dependents>
+            <createdBy>readOnly</createdBy>
+            <description>The master TeX macro contol file that feeds into the the global control file.</description>
+        </file>
+        <file>
+            <name>global</name>
+            <type>sty</type>
+            <location>Process</location>
+            <dependents>.book.conf</dependents>
+            <createdBy>autoConfigProj</createdBy>
+            <description>The global style file that feeds into the the global control file. These styles are the top level project styles.</description>
+        </file>
+        <file>
+            <name>.bookTex</name>
+            <type>conf</type>
+            <location>root</location>
+            <dependents>book.xml</dependents>
+            <createdBy>system</createdBy>
+            <description>The project (book) configuration file that is created from the project type xml file.</description>
+        </file>
+        <file>
+            <name>bookTex</name>
+            <type>xml</type>
+            <location>[tipe]</location>
+            <dependents>none</dependents>
+            <createdBy>readOnly</createdBy>
+            <description>The project (book) master XML configuration file that is used by the system to setup projects with default settings.</description>
+        </file>
+        <file>
+            <name>[font]</name>
+            <type>ttf</type>
+            <location>Fonts</location>
+            <dependents>none</dependents>
+            <createdBy>system</createdBy>
+            <description>Fonts used for rendering all the components in the project.</description>
+        </file>
+        <file>
+            <name>hyphenation</name>
+            <type>tex</type>
+            <location>Hyphenation</location>
+            <dependents>book.conf, wordlist.txt, lccode.tex</dependents>
+            <createdBy>system</createdBy>
+            <description>Hyphenation file for project which is used by the renderer.</description>
+        </file>
+        <file>
+            <name>wordlist</name>
+            <type>txt</type>
+            <location>Hyphenation</location>
+            <dependents>none</dependents>
+            <createdBy>system</createdBy>
+            <description>Wordlist for all components in this project. </description>
+        </file>
+        <file>
+            <name>lccode</name>
+            <type>tex</type>
+            <location>Hyphenation</location>
+            <dependents>.book.conf</dependents>
+            <createdBy>system</createdBy>
+            <description>The lccode is a file used to declair non-word-forming characters.</description>
+        </file>
+    </section>
+</root>
+

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE root [
+  <!ELEMENT root  (section)>
+  <!ELEMENT section (name, description)>
+  <!ELEMENT name (#PCDATA)>
+  <!ELEMENT description (#PCDATA)>
+]>
+
+<root>
+  <section>
+    <name>Something here</name>
+    <description>Describe this section.</description>
+  </section>
+</root>
+

@@ -29,47 +29,50 @@ Todo:
 ]>
 
 <root>
+    <section>
+        <name>Component Folder Names</name>
+        <sectionID>Folders</sectionID>
+        <description>This section contains the names of all the folders used for processing USFM TeX components.</description>
+        <folder>
+            <name>Illustrations Folder Name</name>
+            <key>illustrationsFolder</key>
+            <description>The name of the folder that all project Illustrations will be kept.</description>
+            <value>Illustrations</value>
+        </folder>
+        <folder>
+            <name>Source Text Folder Name</name>
+            <key>sourceFolder</key>
+            <description>The name of the folder that all source text will be kept. Contents can be linked or hard copied into the project.</description>
+            <value>Source</value>
+        </folder>
+        <folder>
+            <name>Text Folder Name</name>
+            <key>textFolder</key>
+            <description>The name of the folder that the working text is stored in.</description>
+            <value>Texts</value>
+        </folder>
+        <folder>
+            <name>Deliverables Folder Name</name>
+            <key>deliverFolder</key>
+            <description>The name of the folder that all project deliverables will be kept.</description>
+            <valueDeliverables></value>
+        </folder>
+    </section>
 
-            <setting id='illustrationsFolder'>
-                <name>Illustrations Folder Name</name>
-                <description>The name of the folder that all project Illustrations will be kept.</description>
-                <type>string</type>
-                <default>Illustrations</default>
-            </setting>
+    <section>
+        <name>Processes</name>
+        <sectionID></sectionID>
+        <description>This section describes processes that are applied to component files.</description>
+        <process>
+            <name>copySource</name>
+            <type>???</type>
+            <description>???</description>
+        </process>
+    </section>
 
-            <setting id='sourceFolder'>
-                <name>Source Text Folder Name</name>
-                <description>The name of the folder that all source text will be kept. Contents can be linked or hard copied into the project.</description>
-                <type>string</type>
-                <default>Source</default>
-            </setting>
-            <setting id='textFolder'>
-                <name>Text Folder Name</name>
-                <description>The name of the folder that the working text is stored in.</description>
-                <type>string</type>
-                <default>Texts</default>
-            </setting>
-
-            <setting id='deliverFolder'>
-                <name>Deliverables Folder Name</name>
-                <description>The name of the folder that all project deliverables will be kept.</description>
-                <type>string</type>
-                <default>Deliverables</default>
-            </setting>
-
-
-
-  <section>
-    <name>Processes</name>
-    <description>This section describes processes that are applied to component files.</description>
-    <process>
-      <name>copySource</name>
-      <type>???</type>
-      <description>???</description>
-    </process>
-  </section>
   <section>
     <name>Dependents</name>
+    <sectionID></sectionID>
     <description>Files used in a Scripture component with their dependencies.</description>
       <file>
         <name>[comp]</name>
@@ -249,28 +252,32 @@ Todo:
       </file>
   </section>
 
-        <section id='ScriptureGroups'>
-            <name>Scripture Type Groups</name>
-            <description>Lists of components in the Scripture type group.</description>
-            <setting id='ot'>
-                <name>Old Testament</name>
-                <description>List of ID Codes for Old Testament Scripture components.</description>
-                <type>list</type>
-                <default>gen, exo, lev, num, deu, jos, jdg, rut, 1sa, 2sa, 1ki, 2ki, 1ch, 2ch, ezr, neh, est, job, psa, pro, ecc, sng, isa, jer, lam, ezk, dan, hos, jol, amo, oba, jon, mic, nam, hab, zep, hag, zec, mal</default>
-            </setting>
-            <setting id='nt'>
-                <name>New Testament</name>
-                <description>List of ID Codes for New Testament Scripture components.</description>
-                <type>list</type>
-                <default>mat, mrk, luk, jhn, act, rom, 1co, 2co, gal, eph, php, col, 1th, 2th, 1ti, 2ti, tit, phm, heb, jas, 1pe, 2pe, 1jn, 2jn, 3jn, jud, rev</default>
-            </setting>
-            <setting id='dc'>
-                <name>Deuterocanonical</name>
-                <description>List of ID Codes for Deuterocanonical Scripture components.</description>
-                <type>list</type>
-                <default>tob, jdt, esg, wis, sir, bar, lje, s3y, sus, bel, 1ma, 2ma, 3ma, 4ma, 1es, 2es, man, ps2, oda, pss, jsa, jdb, tbs, sst, dnt, blt</default>
-            </setting>
-        </section>
+    <section>
+        <name>Scripture Type Groups</name>
+        <sectionID>usfmGroups</sectionID>
+        <description>Lists of components in the Scripture type group.</description>
+        <setting>
+            <name>Old Testament</name>
+            <key>ot</key>
+            <description>List of ID Codes for Old Testament Scripture components.</description>
+            <type>list</type>
+            <value>gen, exo, lev, num, deu, jos, jdg, rut, 1sa, 2sa, 1ki, 2ki, 1ch, 2ch, ezr, neh, est, job, psa, pro, ecc, sng, isa, jer, lam, ezk, dan, hos, jol, amo, oba, jon, mic, nam, hab, zep, hag, zec, mal</value>
+        </setting>
+        <setting>
+            <name>New Testament</name>
+            <key>nt</key>
+            <description>List of ID Codes for New Testament Scripture components.</description>
+            <type>list</type>
+            <value>mat, mrk, luk, jhn, act, rom, 1co, 2co, gal, eph, php, col, 1th, 2th, 1ti, 2ti, tit, phm, heb, jas, 1pe, 2pe, 1jn, 2jn, 3jn, jud, rev</value>
+        </setting>
+        <setting>
+            <name>Deuterocanonical</name>
+            <key>dc</key>
+            <description>List of ID Codes for Deuterocanonical Scripture components.</description>
+            <type>list</type>
+            <value>tob, jdt, esg, wis, sir, bar, lje, s3y, sus, bel, 1ma, 2ma, 3ma, 4ma, 1es, 2es, man, ps2, oda, pss, jsa, jdb, tbs, sst, dnt, blt</value>
+        </setting>
+    </section>
 
 
 

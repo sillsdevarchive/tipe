@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-File: usfmCompTex.xml
+File: usfmTex.xml
 Description:
 This is a component type description for a USFM Scripture component to be rendered
 with TeX. All file relations and processes are described in this file.
@@ -105,7 +105,7 @@ Todo:
             <name>group</name>
             <type>tex</type>
             <location>Process</location>
-            <dependents>global.tex, global.sty, usfmCompTex.tex, .usfmCompTex.conf, group.sty</dependents>
+            <dependents>global.tex, global.sty, usfmTex.tex, .usfmTex.conf, group.sty</dependents>
             <createdBy>autoConfigComp</createdBy>
             <description>The group contol file that feeds into the the component control file.</description>
         </file>
@@ -118,7 +118,7 @@ Todo:
             <description>The global contol file that feeds into the the component control file. This is part of the bookTex control object.</description>
         </file>
         <file>
-            <name>usfmCompTex</name>
+            <name>usfmTex</name>
             <type>tex</type>
             <location>Process</location>
             <dependents>none</dependents>
@@ -129,7 +129,7 @@ Todo:
             <name>[comp]</name>
             <type>sty</type>
             <location>Process</location>
-            <dependents>.usfmCompTex.conf</dependents>
+            <dependents>.usfmTex.conf</dependents>
             <createdBy>autoConfigComp</createdBy>
             <description>The component style file that feeds into the the component control file. These styles will override any previous styles that are set in dependent style files.</description>
         </file>
@@ -150,15 +150,15 @@ Todo:
             <description>The global style file that feeds into the the group control file. These styles are the top level component styles and are the default for all components of this type.</description>
         </file>
         <file>
-            <name>.usfmCompTex</name>
+            <name>.usfmTex</name>
             <type>conf</type>
             <location>root</location>
-            <dependents>usfmCompTex.xml</dependents>
+            <dependents>usfmTex.xml</dependents>
             <createdBy>system</createdBy>
             <description>The TeX Scripture component configuration file that is created by the system from the TeX Scripture component type XML file.</description>
         </file>
         <file>
-            <name>usfmCompTex</name>
+            <name>usfmTex</name>
             <type>xml</type>
             <location>[tipe]</location>
             <dependents>none</dependents>
@@ -185,7 +185,7 @@ Todo:
             <name>[comp]</name>
             <type>piclist</type>
             <location>Process</location>
-            <dependents>captions.csv, .usfmCompTex.conf, *.png</dependents>
+            <dependents>captions.csv, .usfmTex.conf, *.png</dependents>
             <createdBy>autoConfigComp</createdBy>
             <description>This file contains position and location information for illustrations used in this component.</description>
         </file>
@@ -201,7 +201,7 @@ Todo:
             <name>[comp]</name>
             <type>adj</type>
             <location>Process</location>
-            <dependents>.usfmCompTex.conf</dependents>
+            <dependents>.usfmTex.conf</dependents>
             <createdBy>system</createdBy>
             <description>Component adjustment file which contains location information for where textual adjustments can be made.</description>
         </file>

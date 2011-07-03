@@ -10,6 +10,8 @@ Todo:
 1) Add a process section where all processes are described
 2) Add file type section that describes each kind of type of file found in the component
 3) Need a section to describe project folder attributes <location>
+4) Need a default component section that the system will use to create a component
+5) Add a group description section
 
 -->
 
@@ -27,6 +29,36 @@ Todo:
 ]>
 
 <root>
+
+            <setting id='illustrationsFolder'>
+                <name>Illustrations Folder Name</name>
+                <description>The name of the folder that all project Illustrations will be kept.</description>
+                <type>string</type>
+                <default>Illustrations</default>
+            </setting>
+
+            <setting id='sourceFolder'>
+                <name>Source Text Folder Name</name>
+                <description>The name of the folder that all source text will be kept. Contents can be linked or hard copied into the project.</description>
+                <type>string</type>
+                <default>Source</default>
+            </setting>
+            <setting id='textFolder'>
+                <name>Text Folder Name</name>
+                <description>The name of the folder that the working text is stored in.</description>
+                <type>string</type>
+                <default>Texts</default>
+            </setting>
+
+            <setting id='deliverFolder'>
+                <name>Deliverables Folder Name</name>
+                <description>The name of the folder that all project deliverables will be kept.</description>
+                <type>string</type>
+                <default>Deliverables</default>
+            </setting>
+
+
+
   <section>
     <name>Processes</name>
     <description>This section describes processes that are applied to component files.</description>
@@ -67,7 +99,7 @@ Todo:
         <name>group</name>
         <type>tex</type>
         <location>Process</location>
-        <dependents>global.tex, usfmCompTex.tex, .usfmCompTex.conf, group.sty</dependents>
+        <dependents>global.tex, global.sty, usfmCompTex.tex, .usfmCompTex.conf, group.sty</dependents>
         <createdBy>autoConfigComp</createdBy>
         <description>The group contol file that feeds into the the component control file.</description>
       </file>
@@ -102,6 +134,14 @@ Todo:
         <dependents>.book.conf</dependents>
         <createdBy>autoConfigProj</createdBy>
         <description>The group style file that feeds into the the group control file. These styles will override styles that are set in the global style file.</description>
+      </file>
+      <file>
+        <name>global</name>
+        <type>sty</type>
+        <location>Process</location>
+        <dependents>none</dependents>
+        <createdBy>readOnly</createdBy>
+        <description>The global style file that feeds into the the group control file. These styles are the top level component styles and are the default for all components of this type.</description>
       </file>
       <file>
         <name>.usfmCompTex</name>
@@ -208,5 +248,31 @@ Todo:
         <description>This is the main log file that all the processes in the system feed into.</description>
       </file>
   </section>
+
+        <section id='ScriptureGroups'>
+            <name>Scripture Type Groups</name>
+            <description>Lists of components in the Scripture type group.</description>
+            <setting id='ot'>
+                <name>Old Testament</name>
+                <description>List of ID Codes for Old Testament Scripture components.</description>
+                <type>list</type>
+                <default>gen, exo, lev, num, deu, jos, jdg, rut, 1sa, 2sa, 1ki, 2ki, 1ch, 2ch, ezr, neh, est, job, psa, pro, ecc, sng, isa, jer, lam, ezk, dan, hos, jol, amo, oba, jon, mic, nam, hab, zep, hag, zec, mal</default>
+            </setting>
+            <setting id='nt'>
+                <name>New Testament</name>
+                <description>List of ID Codes for New Testament Scripture components.</description>
+                <type>list</type>
+                <default>mat, mrk, luk, jhn, act, rom, 1co, 2co, gal, eph, php, col, 1th, 2th, 1ti, 2ti, tit, phm, heb, jas, 1pe, 2pe, 1jn, 2jn, 3jn, jud, rev</default>
+            </setting>
+            <setting id='dc'>
+                <name>Deuterocanonical</name>
+                <description>List of ID Codes for Deuterocanonical Scripture components.</description>
+                <type>list</type>
+                <default>tob, jdt, esg, wis, sir, bar, lje, s3y, sus, bel, 1ma, 2ma, 3ma, 4ma, 1es, 2es, man, ps2, oda, pss, jsa, jdb, tbs, sst, dnt, blt</default>
+            </setting>
+        </section>
+
+
+
 </root>
 

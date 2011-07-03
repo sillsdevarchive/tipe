@@ -10,26 +10,112 @@ Todo:
 1) Add a process section where all processes are described
 2) Add file type section that describes each kind of type of file found in the component
 3) Need a section to describe project folder attributes <location>
+4) Need a default book project section that the system will use to start a project
 
 -->
 
 <!DOCTYPE root [
   <!ELEMENT root (section+)>
-  <!ELEMENT section (name, description, (file | process)+)>
+  <!ELEMENT section (name, sectionID, description, (setting | file | folder | process)+)>
   <!ELEMENT file (name, type, location, dependents, createdBy, description)>
+  <!ELEMENT folder (name, key, description, value)>
   <!ELEMENT process (name, type, description)>
+  <!ELEMENT setting (name, key, description, type*, value)>
+  <!ELEMENT sectionID (#PCDATA)>
+  <!ELEMENT name (#PCDATA)>
+  <!ELEMENT key (#PCDATA)>
+  <!ELEMENT description (#PCDATA)>
   <!ELEMENT type (#PCDATA)>
   <!ELEMENT location (#PCDATA)>
   <!ELEMENT dependents (#PCDATA)>
   <!ELEMENT createdBy (#PCDATA)>
-  <!ELEMENT name (#PCDATA)>
-  <!ELEMENT description (#PCDATA)>
+  <!ELEMENT value (#PCDATA)>
 ]>
 
 <root>
     <section>
-        <name>Something here</name>
-        <description>Describe this section.</description>
+        <name>Project Information</name>
+        <sectionID>ProjectInfo</sectionID>
+        <description>This section contains general project info for this project.</description>
+        <setting>
+            <name>Project Creation Date</name>
+            <key>projCreateDate</key>
+            <description>The date this project was created.</description>
+            <type>string</type>
+            <value></value>
+        </setting>
+        <setting>
+            <name>Project Edit Date</name>
+            <key>projEditDate</key>
+            <description>The last time this project configuration file set was saved.</description>
+            <type>string</type>
+            <value></value>
+        </setting>
+    </section>
+    <section>
+        <name>System Folder Names</name>
+        <sectionID>Folders</sectionID>
+        <description>This section contains the names of all the folders used in the TIPE system.</description>
+        <folder>
+            <name>Administrative Folder Name</name>
+            <key>adminFolder</key>
+            <description>The name of the folder that all project administrative documents will be kept.</description>
+            <value>Admin</value>
+        </folder>
+        <folder>
+            <name>Fonts Folder Name</name>
+            <key>fontsFolder</key>
+            <description>The name of the folder that all project fonts will be kept.</description>
+            <value>Fonts</value>
+        </folder>
+        <folder>
+            <name>Process Folder Name</name>
+            <key>processFolder</key>
+            <description>The name of the folder that the processes are run.</description>
+            <value>Process</value>
+        </folder>
+        <folder>
+            <name>Report Folder Name</name>
+            <key>reportFolder</key>
+            <description>The name of the folder that reports are kept.</description>
+            <value>Reports</value>
+        </folder>
+        <folder>
+            <name>Regression Testing Folder Name</name>
+            <key>regressionFolder</key>
+            <description>The name of the folder that all project regression base files will be kept.</description>
+            <value>.regression</value>
+        </folder>
+        <folder>
+            <name>Wiki Notes Folder Name</name>
+            <key>wikiFolder</key>
+            <description>The name of the folder that all project notes will be kept.</description>
+            <value>.wiki</value>
+        </folder>
+    </section>
+    <section>
+        <name>Format</name>
+        <sectionID>Format</sectionID>
+        <description>Settings having to do with the formating of this publication.</description>
+        <setting>
+            <name>Page Width</name>
+            <key>pageWidth</key>
+            <description>The trimmed width of the page.</description>
+            <type>integer</type>
+            <value>150</value>
+        </setting>
+        <setting>
+            <name>Page Height</name>
+            <key>pageHeight</key>
+            <description>The trimmed height of the page.</description>
+            <type>integer</type>
+            <value>210</value>
+        </setting>
+    </section>
+    <section>
+        <name>File Relationships</name>
+        <sectionID>Relationships</sectionID>
+        <description>Project file relationships are described in this section.</description>
         <file>
             <name>global</name>
             <type>tex</type>
@@ -45,14 +131,6 @@ Todo:
             <dependents>none</dependents>
             <createdBy>readOnly</createdBy>
             <description>The master TeX macro contol file that feeds into the the global control file.</description>
-        </file>
-        <file>
-            <name>global</name>
-            <type>sty</type>
-            <location>Process</location>
-            <dependents>.book.conf</dependents>
-            <createdBy>autoConfigProj</createdBy>
-            <description>The global style file that feeds into the the global control file. These styles are the top level project styles.</description>
         </file>
         <file>
             <name>.bookTex</name>

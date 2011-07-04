@@ -176,19 +176,16 @@ def safeStart (projHome, userHome, tipeHome) :
 	if os.path.exists(tipeUser) :
 		tu = ConfigObj(tipeUser)
 
-	# Next loop through each setting and override the system default
-	# FIXME: This is temporary
-	res['System']['userName'] = tu['System']['userName']
+	# Merge default settings with global settings
+	res.merge(tu)
 
 	# Finally get the project tipe.conf override settings
 	tipeProj = os.path.join(projHome, 'tipe.conf')
 	if os.path.exists(tipeProj) :
 		tp = ConfigObj(tipeProj)
 
-		# Again, loop through each setting and override any of the system or global
-		# settings
-		# FIXME: This is temporary
-		res['System']['userName'] = tp['System']['userName']
+		# Merge with project settings
+		res.merge(tp)
 
 	# Return the final results of the conf settings
 	return res
@@ -228,6 +225,7 @@ class Project (object) :
 			self.initLogging(self.projHome)
 			self.version                    = self._sysConfig['System']['systemVersion']
 			self.userName                   = self._sysConfig['System']['userName']
+			self.projectName                = self._sysConfig['System']['projectName']
 #            self.isProject                  = self._sysConfig['System']['isProject']
 #            self.projConfFile               = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
 			self.errorLogFile               = os.path.join(self.projHome, self._sysConfig['FileNames']['errorLogFile'])

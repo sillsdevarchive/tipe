@@ -53,18 +53,23 @@ def xml_add_section(data, doc) :
 
 	sets = doc.findall('setting')
 	for s in sets :
-		val = s.find('default').text
+		val = s.find('value').text
 		if s.find('type').text == 'list' :
 			if val :
-				data[s.attrib['id']] = [val.split(',')]
+#                data[s.attrib['id']] = [val.split(',')]
+				data[s.find('key').text] = [val.split(',')]
 			else :
-				data[s.attrib['id']] = []
+#                data[s.attrib['id']] = []
+				data[s.find('key').text] = []
 		else :
-			data[s.attrib['id']] = val
+#            data[s.attrib['id']] = val
+			data[s.find('key').text] = val
+
 	sects = doc.findall('section')
 	for s in sects :
 		nd = {}
-		data[s.attrib['id']] = nd
+#        data[s.attrib['id']] = nd
+		data[s.find('sectionID').text] = nd
 		xml_add_section(nd, s)
 
 
@@ -129,11 +134,6 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 	else :
 		raise IOError, "Can't open " + f
 
-# FIXME: We need to store a couple default system settings and override a couple
-# of the projectConf settings. userName would be one of them. The same user would
-# be using the system regardless as long as it is on this machine.
-
-
 	# If this is a live project it should have been passed a valid project.conf
 	# object.  Otherwise, the default settings from the XML will be good enough
 	# to get going.
@@ -156,17 +156,42 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 
 	return (conf, res)
 
-# STARTUP REFACTOR:
-# TIPE will first load all the tipe.xml default values from the system and
-# override with the settings it finds in the user's tipe.conf file.  Next it
-# will look in the current folder for a tipe.conf file to further override if
-# necessary.  If it doesn't find it, it assumes there is no valid TIPE project.
-# At this point it goes into a basic start up mode based on the TIPE settings
-# loaded in to memory.
 
 def safeStart (projHome, userHome, tipeHome) :
+	'''TIPE will first load all the tipe.xml default values from the system and
+	override with the settings it finds in the user's tipe.conf file.  Next it
+	will look in the current folder for a tipe.conf file to further override if
+	necessary.'''
 
-	print projHome, userHome, tipeHome
+	# Check to see if the file is there, then read it in and break it into
+	# sections. If it fails, scream really loud!
+	tipeXML = os.path.join(tipeHome, 'tipe.xml')
+	if os.path.exists(tipeXML) :
+		res = xml_to_section(tipeXML)
+	else :
+		raise IOError, "Can't open " + tipeXML
+
+	# Now get the settings from the users global tipe.conf file
+	tipeUser = os.path.join(userHome, 'tipe.conf')
+	if os.path.exists(tipeUser) :
+		tu = ConfigObj(tipeUser)
+
+	# Next loop through each setting and override the system default
+	# FIXME: This is temporary
+	res['System']['userName'] = tu['System']['userName']
+
+	# Finally get the project tipe.conf override settings
+	tipeProj = os.path.join(projHome, 'tipe.conf')
+	if os.path.exists(tipeProj) :
+		tp = ConfigObj(tipeProj)
+
+		# Again, loop through each setting and override any of the system or global
+		# settings
+		# FIXME: This is temporary
+		res['System']['userName'] = tp['System']['userName']
+
+	# Return the final results of the conf settings
+	return res
 
 
 
@@ -184,8 +209,13 @@ class Project (object) :
 		self.userHome                       = userHome
 		self.tipeHome                       = tipeHome
 
-		# Load project config files
+		# Load the TIPE config settings and do a safe start
 		self._sysConfig                     = safeStart(projHome, userHome, tipeHome)
+
+		# Check to see if there are project and component settings to load
+		self._projConfig                    = {}
+		self._compConfig                    = {}
+
 #        self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
 #        self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
 #        self._components                    = {}
@@ -194,12 +224,13 @@ class Project (object) :
 #        self._book                          = Book(self, self._sysConfig['Book'])
 #        self._book.loadBooks(self)
 
-#        if self._sysConfig :
-#            self.initLogging(self.home)
-#            self.version                    = self._sysConfig['System']['systemVersion']
+		if self._sysConfig :
+			self.initLogging(self.projHome)
+			self.version                    = self._sysConfig['System']['systemVersion']
+			self.userName                   = self._sysConfig['System']['userName']
 #            self.isProject                  = self._sysConfig['System']['isProject']
 #            self.projConfFile               = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
-#            self.errorLogFile               = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile'])
+			self.errorLogFile               = os.path.join(self.projHome, self._sysConfig['FileNames']['errorLogFile'])
 #            self.logLineLimit               = self._sysConfig['System']['logLineLimit']
 #            self.textFolder                 = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
 #            self.processFolder              = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
@@ -224,10 +255,10 @@ class Project (object) :
 		'''Initialize the log file system.'''
 
 		self.report = Report(
-			logFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['logFile']) if self._sysConfig else None,
-			errFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile']) if self._sysConfig else None,
-			debug           = self._sysConfig and self._sysConfig['System']['debugging'],
-			isProject       = self._sysConfig and self._sysConfig['System']['isProject'])
+			logFile         = os.path.join(dir, self._sysConfig['FileNames']['logFile']) if self._sysConfig else None,
+			errFile         = os.path.join(dir, self._sysConfig['FileNames']['errorLogFile']) if self._sysConfig else None,
+			debug           = self._sysConfig and self._sysConfig['System']['debugging'])
+#            isProject       = self._sysConfig and self._sysConfig['System']['isProject'])
 
 
 	def checkProject (self, home) :

@@ -97,11 +97,12 @@ from project import Project
 aProject = Project(os.getcwd(), userPath, os.path.join(basePath, 'bin'))
 
 # Do some cleanup like getting rid of the last sessions error log file.
-#if os.path.isfile(aProject.errorLogFile) :
-#    os.remove(aProject.errorLogFile)
+if os.path.isfile(aProject.errorLogFile) :
+	os.remove(aProject.errorLogFile)
 
 # Give a welcome message
-#aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version + '\n')
+aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version)
+aProject.terminal('\t\tCurrent User: ' + aProject.userName + '\n')
 
 # TIPE Command Line Syntax
 # The command line will have no more than four parameters and can run with less.

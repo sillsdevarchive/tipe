@@ -1,6 +1,6 @@
 Manual installation instructions for the developer version of the TIPE package
 	By Dennis Drescher (dennis_drescher@sil.org)
-	Last edited: 09/06/2011
+	Last edited: 04/07/2011
 
 
 These are instruction for manually installing the developer version of the TIPE publishing system package on a typical Ubuntu operating system (currently Lucid, 10.04). Ultimately we want TIPE to completely install from the package but at this point, given the state of flux it is in, it is best to get the latest code from the repository and manually install it. Most of the installation commands here will be done in the terminal. If you have not opened a terminal yet, do it now.
@@ -64,9 +64,11 @@ That should put TIPE where you need it. From time to time you may want to update
 
 SYSTEM INSTALLATION AND SETUP
 -----------------------------------------
-For easier operation it is necessary to get TIPE properly located in your system. The first thing that needs to be done is to link tipe.conf file to /etc folder. That is done with:
+For easier operation it is necessary to get TIPE properly located in your system. The first thing that needs to be done is to link tipe.conf file (that will be in your user folder) to /etc folder. That is done with:
 
-	sudo ln -s ~/Projects/tipe/bin/tipe.conf /etc/tipe.conf
+	sudo ln -sf ~/.config/tipe/tipe.conf /etc/tipe.conf
+
+Note that if you go look at /etc/tipe.conf you will see that it is a broken link. That is because ~/.config/tipe/tipe.conf does not yet exsist, but it will after you run TIPE for the first time, then every thing will be happy.
 
 Now we will get TIPE in your path by editing the ~/.profile file. To do that use this command:
 
@@ -74,8 +76,9 @@ Now we will get TIPE in your path by editing the ~/.profile file. To do that use
 
 Add this to the end of the file you just opened on its own line:
 
-	# Export the TIPE path
+	# Export the TIPE user and system paths
 	export TIPE_BASE="$HOME/Projects/tipe"
+	export TIPE_USER="$HOME/.config/tipe"
 
 Save the file and close it. Next time you reboot or login, the new path settings will be there.
 
@@ -88,6 +91,7 @@ That will enable you to test in the current terminal but if you want it to take 
 Test to see if the system recognizes the additional path with:
 
 	echo $TIPE_BASE
+	echo $TIPE_USER
 
 After running this command you should see a path that leads to TIPE.
 
@@ -120,12 +124,4 @@ Then, to check the user name type:
 
 QUICK START GUIDE
 -----------------------------------------
-TIPE has a Wiki help system which, as we are able to update it, gives the user documentaion on the system. This can be accessed by cliking on Help -> Help in the main TIPE menu. There is a quick start guide under Examples called "Role Your Own" that will help you get started.
-
-
-OPENING A PROJECT
------------------------------------------
-In a terminal, to start TIPE on an existing project, start it from the root of a project folder. It will find the confguraton (.scripture.conf or .dictionary.conf) file and automatically load that project. Also, because a special Nautilus script was installed (above) You can start TIPE with a right-click from the file browser.
-
-At this point you may need to load some projects on your local system or start a new project. To do this, start TIPE and open the system help with Help->System Help. You can then look at the Repository section to get a better idea of how to get going.
-
+Write something here!

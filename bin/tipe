@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# version: 20110610
+# version: 20110704
 # By Dennis Drescher (dennis_drescher at sil.org)
 
 
@@ -14,6 +14,7 @@
 
 # History:
 # 20110610 - djd - Start initial draft
+# 20110704 - djd - Start refactor for multiple component types
 
 
 ###############################################################################
@@ -26,37 +27,92 @@ import sys, os, codecs, shutil, operator
 from datetime import *
 from configobj import ConfigObj
 
+# Dumb user home init function
+def initUserHome (home) :
 
+	# Create user folder components
+	tipeFile            = os.path.join(home, 'tipe.conf')
+	resources           = os.path.join(home, 'resources')
+	scripts             = os.path.join(home, 'resources', 'lib_scripts')
+	admin               = os.path.join(home, 'resources', 'lib_admin')
+	illustrations       = os.path.join(home, 'resources', 'lib_illustratons')
+	fonts               = os.path.join(home, 'resources', 'lib_fonts')
+	projs               = os.path.join(home, 'resources', 'lib_projTypes')
+	comps               = os.path.join(home, 'resources', 'lib_compTypes')
+
+	for f in [home, resources, scripts, admin, illustrations, fonts, projs, comps] :
+		if not os.path.isdir(f) :
+			os.mkdir(f)
+
+	# Make the default global tipe.conf for custom environment settings
+	if not os.path.isfile(tipeFile) :
+		tipe = ConfigObj()
+		tipe.filename = tipeFile
+		tipe['System'] = {}
+		tipe['System']['userName'] = 'Default User'
+		tipe.write()
+
+
+# Set the base program path
+# FIXME: If this is ever ported to Windoz more work will be needed here.
 basePath = os.environ.get('TIPE_BASE')
 if not basePath :
-	basePath = "/usr/share/xetex-tipe"
+	basePath = os.path.join('usr', 'share', 'xetex-tipe')
 	os.environ['TIPE_BASE'] = basePath
+
+# Set the user environment path
+userPath = os.environ.get('TIPE_USER')
+if not userPath :
+	sysHome = os.environ.get('HOME')
+	userPath = os.path.join(sysHome, '.config', 'tipe')
+	os.environ['TIPE_USER'] = basePath
+
+# Run init to be safe in case something needs updating or is missing.
+initUserHome(userPath)
 
 # Before we get started we need to do some preliminary tests to see what the
 # environment we are starting in looks like.  That will determine where we go
 # from here.
 
 # Set our paths to application resources
-sys.path.insert(0, basePath + '/bin/python')
-sys.path.insert(0, basePath + '/bin/python/lib_system')
+sys.path.insert(0, os.path.join(basePath, 'bin', 'python'))
+sys.path.insert(0, os.path.join(basePath, 'bin', 'python', 'lib_system'))
+sys.path.insert(0, os.path.join(basePath, 'resources', 'lib_fonts'))
+sys.path.insert(0, os.path.join(basePath, 'resources', 'lib_illustratons'))
+sys.path.insert(0, os.path.join(basePath, 'resources', 'lib_admin'))
+sys.path.insert(0, os.path.join(basePath, 'resources', 'lib_compTypes'))
+sys.path.insert(0, os.path.join(basePath, 'resources', 'lib_projTypes'))
+# Set paths to user resources
+sys.path.insert(0, os.path.join(userPath, 'resources', 'lib_scripts'))
+sys.path.insert(0, os.path.join(userPath, 'resources', 'lib_fonts'))
+sys.path.insert(0, os.path.join(userPath, 'resources', 'lib_illustratons'))
+sys.path.insert(0, os.path.join(userPath, 'resources', 'lib_admin'))
+sys.path.insert(0, os.path.join(userPath, 'resources', 'lib_compTypes'))
+sys.path.insert(0, os.path.join(userPath, 'resources', 'lib_projTypes'))
 
-# Load the local classes
+# Now that our path is good we can load the local classes
 from project import Project
 
-# Give a welcome message
-aProject = Project(os.getcwd(), os.path.join(basePath, 'bin'))
+# Create a basic TIPE project object that will enable it to start
+aProject = Project(os.getcwd(), userPath, os.path.join(basePath, 'bin'))
 
 # Do some cleanup like getting rid of the last sessions error log file.
-if os.path.isfile(aProject.errorLogFile) :
-	os.remove(aProject.errorLogFile)
+#if os.path.isfile(aProject.errorLogFile) :
+#    os.remove(aProject.errorLogFile)
 
-aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version + '\n')
+# Give a welcome message
+#aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version + '\n')
 
-# Examine our command line.  The command line will have no more than three
-# parameters.  The script name, which is always "tipe", followed by the command
-# and then the component code, if a component is to be processed.  Otherwise,
-# the command could be followed by a single parameter that the system will
-# attempt to parse if the command is expecting more than one parameter.
+# TIPE Command Line Syntax
+# The command line will have no more than four parameters and can run with less.
+# They are:
+#   tipe [command] [component] [options]
+#
+# Whereas:
+# tipe = the script name, which is always "tipe"
+# command = tipe command (none = manager)
+# [component] = A specified component
+# [options] = Any special options that go with the command/component
 
 command = ""
 opts = []
@@ -77,25 +133,25 @@ else :
 
 # You can get specific help on one command or by just typing help, you can get
 # a listing of all the commands.
-if command == 'help' :
-	try :
-		msg = getattr(aProject, "_command_" + opts[0]).__doc__.split()
-		aProject.terminal(' '.join(msg))
-	except :
-		print 'How can we get a list of commands and iterate over them for this call?'
+#if command == 'help' :
+#    try :
+#        msg = getattr(aProject, "_command_" + opts[0]).__doc__.split()
+#        aProject.terminal(' '.join(msg))
+#    except :
+#        print 'How can we get a list of commands and iterate over them for this call?'
 
-elif hasattr(aProject, "_command_" + command) :
-	getattr(aProject, "_command_" + command)(opts)
-else :
-	aProject.terminal('ERROR: This command does not exist: ' + command)
+#elif hasattr(aProject, "_command_" + command) :
+#    getattr(aProject, "_command_" + command)(opts)
+#else :
+#    aProject.terminal('ERROR: This command does not exist: ' + command)
 
 
-# Write out all the current settings
-aProject.writeConfFiles()
+## Write out all the current settings
+#aProject.writeConfFiles()
 
-# Trim the project log file if needed
-aProject.trimLog(aProject.logLineLimit)
+## Trim the project log file if needed
+#aProject.trimLog(aProject.logLineLimit)
 
-# Politely say good bye
-aProject.terminal('\n\t\tThank you, please come again!\n')
+## Politely say good bye
+#aProject.terminal('\n\t\tThank you, please come again!\n')
 

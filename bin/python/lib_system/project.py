@@ -11,6 +11,7 @@
 
 # History:
 # 20110610 - djd - Initial draft
+# 20110704 - djd - Refactor for mulitple component and project type processing
 
 
 ###############################################################################
@@ -113,6 +114,8 @@ def override_section(self, aSection) :
 Section.override = override_section
 
 
+
+
 def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 	'''This is the main function for reading in the XML data and overriding
 	default settings with the current project settings.  This works with both
@@ -153,6 +156,21 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 
 	return (conf, res)
 
+# STARTUP REFACTOR:
+# TIPE will first load all the tipe.xml default values from the system and
+# override with the settings it finds in the user's tipe.conf file.  Next it
+# will look in the current folder for a tipe.conf file to further override if
+# necessary.  If it doesn't find it, it assumes there is no valid TIPE project.
+# At this point it goes into a basic start up mode based on the TIPE settings
+# loaded in to memory.
+
+def safeStart (projHome, userHome, tipeHome) :
+
+	print projHome, userHome, tipeHome
+
+
+
+
 
 ###############################################################################
 ################################## Begin Class ################################
@@ -160,29 +178,32 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 
 class Project (object) :
 
-	def __init__(self, dir, tipedir) :
+	def __init__(self, projHome, userHome, tipeHome) :
 
-		self.home                           = dir
+		self.projHome                       = projHome
+		self.userHome                       = userHome
+		self.tipeHome                       = tipeHome
 
 		# Load project config files
-		self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
-		self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
-		self._components                    = {}
+		self._sysConfig                     = safeStart(projHome, userHome, tipeHome)
+#        self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
+#        self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
+#        self._components                    = {}
 
 		# Initialize our book module
-		self._book                          = Book(self, self._sysConfig['Book'])
-		self._book.loadBooks(self)
+#        self._book                          = Book(self, self._sysConfig['Book'])
+#        self._book.loadBooks(self)
 
-		if self._sysConfig :
-			self.initLogging(self.home)
-			self.version                    = self._sysConfig['System']['systemVersion']
-			self.isProject                  = self._sysConfig['System']['isProject']
-			self.projConfFile               = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
-			self.errorLogFile               = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile'])
-			self.logLineLimit               = self._sysConfig['System']['logLineLimit']
-			self.textFolder                 = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
-			self.processFolder              = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
-			self.reportFolder               = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
+#        if self._sysConfig :
+#            self.initLogging(self.home)
+#            self.version                    = self._sysConfig['System']['systemVersion']
+#            self.isProject                  = self._sysConfig['System']['isProject']
+#            self.projConfFile               = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
+#            self.errorLogFile               = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile'])
+#            self.logLineLimit               = self._sysConfig['System']['logLineLimit']
+#            self.textFolder                 = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
+#            self.processFolder              = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
+#            self.reportFolder               = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
 
 
 	def writeConfFiles(self) :

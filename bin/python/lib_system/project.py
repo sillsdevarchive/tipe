@@ -38,23 +38,117 @@ from xml.etree import ElementTree
 # These root level functions work at a fundamental level of the system
 
 
+
+# REFACTOR
+# Not sure yet what all is needed in the following commented code
+###############################################################################
+
+#def override(sysConfig, fname) :
+#    '''Subprocess of override_components().  The purpose is to override default
+#    settings taken from the TIPE system (sysConfig) file with those found in the
+#    project.conf file (projConfig).'''
+
+#    # Read in the project.conf file and create an object
+#    projConfig = ConfigObj(fname)
+#    res = ConfigObj(sysConfig.dict())
+
+#    # Recall this function to override the default settings
+#    res.override(projConfig)
+#    return res
+
+
+#def override_components(aConfig, fname) :
+#    '''Overrides component settings that we got from the default XML system
+#    settings file.'''
+#    res = ConfigObj()
+#    projConfig = ConfigObj(fname)
+#    for s, v in projConfig.items() :
+#        newtype = v['Type']
+#        old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
+#        old.override(v)
+#        oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
+#        oldtype.override(newtype)
+#        res[s] = old
+#        res[s]['Type'] = oldtype
+#    return res
+
+
+#def override_section(self, aSection) :
+#    '''Overrides an entire setting section.'''
+
+#    for k, v in self.items() :
+#        if k in aSection :
+#            if isinstance(v, dict) and isinstance(aSection[k], dict) :
+#                v.override(aSection[k])
+#            elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
+#                self[k] = aSection[k]
+
+
+## This will reasign the standard ConfigObj function that works much like ours
+## but not quite what we need for working with XML as one of the inputs.
+#Section.override = override_section
+
+
+#def safeConfig(dir, fname, tipedir, setting, projconf = None) :
+#    '''This is the main function for reading in the XML data and overriding
+#    default settings with the current project settings.  This works with both
+#    the project.conf file and the components.conf files.'''
+
+#    # Check to see if the file is there, then read it in and break it into
+#    # sections. If it fails, scream really loud!
+#    f = os.path.join(tipedir, fname)
+#    if os.path.exists(f) :
+#        res = xml_to_section(f)
+#    else :
+#        raise IOError, "Can't open " + f
+
+#    # If this is a live project it should have been passed a valid project.conf
+#    # object.  Otherwise, the default settings from the XML will be good enough
+#    # to get going.
+#    if not projconf : projconf = res
+#    f = projconf['System']['FileNames'][setting]
+
+#    # If dealing with a components we'll use the same process but just create an
+#    # empty object if no components have been defined for the project or a
+#    # project doesn't exist.
+#    if fname == 'components.xml' :
+#        if os.path.exists(f) :
+#            conf = override_components(res, f)
+#        else :
+#            conf = ConfigObj()
+#    else :
+#        if os.path.exists(f) :
+#            conf = override(res, f)
+#        else :
+#            conf = res
+
+#    return (conf, res)
+
+###############################################################################
+
 def xml_to_section(fname) :
 	'''Read in our default settings from the XML system settings file'''
 
+	# Read in our XML file
 	doc = ElementTree.parse(fname)
+	# Create an empty dictionary
 	data = {}
+	# Extract the section/key/value data
 	xml_add_section(data, doc)
+	# Convert the extracted data to a configobj and return
 	return ConfigObj(data)
 
 
 def xml_add_section(data, doc) :
 	'''Subprocess of xml_to_section().  Adds sections in the XML to conf
-	object.'''
+	object that is in memory.  It acts only on that object and does not return
+	anything.'''
 
 	# Find all the key and value in a setting
 	sets = doc.findall('setting')
 	for s in sets :
 		val = s.find('value').text
+		# Need to treat lists special
 		if s.find('type').text == 'list' :
 			if val :
 				data[s.find('key').text] = [val.split(',')]
@@ -72,99 +166,15 @@ def xml_add_section(data, doc) :
 		xml_add_section(nd, s)
 
 
-def override(sysConfig, fname) :
-	'''Subprocess of override_components().  The purpose is to override default
-	settings taken from the TIPE system (sysConfig) file with those found in the
-	project.conf file (projConfig).'''
-
-	# Read in the project.conf file and create an object
-	projConfig = ConfigObj(fname)
-	res = ConfigObj(sysConfig.dict())
-
-	# Recall this function to override the default settings
-	res.override(projConfig)
-	return res
-
-
-def override_components(aConfig, fname) :
-	'''Overrides component settings that we got from the default XML system
-	settings file.'''
-	res = ConfigObj()
-	projConfig = ConfigObj(fname)
-	for s, v in projConfig.items() :
-		newtype = v['Type']
-		old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
-		old.override(v)
-		oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
-		oldtype.override(newtype)
-		res[s] = old
-		res[s]['Type'] = oldtype
-	return res
-
-
-def override_section(self, aSection) :
-	'''Overrides an entire setting section.'''
-
-	for k, v in self.items() :
-		if k in aSection :
-			if isinstance(v, dict) and isinstance(aSection[k], dict) :
-				v.override(aSection[k])
-			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
-				self[k] = aSection[k]
-
-
-# This will reasign the standard ConfigObj function that works much like ours
-# but not quite what we need for working with XML as one of the inputs.
-Section.override = override_section
-
-
-
-
-def safeConfig(dir, fname, tipedir, setting, projconf = None) :
-	'''This is the main function for reading in the XML data and overriding
-	default settings with the current project settings.  This works with both
-	the project.conf file and the components.conf files.'''
-
-	# Check to see if the file is there, then read it in and break it into
-	# sections. If it fails, scream really loud!
-	f = os.path.join(tipedir, fname)
-	if os.path.exists(f) :
-		res = xml_to_section(f)
-	else :
-		raise IOError, "Can't open " + f
-
-	# If this is a live project it should have been passed a valid project.conf
-	# object.  Otherwise, the default settings from the XML will be good enough
-	# to get going.
-	if not projconf : projconf = res
-	f = projconf['System']['FileNames'][setting]
-
-	# If dealing with a components we'll use the same process but just create an
-	# empty object if no components have been defined for the project or a
-	# project doesn't exist.
-	if fname == 'components.xml' :
-		if os.path.exists(f) :
-			conf = override_components(res, f)
-		else :
-			conf = ConfigObj()
-	else :
-		if os.path.exists(f) :
-			conf = override(res, f)
-		else :
-			conf = res
-
-	return (conf, res)
-
-
 def safeStart (projHome, userHome, tipeHome) :
 	'''TIPE will first load all the tipe.xml default values from the system and
 	override with the settings it finds in the user's tipe.conf file.  Next it
 	will look in the current folder for a tipe.conf file to further override if
-	necessary.'''
+	necessary. Once this is done the program can start'''
 
 	# Check to see if the file is there, then read it in and break it into
 	# sections. If it fails, scream really loud!
-	tipeXML = os.path.join(tipeHome, 'tipe.xml')
+	tipeXML = os.path.join(tipeHome, 'bin', 'tipe.xml')
 	if os.path.exists(tipeXML) :
 		res = xml_to_section(tipeXML)
 	else :
@@ -189,9 +199,16 @@ def safeStart (projHome, userHome, tipeHome) :
 	# Return the final results of the conf settings
 	return res
 
+##############################################################################
+def loadProjectSettings (tipeProj, projHome, userHome, tipeHome) :
+	'''Load up a project settings file.  First load the defaults from the system
+	XML file.  Next, override with any gloabal user project conf settings, then
+	override with project conf settings.'''
 
+# FIXME: Start working here first!
+	pass
 
-
+###############################################################################
 
 ###############################################################################
 ################################## Begin Class ################################
@@ -201,16 +218,37 @@ class Project (object) :
 
 	def __init__(self, projHome, userHome, tipeHome) :
 
-		self.projHome                       = projHome
-		self.userHome                       = userHome
-		self.tipeHome                       = tipeHome
+		# Set all the paths and locations
+		# System level paths
+		self.tipeHome           = tipeHome
+		self.userHome           = userHome
+		self.projHome           = projHome
+		self.tipeFonts          = os.path.join(tipeHome, 'resources', 'lib_fonts')
+		self.tipeIllustrations  = os.path.join(tipeHome, 'resources', 'lib_illustratons')
+		self.tipeAdmin          = os.path.join(tipeHome, 'resources', 'lib_admin')
+		self.tipeCompTypes      = os.path.join(tipeHome, 'resources', 'lib_compTypes')
+		self.tipeProjTypes      = os.path.join(tipeHome, 'resources', 'lib_projTypes')
+		# User/Global level paths
+		self.userScripts        = os.path.join(userHome, 'resources', 'lib_scripts')
+		self.userFonts          = os.path.join(userHome, 'resources', 'lib_fonts')
+		self.userIllustrations  = os.path.join(userHome, 'resources', 'lib_illustratons')
+		self.userAdmin          = os.path.join(userHome, 'resources', 'lib_admin')
+		self.userCompTypes      = os.path.join(userHome, 'resources', 'lib_compTypes')
+		self.userProjTypes      = os.path.join(userHome, 'resources', 'lib_projTypes')
+		# Project level paths
+		# These will be created from information in the projConfFile
+
+
 
 		# Load the TIPE config settings and do a safe start
 		self._sysConfig                     = safeStart(projHome, userHome, tipeHome)
 
-		# Check to see if there are project and component settings to load
+		# Check to see if there is a project present and load it
 		self._projConfig                    = {}
-		self._compConfig                    = {}
+		if self._sysConfig['System']['projectType'] :
+			self.projectType = self._sysConfig['System']['projectType']
+			# Look in the project to see what components there are
+			self._compConfig                    = {}
 
 #        self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
 #        self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
@@ -235,16 +273,24 @@ class Project (object) :
 
 
 	def writeConfFiles(self) :
-		if self._sysConfig['System']['isProject'] :
+		'''Write out all relevent project conf files.'''
+
+		tipeConf = self._sysConfig['FileNames']['tipeConfFile']
+		projConf = self._sysConfig['System']['projectType']
+		if projConf :
 			date_time, secs = str(datetime.now()).split(".")
 			self._sysConfig['System']['projEditDate'] = date_time   # bad for VCS
-			# Write out component config file now only if the save flag has been
-			# set.  Set the flag back to False before we write.
-			if self._sysConfig['System']['writeOutCompConf'] == True :
-				self._sysConfig['System']['writeOutCompConf'] = False
-				self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
-				self._compConf.write()
-			self._sysConfig.filename = self._sysConfig['System']['FileNames']['projConfFile']
+#            # Write out component config file now only if the save flag has been
+#            # set.  Set the flag back to False before we write.
+#            if self._sysConfig['System']['writeOutCompConf'] == True :
+#                self._sysConfig['System']['writeOutCompConf'] = False
+#                self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
+#                self._compConf.write()
+
+#            self._projConfig.filename = self._projConfig['FileNames'][projConf + 'Conf']
+#            self._projConfig.write()
+
+			self._sysConfig.filename = tipeConf
 			self._sysConfig.write()
 
 
@@ -289,24 +335,33 @@ class Project (object) :
 				self.writeToLog('LOG', 'Created folder: ' + value, mod)
 
 
-	def makeProject (self, home, settings="") :
-		'''Create a new publishing project.'''
+	def makeProject (self, settings="") :
+		'''Create a new publishing project based on a specific predefined
+		project type.'''
 
 		mod = 'project.makeProject()'
-		# A new project only needs to have the necessary configuration files.
-		# The rest is made with the check project file the first time a
-		# component is processed.  However, if these files already exists we
-		# will abandon the process
-		if not os.path.isfile(self.projConfFile) :
-			date_time, secs = str(datetime.now()).split(".")
-			self._sysConfig['System']['isProject'] = True
-			self._sysConfig['System']['projCreateDate'] = date_time
-			self.initLogging(home)
-			self.initProject(home)
-			return True
+		# A new project will need to be based on a predefined type.  First check
+		# to see if that type exists.
+
+		tipeProj = os.path.join(self.tipeProjTypes, settings[0])
+		if os.path.isdir(tipeProj) :
+			self._sysConfig['System']['projectType'] = settings[0]
+			loadProjectSettings(tipeProj, self.projHome, self.userHome, self.tipeHome)
 		else :
-			self.writeToLog('ERR', 'Project already exists here!', mod)
-			return False
+			self.writeToLog('ERR', 'Project type: ' + settings[0] + ' not found!', mod)
+
+
+
+#        if not os.path.isfile(self.projConfFile) :
+#            date_time, secs = str(datetime.now()).split(".")
+#            self._sysConfig['System']['projectType'] = projType
+#            self._sysConfig['System']['projCreateDate'] = date_time
+#            self.initLogging(projHome)
+#            self.initProject(projHome)
+#            return True
+#        else :
+#            self.writeToLog('ERR', 'Project already exists here!', mod)
+#            return False
 
 	def addNewComponent(self, idCode, compType) :
 		'''Add a new component id to the binding order and create a new component config section for it'''
@@ -480,8 +535,8 @@ class Project (object) :
 		'''Usage: newProject [CompID] [CompType] | Setup a new project in the
 		current directory.'''
 
-		if self.makeProject(os.getcwd()) :
-			self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'tipe.newProject()')
+		if self.makeProject(argv) :
+				self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'tipe.newProject()')
 
 
 	def _command_reInitComponentFiles (self, argv) :

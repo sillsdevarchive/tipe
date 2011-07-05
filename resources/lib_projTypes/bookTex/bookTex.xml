@@ -114,72 +114,88 @@ Todo:
     </section>
     <section>
         <name>File Relationships</name>
-        <sectionID>Relationships</sectionID>
+        <sectionID>FileNames</sectionID>
         <description>Project file relationships are described in this section.</description>
-        <file>
-            <name>global</name>
+        <setting>
+            <name>GlobalTex TeX File</name>
+            <key>globalTex</key>
             <type>tex</type>
             <location>Process</location>
             <dependents>*.ttf, ptx2pdf.tex, hyphenation.tex, .book.conf, global.sty</dependents>
             <createdBy>autoConfigProj</createdBy>
             <description>The global contol file that feeds into the the component control file.</description>
-        </file>
-        <file>
-            <name>bookTex</name>
+            <value>global.tex</value>
+        </setting>
+        <setting>
+            <name>BookTex TeX File</name>
+            <key>bookTexTex</key>
             <type>tex</type>
             <location>Process</location>
             <dependents>none</dependents>
             <createdBy>readOnly</createdBy>
             <description>The master TeX macro contol file that feeds into the the global control file.</description>
-        </file>
-        <file>
-            <name>.bookTex</name>
+            <value>bookTex.tex</value>
+        </setting>
+        <setting>
+            <name>BookTex Configuration File</name>
+            <key>bookTexConf</key>
             <type>conf</type>
             <location>root</location>
             <dependents>book.xml</dependents>
             <createdBy>system</createdBy>
             <description>The project (book) configuration file that is created from the project type xml file.</description>
-        </file>
-        <file>
-            <name>bookTex</name>
+            <value>.bookTex.conf</value>
+        </setting>
+        <setting>
+            <name>BookTex XML File</name>
+            <key>bookTexXml</key>
             <type>xml</type>
             <location>[tipe]</location>
             <dependents>none</dependents>
             <createdBy>readOnly</createdBy>
             <description>The project (book) master XML configuration file that is used by the system to setup projects with default settings.</description>
-        </file>
-        <file>
-            <name>[font]</name>
-            <type>ttf</type>
-            <location>Fonts</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>Fonts used for rendering all the components in the project.</description>
-        </file>
-        <file>
-            <name>hyphenation</name>
+            <value>bookTex.xml</value>
+        </setting>
+<!--        <setting>-->
+<!--            <name>[font]</name>-->
+<!--            <key></key>-->
+<!--            <type>ttf</type>-->
+<!--            <location>Fonts</location>-->
+<!--            <dependents>none</dependents>-->
+<!--            <createdBy>system</createdBy>-->
+<!--            <description>Fonts used for rendering all the components in the project.</description>-->
+<!--            <value></value>-->
+<!--        </setting>-->
+        <setting>
+            <name>Hyphenation TeX File</name>
+            <key>hyphenationTex</key>
             <type>tex</type>
             <location>Hyphenation</location>
             <dependents>book.conf, wordlist.txt, lccode.tex</dependents>
             <createdBy>system</createdBy>
             <description>Hyphenation file for project which is used by the renderer.</description>
-        </file>
-        <file>
-            <name>wordlist</name>
+            <value>hyphenation.tex</value>
+        </setting>
+        <setting>
+            <name>Wordlist File</name>
+            <key>wordlistTxt</key>
             <type>txt</type>
             <location>Hyphenation</location>
             <dependents>none</dependents>
             <createdBy>system</createdBy>
             <description>Wordlist for all components in this project. </description>
-        </file>
-        <file>
-            <name>lccode</name>
+            <value>wordlist.txt</value>
+        </setting>
+        <setting>
+            <name>Lccode TeX File</name>
+            <key>lccodeTex</key>
             <type>tex</type>
             <location>Hyphenation</location>
             <dependents>.book.conf</dependents>
             <createdBy>system</createdBy>
             <description>The lccode is a file used to declair non-word-forming characters.</description>
-        </file>
+            <value>lccode.tex</value>
+        </setting>
     </section>
 </root>
 

@@ -67,6 +67,13 @@ Todo:
             <value>None</value>
         </setting>
         <setting>
+            <name>Current Project Type</name>
+            <key>projectType</key>
+            <description>The type of the current project the system is processing.</description>
+            <type>string</type>
+            <value></value>
+        </setting>
+        <setting>
             <name>About Text</name>
             <key>aboutText</key>
             <description>The description text that will show up in the wiki about file.</description>
@@ -124,8 +131,8 @@ Todo:
             <value>.makefile</value>
         </setting>
         <setting>
-            <name>TIPE Settings</name>
-            <key>tipeFile</key>
+            <name>TIPE Configuration Settings</name>
+            <key>tipeConfFile</key>
             <description>The name of the TIPE settings file. This is created when a project is started.</description>
             <type>string</type>
             <version>True</version>

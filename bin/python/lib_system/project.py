@@ -51,24 +51,23 @@ def xml_add_section(data, doc) :
 	'''Subprocess of xml_to_section().  Adds sections in the XML to conf
 	object.'''
 
+	# Find all the key and value in a setting
 	sets = doc.findall('setting')
 	for s in sets :
 		val = s.find('value').text
 		if s.find('type').text == 'list' :
 			if val :
-#                data[s.attrib['id']] = [val.split(',')]
 				data[s.find('key').text] = [val.split(',')]
 			else :
-#                data[s.attrib['id']] = []
 				data[s.find('key').text] = []
 		else :
-#            data[s.attrib['id']] = val
 			data[s.find('key').text] = val
 
+	# Find all the sections then call this same function to grab the keys and
+	# values all the settings in the section
 	sects = doc.findall('section')
 	for s in sects :
 		nd = {}
-#        data[s.attrib['id']] = nd
 		data[s.find('sectionID').text] = nd
 		xml_add_section(nd, s)
 

@@ -180,9 +180,6 @@ def safeStart (projHome, userHome, tipeHome) :
 	else :
 		raise IOError, "Can't open " + tipeXML
 
-	print 'xml-res = ' + res
-
-
 	# Now get the settings from the users global tipe.conf file
 	tipeUser = os.path.join(userHome, 'tipe.conf')
 	if os.path.exists(tipeUser) :
@@ -192,10 +189,8 @@ def safeStart (projHome, userHome, tipeHome) :
 
 	# Finally get the project tipe.conf override settings
 	tipeProj = os.path.join(projHome, '.tipe.conf')
-	print 'projType-res = ' + res['System']['projectType']
 	if os.path.exists(tipeProj) :
 		tp = ConfigObj(tipeProj)
-		print 'tp = ' + tp['System']['projectType']
 		# Merge with project settings
 		res.merge(tp)
 
@@ -268,7 +263,9 @@ class Project (object) :
 		# Check to see if there is a project present and load it
 		self._projConfig                    = {}
 		if self._sysConfig['System']['projectType'] :
+			self._projConfig = loadProjectSettings(self._sysConfig['System']['projectType'], self.projHome, self.userHome, self.tipeHome)
 			self.projectType = self._sysConfig['System']['projectType']
+
 			# Look in the project to see what components there are
 			self._compConfig                    = {}
 
@@ -308,7 +305,7 @@ class Project (object) :
 #                self._sysConfig['System']['writeOutCompConf'] = False
 #                self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
 #                self._compConf.write()
-			print 'projConfig = ' + self._projConfig
+
 			self._projConfig.filename = self._projConfig['FileNames'][projConf + 'Conf']
 			self._projConfig.write()
 
@@ -364,32 +361,37 @@ class Project (object) :
 		mod = 'project.makeProject()'
 		# See if the project type is already registered in the TIPE config.  If
 		# it is, don't proceed.  It should be removed first.
-		print 'sysConfig = ' + self._sysConfig['System']['projectType']
 		if self._sysConfig['System']['projectType'] == settings[0] :
-			self.writeToLog('ERR', 'Project type: ' + settings[0] + ' exsits. To proceed remove old version first.', mod)
+			self.writeToLog('ERR', 'Type: ' + settings[0] + ' exsits. Remove to proceed.', mod)
 			return
 
 		# A new project will need to be based on a predefined type.  First check
 		# to see if that type exists.
 		tipeProj = os.path.join(self.tipeProjTypes, settings[0])
 		if os.path.isdir(tipeProj) :
+			date_time, secs = str(datetime.now()).split(".")
 			self._sysConfig['System']['projectType'] = settings[0]
+			self._sysConfig['System']['projCreateDate'] = date_time
 			self._projConfig = loadProjectSettings(settings[0], self.projHome, self.userHome, self.tipeHome)
+			# Initialize the project here
+#            self.initLogging(projHome)
+#            self.initProject(projHome)
+			return True
 		else :
 			self.writeToLog('ERR', 'Project type: ' + settings[0] + ' not found!', mod)
 
 
+	def removeProject (self, settings="") :
+		'''Remove the project from the current working folder.'''
 
-#        if not os.path.isfile(self.projConfFile) :
-#            date_time, secs = str(datetime.now()).split(".")
-#            self._sysConfig['System']['projectType'] = projType
-#            self._sysConfig['System']['projCreateDate'] = date_time
-#            self.initLogging(projHome)
-#            self.initProject(projHome)
-#            return True
-#        else :
-#            self.writeToLog('ERR', 'Project already exists here!', mod)
-#            return False
+		# 1) Check if the project actually exists and report and pass if it does
+		# 2) If the project does exists, give a warning and ask for input. (add a force override)
+		# 3) Remove references from project tipe.conf
+		# 4) Clean out all project and component residue (this is where work could be lost)
+		# 5) Report the process is done
+
+		pass
+
 
 	def addNewComponent(self, idCode, compType) :
 		'''Add a new component id to the binding order and create a new component config section for it'''
@@ -560,32 +562,40 @@ class Project (object) :
 
 
 	def _command_newProject (self, argv) :
-		'''Usage: newProject [CompID] [CompType] | Setup a new project in the
+		'''Usage: newProject ProjectType [ProjectName] | Setup a new project in the
 		current directory.'''
 
 		if self.makeProject(argv) :
-				self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'tipe.newProject()')
+				self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'project.newProject()')
 
 
-	def _command_reInitComponentFiles (self, argv) :
-		'''Usage: reInitComponentFiles [CompID] [CompType] | This is a way to
-		call initComponentFiles to replace any missing component files.'''
+	def _command_removeProject (self, argv) :
+		'''Usage: removeProject ProjectType | Remove an existing project in
+		the current directory.'''
 
-		self.initComponentFiles(argv[0], argv[1])
+		if self.removeProject(argv) :
+				self.writeToLog('MSG', 'Removed project at: ' + os.getcwd(), 'project.newProject()')
 
 
-	def _command_runMake () :
-		'''Usage: runMake | All component processes are expected to be run via
-		makefile.  This is a generic makefile running function.'''
+#    def _command_reInitComponentFiles (self, argv) :
+#        '''Usage: reInitComponentFiles [CompID] [CompType] | This is a way to
+#        call initComponentFiles to replace any missing component files.'''
+#
+#        self.initComponentFiles(argv[0], argv[1])
 
-		# Send off the command return error code
-		error = os.system(sysConfig['System']['makeStartParams'] + os.getcwd() + '/' + sysConfig['System']['makefileFile'])
 
-		if error == 0 :
-			return True
-		else :
-			report.terminal('ERROR: tipe.runMake: ' + str(error))
-			return
+#    def _command_runMake () :
+#        '''Usage: runMake | All component processes are expected to be run via
+#        makefile.  This is a generic makefile running function.'''
+
+#        # Send off the command return error code
+#        error = os.system(sysConfig['System']['makeStartParams'] + os.getcwd() + '/' + sysConfig['System']['makefileFile'])
+#
+#        if error == 0 :
+#            return True
+#        else :
+#            report.terminal('ERROR: tipe.runMake: ' + str(error))
+#            return
 
 
 

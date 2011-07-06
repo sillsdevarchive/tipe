@@ -56,42 +56,48 @@ Todo:
         <name>System Folder Names</name>
         <sectionID>Folders</sectionID>
         <description>This section contains the names of all the folders used in the TIPE system.</description>
-        <folder>
+        <setting>
             <name>Administrative Folder Name</name>
             <key>adminFolder</key>
             <description>The name of the folder that all project administrative documents will be kept.</description>
+            <type>string</type>
             <value>Admin</value>
-        </folder>
-        <folder>
+        </setting>
+        <setting>
             <name>Fonts Folder Name</name>
             <key>fontsFolder</key>
             <description>The name of the folder that all project fonts will be kept.</description>
+            <type>string</type>
             <value>Fonts</value>
-        </folder>
-        <folder>
+        </setting>
+        <setting>
             <name>Process Folder Name</name>
             <key>processFolder</key>
             <description>The name of the folder that the processes are run.</description>
+            <type>string</type>
             <value>Process</value>
-        </folder>
-        <folder>
+        </setting>
+        <setting>
             <name>Report Folder Name</name>
             <key>reportFolder</key>
             <description>The name of the folder that reports are kept.</description>
+            <type>string</type>
             <value>Reports</value>
-        </folder>
-        <folder>
+        </setting>
+        <setting>
             <name>Regression Testing Folder Name</name>
             <key>regressionFolder</key>
             <description>The name of the folder that all project regression base files will be kept.</description>
+            <type>string</type>
             <value>.regression</value>
-        </folder>
-        <folder>
+        </setting>
+        <setting>
             <name>Wiki Notes Folder Name</name>
             <key>wikiFolder</key>
             <description>The name of the folder that all project notes will be kept.</description>
+            <type>string</type>
             <value>.wiki</value>
-        </folder>
+        </setting>
     </section>
     <section>
         <name>Format</name>
@@ -119,81 +125,89 @@ Todo:
         <setting>
             <name>GlobalTex TeX File</name>
             <key>globalTex</key>
-            <type>tex</type>
+            <fileType>tex</fileType>
             <location>Process</location>
             <dependents>*.ttf, ptx2pdf.tex, hyphenation.tex, .book.conf, global.sty</dependents>
             <createdBy>autoConfigProj</createdBy>
             <description>The global contol file that feeds into the the component control file.</description>
+            <type>string</type>
             <value>global.tex</value>
         </setting>
         <setting>
             <name>BookTex TeX File</name>
             <key>bookTexTex</key>
-            <type>tex</type>
+            <fileType>tex</fileType>
             <location>Process</location>
             <dependents>none</dependents>
             <createdBy>readOnly</createdBy>
             <description>The master TeX macro contol file that feeds into the the global control file.</description>
+            <type>string</type>
             <value>bookTex.tex</value>
         </setting>
         <setting>
             <name>BookTex Configuration File</name>
             <key>bookTexConf</key>
-            <type>conf</type>
+            <fileType>conf</fileType>
             <location>root</location>
             <dependents>book.xml</dependents>
             <createdBy>system</createdBy>
             <description>The project (book) configuration file that is created from the project type xml file.</description>
+            <type>string</type>
             <value>.bookTex.conf</value>
         </setting>
         <setting>
             <name>BookTex XML File</name>
             <key>bookTexXml</key>
-            <type>xml</type>
+            <fileType>xml</fileType>
             <location>[tipe]</location>
             <dependents>none</dependents>
             <createdBy>readOnly</createdBy>
             <description>The project (book) master XML configuration file that is used by the system to setup projects with default settings.</description>
+            <type>string</type>
             <value>bookTex.xml</value>
         </setting>
 <!--        <setting>-->
 <!--            <name>[font]</name>-->
 <!--            <key></key>-->
-<!--            <type>ttf</type>-->
+<!--            <fileType>ttf</fileType>-->
 <!--            <location>Fonts</location>-->
 <!--            <dependents>none</dependents>-->
 <!--            <createdBy>system</createdBy>-->
 <!--            <description>Fonts used for rendering all the components in the project.</description>-->
+<!--            <type>string</type>-->
 <!--            <value></value>-->
 <!--        </setting>-->
         <setting>
             <name>Hyphenation TeX File</name>
             <key>hyphenationTex</key>
-            <type>tex</type>
+            <fileType>tex</fileType>
             <location>Hyphenation</location>
             <dependents>book.conf, wordlist.txt, lccode.tex</dependents>
             <createdBy>system</createdBy>
             <description>Hyphenation file for project which is used by the renderer.</description>
+            <type>string</type>
             <value>hyphenation.tex</value>
         </setting>
         <setting>
             <name>Wordlist File</name>
             <key>wordlistTxt</key>
-            <type>txt</type>
+            <fileType>txt</fileType>
             <location>Hyphenation</location>
             <dependents>none</dependents>
             <createdBy>system</createdBy>
             <description>Wordlist for all components in this project. </description>
+            <type>string</type>
             <value>wordlist.txt</value>
         </setting>
         <setting>
             <name>Lccode TeX File</name>
             <key>lccodeTex</key>
-            <type>tex</type>
+            <fileType>tex</fileType>
             <location>Hyphenation</location>
             <dependents>.book.conf</dependents>
             <createdBy>system</createdBy>
             <description>The lccode is a file used to declair non-word-forming characters.</description>
+            <type>string</type>
             <value>lccode.tex</value>
         </setting>
     </section>

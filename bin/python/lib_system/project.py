@@ -148,7 +148,7 @@ def xml_add_section(data, doc) :
 	sets = doc.findall('setting')
 	for s in sets :
 		val = s.find('value').text
-		# Need to treat lists special
+		# Need to treat lists special but type is not required
 		if s.find('type').text == 'list' :
 			if val :
 				data[s.find('key').text] = [val.split(',')]
@@ -180,35 +180,57 @@ def safeStart (projHome, userHome, tipeHome) :
 	else :
 		raise IOError, "Can't open " + tipeXML
 
+	print 'xml-res = ' + res
+
+
 	# Now get the settings from the users global tipe.conf file
 	tipeUser = os.path.join(userHome, 'tipe.conf')
 	if os.path.exists(tipeUser) :
 		tu = ConfigObj(tipeUser)
-
-	# Merge default settings with global settings
-	res.merge(tu)
+		# Merge default settings with global settings
+		res.merge(tu)
 
 	# Finally get the project tipe.conf override settings
-	tipeProj = os.path.join(projHome, 'tipe.conf')
+	tipeProj = os.path.join(projHome, '.tipe.conf')
+	print 'projType-res = ' + res['System']['projectType']
 	if os.path.exists(tipeProj) :
 		tp = ConfigObj(tipeProj)
-
+		print 'tp = ' + tp['System']['projectType']
 		# Merge with project settings
 		res.merge(tp)
 
 	# Return the final results of the conf settings
 	return res
 
-##############################################################################
+
 def loadProjectSettings (tipeProj, projHome, userHome, tipeHome) :
 	'''Load up a project settings file.  First load the defaults from the system
 	XML file.  Next, override with any gloabal user project conf settings, then
 	override with project conf settings.'''
 
-# FIXME: Start working here first!
-	pass
+	# Set paths
+	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
+	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
+	projProjConf    = os.path.join(projHome, '.' + tipeProj + '.conf')
 
-###############################################################################
+	# Check first to see if this project type exsits in the user area.  That
+	# project def. will get priority over system defs.  We use one or the other,
+	# not both.
+	if os.path.exists(userProjXML) :
+		res = xml_to_section(userProjXML)
+	elif  os.path.exists(tipeProjXML) :
+		res = xml_to_section(tipeProjXML)
+	else :
+		raise IOError, "Can't open " + tipeProj + '.xml'
+
+	# Now get the settings from the projet .conf file if there is one.
+	if os.path.exists(projProjConf) :
+		# Merge default settings with global settings
+		res.merge(ConfigObj(projProjConf))
+
+	# Return the final results of the conf settings
+	return res
+
 
 ###############################################################################
 ################################## Begin Class ################################
@@ -286,9 +308,9 @@ class Project (object) :
 #                self._sysConfig['System']['writeOutCompConf'] = False
 #                self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
 #                self._compConf.write()
-
-#            self._projConfig.filename = self._projConfig['FileNames'][projConf + 'Conf']
-#            self._projConfig.write()
+			print 'projConfig = ' + self._projConfig
+			self._projConfig.filename = self._projConfig['FileNames'][projConf + 'Conf']
+			self._projConfig.write()
 
 			self._sysConfig.filename = tipeConf
 			self._sysConfig.write()
@@ -340,13 +362,19 @@ class Project (object) :
 		project type.'''
 
 		mod = 'project.makeProject()'
+		# See if the project type is already registered in the TIPE config.  If
+		# it is, don't proceed.  It should be removed first.
+		print 'sysConfig = ' + self._sysConfig['System']['projectType']
+		if self._sysConfig['System']['projectType'] == settings[0] :
+			self.writeToLog('ERR', 'Project type: ' + settings[0] + ' exsits. To proceed remove old version first.', mod)
+			return
+
 		# A new project will need to be based on a predefined type.  First check
 		# to see if that type exists.
-
 		tipeProj = os.path.join(self.tipeProjTypes, settings[0])
 		if os.path.isdir(tipeProj) :
 			self._sysConfig['System']['projectType'] = settings[0]
-			loadProjectSettings(tipeProj, self.projHome, self.userHome, self.tipeHome)
+			self._projConfig = loadProjectSettings(settings[0], self.projHome, self.userHome, self.tipeHome)
 		else :
 			self.writeToLog('ERR', 'Project type: ' + settings[0] + ' not found!', mod)
 

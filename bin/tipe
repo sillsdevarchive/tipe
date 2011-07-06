@@ -143,5 +143,5 @@ aProject.writeConfFiles()
 #aProject.trimLog(aProject.logLineLimit)
 
 ## Politely say good bye
-#aProject.terminal('\n\t\tThank you, please come again!\n')
+aProject.terminal('\n\t\tThank you, please come again!\n')
 

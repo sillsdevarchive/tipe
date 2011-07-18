@@ -45,17 +45,17 @@ Todo:
             <value></value>
         </setting>
         <setting>
-            <name>Project Edit Date</name>
-            <key>projEditDate</key>
-            <description>The last time this project configuration file set was saved.</description>
+            <name>Project Settings Last Edit Date</name>
+            <key>projectEditDate</key>
+            <description>Time stamp of when the project settings were last edited.</description>
             <type>string</type>
             <value></value>
         </setting>
     </section>
     <section>
-        <name>System Folder Names</name>
+        <name>Project Folder Names</name>
         <sectionID>Folders</sectionID>
-        <description>This section contains the names of all the folders used in the TIPE system.</description>
+        <description>This section contains the names of all the folders used by the TIPE system for this type of project.</description>
         <setting>
             <name>Administrative Folder Name</name>
             <key>adminFolder</key>

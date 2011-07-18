@@ -89,7 +89,7 @@ Todo:
         </setting>
         <setting>
             <name>Log File Length</name>
-            <key>logLineLimit</key>
+            <key>projLogLineLimit</key>
             <description>This is the maximum number of lines that will be permited to be in the log file. This is necessary because TIPE records all events in one log file.</description>
             <type>integer</type>
             <value>1000</value>
@@ -101,22 +101,36 @@ Todo:
             <type>string</type>
             <value>make --makefile=</value>
         </setting>
+        <setting>
+            <name>TIPE Settings Last Edit Date</name>
+            <key>tipeEditDate</key>
+            <description>Time stamp of when the TIPE settings were last edited.</description>
+            <type>string</type>
+            <value></value>
+        </setting>
+        <setting>
+            <name>User Settings Last Edit Date</name>
+            <key>userEditDate</key>
+            <description>Time stamp of when the user settings were last edited.</description>
+            <type>string</type>
+            <value></value>
+        </setting>
     </section>
     <section>
         <name>System File Names</name>
         <sectionID>FileNames</sectionID>
         <description>This section contains the names of all the TIPE system files.</description>
         <setting>
-            <name>Log File Name</name>
-            <key>logFile</key>
+            <name>Project Log File Name</name>
+            <key>projLogFile</key>
             <description>The name of the project log file.</description>
             <type>string</type>
             <version>False</version>
             <value>.tipe.log</value>
         </setting>
         <setting>
-            <name>Error Log File Name</name>
-            <key>errorLogFile</key>
+            <name>Project Error Log File Name</name>
+            <key>projErrorLogFile</key>
             <description>The name of the project error log file where errors are collected from a single session.</description>
             <type>string</type>
             <version>False</version>
@@ -131,12 +145,20 @@ Todo:
             <value>.makefile</value>
         </setting>
         <setting>
-            <name>TIPE Configuration Settings</name>
-            <key>tipeConfFile</key>
+            <name>TIPE Project Configuration Settings</name>
+            <key>tipeProjConfFile</key>
             <description>The name of the TIPE settings file. This is created when a project is started.</description>
             <type>string</type>
             <version>True</version>
             <value>.tipe.conf</value>
+        </setting>
+        <setting>
+            <name>TIPE User Configuration Settings</name>
+            <key>tipeUserConfFile</key>
+            <description>The name of the TIPE user settings file. This is created when type is run for the first time and contains global override settings for default system settings.</description>
+            <type>string</type>
+            <version>False</version>
+            <value>tipe.conf</value>
         </setting>
     </section>
 </root>

@@ -85,8 +85,8 @@ from project import Project
 aProject = Project(os.getcwd(), userPath, basePath)
 
 # Do some cleanup like getting rid of the last sessions error log file.
-if os.path.isfile(aProject.errorLogFile) :
-	os.remove(aProject.errorLogFile)
+if os.path.isfile(aProject.projErrorLogFile) :
+	os.remove(aProject.projErrorLogFile)
 
 # Give a welcome message
 aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version)
@@ -112,7 +112,7 @@ if len(sys.argv) > 1 :
 	opts = sys.argv[2:]
 else :
 	# If there isn't anything then we'll just go to the projects manager
-	command = "manage"
+	command = "tipeManager"
 
 
 
@@ -137,10 +137,10 @@ else :
 
 
 ## Write out all the current settings
-aProject.writeConfFiles()
+aProject.writeProjConfFiles()
 
 ## Trim the project log file if needed
-#aProject.trimLog(aProject.logLineLimit)
+#aProject.trimLog(aProject.projLogLineLimit)
 
 ## Politely say good bye
 aProject.terminal('\n\t\tThank you, please come again!\n')

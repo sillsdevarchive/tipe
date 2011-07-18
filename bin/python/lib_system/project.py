@@ -262,12 +262,13 @@ class Project (object) :
 
 		# Check to see if there is a project present and load it
 		self._projConfig                    = {}
+		self.projectType                    = None
 		if self._sysConfig['System']['projectType'] :
 			self._projConfig = loadProjectSettings(self._sysConfig['System']['projectType'], self.projHome, self.userHome, self.tipeHome)
 			self.projectType = self._sysConfig['System']['projectType']
 
 			# Look in the project to see what components there are
-			self._compConfig                    = {}
+			self._compConfig                = {}
 
 #        self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
 #        self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
@@ -282,45 +283,47 @@ class Project (object) :
 			self.version                    = self._sysConfig['System']['systemVersion']
 			self.userName                   = self._sysConfig['System']['userName']
 			self.projectName                = self._sysConfig['System']['projectName']
-#            self.isProject                  = self._sysConfig['System']['isProject']
-#            self.projConfFile               = os.path.join(self.home, self._sysConfig['System']['FileNames']['projConfFile'])
-			self.errorLogFile               = os.path.join(self.projHome, self._sysConfig['FileNames']['errorLogFile'])
-#            self.logLineLimit               = self._sysConfig['System']['logLineLimit']
-#            self.textFolder                 = os.path.join(self.home, self._sysConfig['System']['FolderNames']['textFolder'])
-#            self.processFolder              = os.path.join(self.home, self._sysConfig['System']['FolderNames']['processFolder'])
-#            self.reportFolder               = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
+			self.projectType                = self._sysConfig['System']['projectType']
+			self.tipeEditDate               = self._sysConfig['System']['tipeEditDate']
+			self.orgTipeEditDate            = self.tipeEditDate
+			# File paths
+			self.tipeProjConf               = os.path.join(self.projHome, self._sysConfig['FileNames']['tipeProjConfFile'])
+			self.tipeUserConf               = os.path.join(self.userHome, self._sysConfig['FileNames']['tipeUserConfFile'])
+			self.projErrorLogFile           = os.path.join(self.projHome, self._sysConfig['FileNames']['projErrorLogFile'])
+			self.projLogLineLimit           = self._sysConfig['System']['projLogLineLimit']
+
+		self.projectEditDate                = ''
+		self.orgProjectEditDate             = ''
+		if self._projConfig :
+			self.projectConfFile            = os.path.join(self.projHome, self._projConfig['FileNames'][self.projectType + 'Conf'])
+			self.projectEditDate            = self._projConfig['ProjectInfo']['projectEditDate']
+			self.orgProjectEditDate         = self.projectEditDate
 
 
-	def writeConfFiles(self) :
+	def writeProjConfFiles (self) :
 		'''Write out all relevent project conf files.'''
 
-		tipeConf = self._sysConfig['FileNames']['tipeConfFile']
-		projConf = self._sysConfig['System']['projectType']
-		if projConf :
+		if self.projectType :
 			date_time, secs = str(datetime.now()).split(".")
-			self._sysConfig['System']['projEditDate'] = date_time   # bad for VCS
-#            # Write out component config file now only if the save flag has been
-#            # set.  Set the flag back to False before we write.
-#            if self._sysConfig['System']['writeOutCompConf'] == True :
-#                self._sysConfig['System']['writeOutCompConf'] = False
-#                self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
-#                self._compConf.write()
+			# Write out config files only if the edit date has changed
+			if self.orgTipeEditDate != self.tipeEditDate :
+				self._sysConfig.filename = self.tipeProjConf
+				self._sysConfig.write()
 
-			self._projConfig.filename = self._projConfig['FileNames'][projConf + 'Conf']
-			self._projConfig.write()
+			if self.orgProjectEditDate != self.projectEditDate :
+				self._projConfig.filename = self.projectConfFile
+				self._projConfig.write()
 
-			self._sysConfig.filename = tipeConf
-			self._sysConfig.write()
 
 
 	def initLogging (self, dir) :
 		'''Initialize the log file system.'''
 
 		self.report = Report(
-			logFile         = os.path.join(dir, self._sysConfig['FileNames']['logFile']) if self._sysConfig else None,
-			errFile         = os.path.join(dir, self._sysConfig['FileNames']['errorLogFile']) if self._sysConfig else None,
-			debug           = self._sysConfig and self._sysConfig['System']['debugging'])
-#            isProject       = self._sysConfig and self._sysConfig['System']['isProject'])
+			projLogFile         = os.path.join(dir, self._sysConfig['FileNames']['projLogFile']) if self._sysConfig else None,
+			projErrFile         = os.path.join(dir, self._sysConfig['FileNames']['projErrorLogFile']) if self._sysConfig else None,
+			debug               = self._sysConfig and self._sysConfig['System']['debugging'],
+			projectType         = self.projectType)
 
 
 	def checkProject (self, home) :
@@ -347,7 +350,7 @@ class Project (object) :
 		folders, etc.'''
 
 		mod = 'project.initProject()'
-		for key, value in self._sysConfig['System']['FolderNames'].iteritems() :
+		for key, value in self._projConfig['Folders'].iteritems() :
 			thisFolder = os.path.join(home, value)
 			if not os.path.isdir(thisFolder) :
 				os.mkdir(thisFolder)
@@ -366,19 +369,31 @@ class Project (object) :
 			return
 
 		# A new project will need to be based on a predefined type.  First check
-		# to see if that type exists.
-		tipeProj = os.path.join(self.tipeProjTypes, settings[0])
-		if os.path.isdir(tipeProj) :
-			date_time, secs = str(datetime.now()).split(".")
-			self._sysConfig['System']['projectType'] = settings[0]
-			self._sysConfig['System']['projCreateDate'] = date_time
-			self._projConfig = loadProjectSettings(settings[0], self.projHome, self.userHome, self.tipeHome)
-			# Initialize the project here
-#            self.initLogging(projHome)
-#            self.initProject(projHome)
-			return True
+		# to see if that type exists.  Project type definition files can exist
+		# in two places, they users settings area and the system.  We will use
+		# the first instance we find and we will look in the user's settings
+		# area first.
+		if os.path.isdir(os.path.join(self.userProjTypes, settings[0])) :
+			projTypeToUse = os.path.join(self.userProjTypes, settings[0])
+		elif os.path.isdir(os.path.join(self.tipeProjTypes, settings[0])) :
+			projTypeToUse = os.path.join(self.tipeProjTypes, settings[0])
 		else :
-			self.writeToLog('ERR', 'Project type: ' + settings[0] + ' not found!', mod)
+			self.writeToLog('ERR', 'Project type does not exist: ' + settings[0], mod)
+			return
+
+		date_time, secs = str(datetime.now()).split(".")
+		self._sysConfig['System']['projectType'] = settings[0]
+		self.projectType = settings[0]
+		self._sysConfig['System']['projCreateDate'] = date_time
+		self.tipeEditDate = date_time
+		self._projConfig = loadProjectSettings(settings[0], self.projHome, self.userHome, self.tipeHome)
+		# Initialize the project here
+		self.projectConfFile = os.path.join(self.projHome, self._projConfig['FileNames'][self.projectType + 'Conf'])
+		self._projConfig['ProjectInfo']['projectEditDate'] = date_time
+		self.projectEditDate = date_time
+		self.initLogging(self.projHome)
+		self.initProject(self.projHome)
+		return True
 
 
 	def removeProject (self, settings="") :
@@ -455,7 +470,7 @@ class Project (object) :
 	def terminal(self, msg) : self.report.terminal(msg)
 	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
 	def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
-	def trimLog(self, logLineLimit) : self.report.trimLog(logLineLimit)
+	def trimLog(self, projLogLineLimit) : self.report.trimLog(projLogLineLimit)
 
 
 ###############################################################################
@@ -478,6 +493,22 @@ class Project (object) :
 
 		self._book.removeFromBinding(argv[0])
 
+	def _command_changeUser (self, argv) :
+		'''Change the user name of this specific installation of TIPE.'''
+
+		mod = 'project.changeUser'
+		date_time, secs = str(datetime.now()).split(".")
+		self._sysConfig['System']['userName'] = argv[0]
+		self._sysConfig['System']['userEditDate'] = date_time
+		userConfig = ConfigObj(self.tipeUserConf)
+		if userConfig['System']['userName'] == self._sysConfig['System']['userName'] :
+			self.writeToLog('MSG', 'Name already in use: ' + self._sysConfig['System']['userName'], mod)
+		else :
+			userConfig.filename = self.tipeUserConf
+			userConfig['System']['userEditDate'] = self._sysConfig['System']['userEditDate']
+			userConfig['System']['userName'] = self._sysConfig['System']['userName']
+			userConfig.write()
+			self.writeToLog('MSG', 'User name changed to: ' + self._sysConfig['System']['userName'], mod)
 
 
 	def _command_changeSetting (self, argv) :
@@ -607,13 +638,13 @@ class Project (object) :
 class Report (object) :
 
 	# Intitate the whole class
-	def __init__(self, logFile = None, errFile = None, debug = False, isProject = True) :
+	def __init__(self, projLogFile = None, projErrFile = None, debug = False, projectType = None) :
 
 		self._debugging         = False
-		self._logFile           = logFile
-		self._errorLogFile      = errFile
+		self._projLogFile       = projLogFile
+		self._projErrorLogFile  = projErrFile
 		self._debugging         = debug
-		self._isProject         = isProject
+		self._projectType       = projectType
 
 
 	def terminal (self, msg) :
@@ -702,8 +733,9 @@ class Report (object) :
 		if code != 'LOG' :
 			self.terminal(code + ' - ' + msg)
 
-		# If there is not project, why bother?
-		if self._isProject :
+		# If the project type is set then this is a live project and we can
+		# write out log files.  Otherwise, why bother?
+		if self._projectType :
 			# When are we doing this?
 			date_time, secs = str(datetime.now()).split(".")
 
@@ -714,13 +746,13 @@ class Report (object) :
 				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg + '\"'
 
 			# Do we need a log file made?
-			if not os.path.isfile(self._logFile) or os.path.getsize(self._logFile) == 0 :
-				writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
+			if not os.path.isfile(self._projLogFile) or os.path.getsize(self._projLogFile) == 0 :
+				writeObject = codecs.open(self._projLogFile, "w", encoding='utf_8')
 				writeObject.write('TIPE event log file created: ' + date_time + '\n')
 				writeObject.close()
 
 			# Now log the event to the top of the log file using preAppend().
-			self.preAppend(eventLine, self._logFile)
+			self.preAppend(eventLine, self._projLogFile)
 
 			# Write errors and warnings to the error log file
 			if code == 'WRN' and self._debugging :
@@ -740,10 +772,10 @@ class Report (object) :
 
 		# Because we want to read errors from top to bottom, we don't pre append
 		# them to the error log file.
-		if not os.path.isfile(self._errorLogFile) :
-			writeObject = codecs.open(self._errorLogFile, "w", encoding='utf_8')
+		if not os.path.isfile(self._projErrorLogFile) :
+			writeObject = codecs.open(self._projErrorLogFile, "w", encoding='utf_8')
 		else :
-			writeObject = codecs.open(self._errorLogFile, "a", encoding='utf_8')
+			writeObject = codecs.open(self._projErrorLogFile, "a", encoding='utf_8')
 
 		# Write and close
 		writeObject.write(eventLine + '\n')
@@ -752,28 +784,28 @@ class Report (object) :
 		return
 
 
-	def trimLog (self, logLineLimit = 1000) :
+	def trimLog (self, projLogLineLimit = 1000) :
 		'''Trim the system log file.  This will take an existing log file and
 		trim it to the amount specified in the system file.'''
 
 		# Of course this isn't needed if there isn't even a log file
-		if os.path.isfile(self._logFile) :
+		if os.path.isfile(self._projLogFile) :
 
 			# Change this to an int()
-			logLineLimit = int(logLineLimit)
+			projLogLineLimit = int(projLogLineLimit)
 
 			# Read in the existing log file
-			readObject = codecs.open(self._logFile, "r", encoding='utf_8')
+			readObject = codecs.open(self._projLogFile, "r", encoding='utf_8')
 			lines = readObject.readlines()
 			readObject.close()
 
 			# Process only if we have enough lines
-			if len(lines) > logLineLimit :
+			if len(lines) > projLogLineLimit :
 
-				writeObject = codecs.open(self._logFile, "w", encoding='utf_8')
+				writeObject = codecs.open(self._projLogFile, "w", encoding='utf_8')
 				lineCount = 0
 				for line in lines :
-					if logLineLimit > lineCount :
+					if projLogLineLimit > lineCount :
 						writeObject.write(line)
 						lineCount +=1
 

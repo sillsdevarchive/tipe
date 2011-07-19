@@ -198,33 +198,56 @@ def safeStart (projHome, userHome, tipeHome) :
 	return res
 
 
-def loadProjectSettings (tipeProj, projHome, userHome, tipeHome) :
-	'''Load up a project settings file.  First load the defaults from the system
-	XML file.  Next, override with any gloabal user project conf settings, then
-	override with project conf settings.'''
+def loadProjectSettings (projHome, userHome, tipeHome, mode) :
+	'''Load up the project.conf settings.  If the mode is set to load then we
+	look in the current folder for the .project.conf file.  One exsits then we
+	will first load the system defaults, then override with the user settings
+	(if any) then finally override with the project settings.  If the mode is
+	set to add, then it will only load the system defaults, followed by the user
+	override settings and return that object.'''
 
 	# Set paths
-	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
 	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
-	projProjConf    = os.path.join(projHome, '.' + tipeProj + '.conf')
+	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
+	projProjConf    = os.path.join(projHome, '.project.conf')
 
-	# Check first to see if this project type exsits in the user area.  That
-	# project def. will get priority over system defs.  We use one or the other,
-	# not both.
-	if os.path.exists(userProjXML) :
-		res = xml_to_section(userProjXML)
-	elif  os.path.exists(tipeProjXML) :
-		res = xml_to_section(tipeProjXML)
+#####################################################################################
+
+	if mode.lower() == 'load' :
+
+		# Do a quick load to get the project type, then we'll reload in order
+
+
+
+		# Check first to see if this project type exsits in the user area.  That
+		# project def. will get priority over system defs.  We use one or the other,
+		# not both.
+		if  os.path.exists(tipeProjXML) :
+			res = xml_to_section(tipeProjXML)
+		else :
+			raise IOError, "Can't open " + tipeProjXML
+
+		if os.path.exists(userProjXML) :
+			res = xml_to_section(userProjXML)
+		else :
+			raise IOError, "Can't open " + userProjXML
+
+		# Now get the settings from the .project.conf file if there is one.
+		if os.path.exists(projProjConf) :
+			# Merge default settings with global settings
+			res.merge(ConfigObj(projProjConf))
+
+	elif mode.lower() == 'add' :
+		pass
+
 	else :
-		raise IOError, "Can't open " + tipeProj + '.xml'
-
-	# Now get the settings from the projet .conf file if there is one.
-	if os.path.exists(projProjConf) :
-		# Merge default settings with global settings
-		res.merge(ConfigObj(projProjConf))
+		raise IOError, 'The mode setting of: [' + mode + '] is not recognized.'
 
 	# Return the final results of the conf settings
 	return res
+
+
+#####################################################################################
 
 
 ###############################################################################
@@ -235,7 +258,7 @@ class Project (object) :
 
 	def __init__(self, projHome, userHome, tipeHome) :
 
-		# Set all the paths and locations
+		# Set all the initial paths and locations
 		# System level paths
 		self.tipeHome           = tipeHome
 		self.userHome           = userHome
@@ -252,32 +275,11 @@ class Project (object) :
 		self.userAdmin          = os.path.join(userHome, 'resources', 'lib_admin')
 		self.userCompTypes      = os.path.join(userHome, 'resources', 'lib_compTypes')
 		self.userProjTypes      = os.path.join(userHome, 'resources', 'lib_projTypes')
-		# Project level paths
-		# These will be created from information in the projConfFile
-
-
 
 		# Load the TIPE config settings and do a safe start
 		self._sysConfig                     = safeStart(projHome, userHome, tipeHome)
 
-		# Check to see if there is a project present and load it
-		self._projConfig                    = {}
-		self.projectType                    = None
-		if self._sysConfig['System']['projectType'] :
-			self._projConfig = loadProjectSettings(self._sysConfig['System']['projectType'], self.projHome, self.userHome, self.tipeHome)
-			self.projectType = self._sysConfig['System']['projectType']
-
-			# Look in the project to see what components there are
-			self._compConfig                = {}
-
-#        self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
-#        self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
-#        self._components                    = {}
-
-		# Initialize our book module
-#        self._book                          = Book(self, self._sysConfig['Book'])
-#        self._book.loadBooks(self)
-
+		# Set all the system settings
 		if self._sysConfig :
 			self.initLogging(self.projHome)
 			self.version                    = self._sysConfig['System']['systemVersion']
@@ -292,13 +294,20 @@ class Project (object) :
 			self.projErrorLogFile           = os.path.join(self.projHome, self._sysConfig['FileNames']['projErrorLogFile'])
 			self.projLogLineLimit           = self._sysConfig['System']['projLogLineLimit']
 
-		self.projectEditDate                = ''
-		self.orgProjectEditDate             = ''
-		if self._projConfig :
+		# Look for a project in the current location and load the settings
+		if self._projConfig = loadProjectSettings(ptype, self.projHome, self.userHome, self.tipeHome) :
 			self.projectConfFile            = os.path.join(self.projHome, self._projConfig['FileNames'][self.projectType + 'Conf'])
 			self.projectEditDate            = self._projConfig['ProjectInfo']['projectEditDate']
 			self.orgProjectEditDate         = self.projectEditDate
+			self.projectType                = self._projConfig['ProjectInfo']['projectType']
+			self.projectName                = self._projConfig['ProjectInfo']['projectName']
+			self.projectCreateDate          = self._projConfig['ProjectInfo']['projCreateDate']
+			self.projectIDCode              = self._projConfig['ProjectInfo']['projectIDCode']
 
+
+###############################################################################
+############################# Begin Main Functions ############################
+###############################################################################
 
 	def writeProjConfFiles (self) :
 		'''Write out all relevent project conf files.'''
@@ -359,41 +368,91 @@ class Project (object) :
 
 	def makeProject (self, settings="") :
 		'''Create a new publishing project based on a specific predefined
-		project type.'''
+		project type. This command will take the following parameters:
+			-ptype "text"   The project type (required)
+			-pname "text"   The human readable name of the project
+			-pid "text"     The project ID code
+			-ctype "text"   Component type to add to this project
+			-comp file      File name of a component to add '''
 
 		mod = 'project.makeProject()'
-		# See if the project type is already registered in the TIPE config.  If
-		# it is, don't proceed.  It should be removed first.
-		if self._sysConfig['System']['projectType'] == settings[0] :
-			self.writeToLog('ERR', 'Type: ' + settings[0] + ' exsits. Remove to proceed.', mod)
+
+		# Collect our parameters
+		c = 0; ptype = ''; pname = ''; pid = ''; ctype = ''; comp = ''
+		commands = ['-ptype', '-pname', '-pid', '-ctype', '-comp']
+		for s in settings :
+			if s in commands :
+				if s == '-ptype' :
+					ptype = settings[c+1]
+				elif s == '-pname' :
+					pname = settings[c+1]
+				elif s == '-pid' :
+					pid = settings[c+1]
+				elif s == '-ctype' :
+					ctype = settings[c+1]
+				elif s == '-comp' :
+					comp = settings[c+1]
+			else :
+				if s[0] == '-' :
+					self.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
+					return
+
+			c+=1
+
+		# It is required that there be at least a project type defined we will
+		# look for that here and fail if we don't find it
+		if ptype == '' :
+			self.writeToLog('ERR', 'Project type required (-ptype), process failed!', mod)
 			return
+
+
+
+
+###################################################################################
+# FIXME: Change this to look for a .project.conf file and fail if it dosen't find it
+
+		# See if the project type is already registered in the TIPE config.  If
+		# it is, don't proceed.
+		if self._sysConfig['System']['projectType'] == ptype :
+			self.writeToLog('ERR', 'Hault! Type: ' + ptype + ' already defined for project.', mod)
+			return
+
+###################################################################################
+
+
 
 		# A new project will need to be based on a predefined type.  First check
 		# to see if that type exists.  Project type definition files can exist
 		# in two places, they users settings area and the system.  We will use
 		# the first instance we find and we will look in the user's settings
 		# area first.
-		if os.path.isdir(os.path.join(self.userProjTypes, settings[0])) :
-			projTypeToUse = os.path.join(self.userProjTypes, settings[0])
-		elif os.path.isdir(os.path.join(self.tipeProjTypes, settings[0])) :
-			projTypeToUse = os.path.join(self.tipeProjTypes, settings[0])
+		if os.path.isdir(os.path.join(self.userProjTypes, ptype)) :
+			projTypeToUse = os.path.join(self.userProjTypes, ptype)
+		elif os.path.isdir(os.path.join(self.tipeProjTypes, ptype)) :
+			projTypeToUse = os.path.join(self.tipeProjTypes, ptype)
 		else :
-			self.writeToLog('ERR', 'Project type does not exist: ' + settings[0], mod)
+			self.writeToLog('ERR', 'Project type does not exist: ' + ptype, mod)
 			return
 
-		date_time, secs = str(datetime.now()).split(".")
-		self._sysConfig['System']['projectType'] = settings[0]
-		self.projectType = settings[0]
-		self._sysConfig['System']['projCreateDate'] = date_time
-		self.tipeEditDate = date_time
-		self._projConfig = loadProjectSettings(settings[0], self.projHome, self.userHome, self.tipeHome)
 		# Initialize the project here
-		self.projectConfFile = os.path.join(self.projHome, self._projConfig['FileNames'][self.projectType + 'Conf'])
-		self._projConfig['ProjectInfo']['projectEditDate'] = date_time
-		self.projectEditDate = date_time
-		self.initLogging(self.projHome)
-		self.initProject(self.projHome)
-		return True
+		if self._projConfig = loadProjectSettings(ptype, self.projHome, self.userHome, self.tipeHome) :
+			date_time, secs = str(datetime.now()).split(".")
+			self.projectType = ptype
+			self.projectConfFile = os.path.join(self.projHome, self._projConfig['FileNames'][self.projectType + 'Conf'])
+			self.projConfig['ProjectInfo']['projectName'] = pname
+			self.projectName = pname
+			self.projConfig['ProjectInfo']['projectIDCode'] = pid
+			self.projectIDCode = pid
+			self.projConfig['ProjectInfo']['projCreateDate'] = date_time
+			self.projectCreateDate = date_time
+			self.projConfig['ProjectInfo']['projectEditDate'] = date_time
+			self.projectEditDate = date_time
+			self.initLogging(self.projHome)
+			self.initProject(self.projHome)
+			return True
+		else :
+			self.writeToLog('ERR', 'Failed to initialize project.', mod)
+			return
 
 
 	def removeProject (self, settings="") :

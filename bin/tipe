@@ -46,10 +46,13 @@ def initUserHome (userHome) :
 
 	# Make the default global tipe.conf for custom environment settings
 	if not os.path.isfile(tipeFile) :
+		date_time, secs = str(datetime.now()).split(".")
 		tipe = ConfigObj()
 		tipe.filename = tipeFile
 		tipe['System'] = {}
+		tipe['Projects'] = {}
 		tipe['System']['userName'] = 'Default User'
+		tipe['System']['initDate'] = date_time
 		tipe.write()
 
 
@@ -89,9 +92,13 @@ if os.path.isfile(aProject.projErrorLogFile) :
 	os.remove(aProject.projErrorLogFile)
 
 # Give a welcome message
+idCode = ''
+if aProject.projectIDCode != '' :
+	idCode = ' (' + aProject.projectIDCode + ')'
+
 aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.version)
 aProject.terminal('\t\tCurrent User: ' + aProject.userName)
-aProject.terminal('\t\tCurrent Project: ' + aProject.projectName + '\n')
+aProject.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
 
 # TIPE Command Line Syntax
 # The command line will have no more than four parameters and can run with less.

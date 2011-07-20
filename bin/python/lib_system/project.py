@@ -198,11 +198,13 @@ def safeStart (projHome, userHome, tipeHome) :
 	return res
 
 
-def loadProjectSettings (projHome, userHome, tipeHome) :
+def loadProjectSettings (tipeUserConf, projHome, userHome, tipeHome) :
 	'''Load up the project.conf settings.  This will first look in the current
 	folder for the .project.conf file.  One exsits then we will first load the
 	system defaults, then override with the user settings (if any) then finally
-	override with the project settings.'''
+	override with the project settings.  When all that is done we'll look to see
+	if the project exists in the user's config file.  If not, we'll add it in
+	the projects section.'''
 
 	# Set path to project config file
 	projProjConf    = os.path.join(projHome, '.project.conf')
@@ -238,9 +240,56 @@ def loadProjectSettings (projHome, userHome, tipeHome) :
 		# Merge default settings with global settings
 		res.merge(ConfigObj(projProjConf))
 
+	# Check the user's config for this project, silently add if needed
+	pname = res['ProjectInfo']['projectName']
+	ptype = res['ProjectInfo']['projectType']
+	pid = res['ProjectInfo']['projectIDCode']
+	date = res['ProjectInfo']['projCreateDate']
+	if not isRecordedProject(tipeUserConf, pid) == True :
+		recordProject(tipeUserConf, projHome, pname, ptype, pid, date)
 
 	# Return the final results of the conf settings
 	return res
+
+
+def recordProject (tipeUserConf, projHome, pname, ptype, pid, date) :
+	'''Add information about this project to the user's tipe.conf located in
+	the home config folder.'''
+
+	mod = 'project.recordProject()'
+	if os.path.isfile(tipeUserConf) :
+		cf = ConfigObj(tipeUserConf)
+
+		# FIXME: Before we create a project entry we want to be sure that
+		# the projects section already exsists.  There might be a better way
+		# of doing this.
+		try :
+			cf['Projects'][pid] = {}
+		except :
+			cf['Projects'] = {}
+			cf['Projects'][pid] = {}
+
+		# Now add the project data
+		cf['Projects'][pid]['projectName'] = pname
+		cf['Projects'][pid]['projectType'] = ptype
+		cf['Projects'][pid]['projectPath'] = projHome
+		cf['Projects'][pid]['createDate'] = date
+		cf.write()
+		return True
+	else :
+		return False
+
+
+def isRecordedProject (tipeUserConf, pid) :
+	'''Check to see if this project is recorded in the user's config'''
+
+	if os.path.isfile(tipeUserConf) :
+		cf = ConfigObj(tipeUserConf)
+		try :
+			isConfPID = cf['Projects'][pid]
+			return True
+		except :
+			return False
 
 
 def makeProjectSettings (projHome, userHome, tipeHome, tipeProj) :
@@ -265,10 +314,6 @@ def makeProjectSettings (projHome, userHome, tipeHome, tipeProj) :
 
 	# Return the final results of the conf settings
 	return res
-
-
-
-#####################################################################################
 
 
 ###############################################################################
@@ -306,7 +351,6 @@ class Project (object) :
 
 		# Set all the system settings
 		if self._sysConfig :
-			self.initLogging(self.projHome)
 			self.version                    = self._sysConfig['System']['systemVersion']
 			self.userName                   = self._sysConfig['System']['userName']
 			self.tipeEditDate               = self._sysConfig['System']['tipeEditDate']
@@ -317,7 +361,7 @@ class Project (object) :
 
 		# Look for a project in the current location and load the settings
 		if os.path.isfile(self.projectConfFile) :
-			self._projConfig = loadProjectSettings(self.projHome, self.userHome, self.tipeHome)
+			self._projConfig = loadProjectSettings(self.tipeUserConf, self.projHome, self.userHome, self.tipeHome)
 			if self._projConfig :
 				self.projectType                = self._projConfig['ProjectInfo']['projectType']
 				self.projectName                = self._projConfig['ProjectInfo']['projectName']
@@ -328,6 +372,11 @@ class Project (object) :
 		else :
 			# Set this in case there is no project present
 			self.projectName                    = 'None'
+			self.projectIDCode                  = ''
+
+		# Initialize any needed services
+		self.initLogging(self.projHome)
+
 
 
 ###############################################################################
@@ -340,7 +389,6 @@ class Project (object) :
 
 		# We'll test for a project by looking for a name
 		if self.projectName != 'None' :
-			date_time, secs = str(datetime.now()).split(".")
 			# Write out config files only if the edit date has changed
 			if self.orgTipeEditDate != self.tipeEditDate :
 				self._sysConfig.filename = self.tipeProjConf
@@ -359,7 +407,7 @@ class Project (object) :
 			projLogFile         = os.path.join(dir, self._sysConfig['FileNames']['projLogFile']) if self._sysConfig else None,
 			projErrFile         = os.path.join(dir, self._sysConfig['FileNames']['projErrorLogFile']) if self._sysConfig else None,
 			debug               = self._sysConfig and self._sysConfig['System']['debugging'],
-			projectConfFile     = self.projectConfFile)
+			projectName         = self.projectName)
 
 
 	def checkProject (self, home) :
@@ -400,7 +448,12 @@ class Project (object) :
 			-pname "text"   The human readable name of the project
 			-pid "text"     The project ID code
 			-ctype "text"   Component type to add to this project
-			-comp file      File name of a component to add '''
+			-comp file      File name of a component to add
+
+		This process will fail if a valid .project.conf (or .project.conf.bak)
+		file is found in the cwd or if the pid is already found in the user
+		config file.  It will also fail if one on the required parameters are
+		missing.'''
 
 		mod = 'project.makeProject()'
 
@@ -428,13 +481,18 @@ class Project (object) :
 
 		# It is required that there be at least a project type defined we will
 		# look for that here and fail if we don't find it
-		if ptype == '' :
-			self.writeToLog('ERR', 'Project type required (-ptype), process failed!', mod)
+		if ptype == '' or pname == '' or pid == '' :
+			self.writeToLog('ERR', 'Missing required parameter (-ptype, -pname, -pid), process failed!', mod)
 			return
 
 		# See if a project is already here by looking for a .project.conf file
-		if os.path.isfile(self.projectConfFile) :
+		if os.path.isfile(self.projectConfFile) or os.path.isfile(self.projectConfFile + '.bak')  :
 			self.writeToLog('ERR', 'Hault! A project is already defined in this location.', mod)
+			return
+
+		# Test if this project already exists in the user's config file.
+		if isRecordedProject(self.tipeUserConf, pid) :
+			self.writeToLog('ERR', 'Hault! Project ID already defined for another project.', mod)
 			return
 
 		# A new project will need to be based on a predefined type.  First check
@@ -468,6 +526,8 @@ class Project (object) :
 			self.orgTipeEditDate = ''
 			self.initLogging(self.projHome)
 			self.initProject(self.projHome)
+			# Record the project with the system
+			recordProject(self.tipeUserConf, self.projHome, pname, ptype, pid, date_time)
 			return True
 		else :
 			self.writeToLog('ERR', 'Failed to initialize project.', mod)
@@ -475,19 +535,52 @@ class Project (object) :
 
 
 	def removeProject (self, settings="") :
-		'''Remove the project from the current working folder.'''
+		'''Remove the project from the TIPE system.  This will not remove the
+		project data but will 'disable' the project.  This command takes the
+		following parameters:
+			-pid "text"     The project ID code (required)'''
 
-		# 1) Check if the project actually exists and report and pass if it does
-		# 2) If the project does exists, give a warning and ask for input. (add a force override)
-		# 3) Remove references from project tipe.conf
-		# 4) Clean out all project and component residue (this is where work could be lost)
-		# 5) Report the process is done
+		mod = 'project.removeProject()'
 
-		pass
+		# Collect our parameters
+		c = 0; pid = ''
+		commands = ['-pid']
+		for s in settings :
+			if s in commands :
+				if s == '-pid' :
+					pid = settings[c+1]
+			else :
+				if s[0] == '-' :
+					self.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
+					return
+
+		# 1) Check the user's conf file to see if the project actually exists
+		if not isRecordedProject(self.tipeUserConf, pid) :
+			self.writeToLog('ERR', 'Project ID [' + pid + '] not found in system configuration.', mod)
+			return
+		else :
+			# 2) If the project does exist in the user config, disable the project
+			cf = ConfigObj(self.tipeUserConf)
+			projPath = cf['Projects'][pid]['projectPath']
+			projTipeConf = os.path.join(projPath, '.tipe.conf')
+			projProjConf = os.path.join(projPath, '.project.conf')
+			if os.path.isfile(projTipeConf) :
+				os.rename(projTipeConf, projTipeConf + '.bak')
+			if os.path.isfile(projProjConf) :
+				os.rename(projProjConf, projProjConf + '.bak')
+
+			# 3) Remove references from user tipe.conf
+			del cf['Projects'][pid]
+			cf.write()
+
+			# 4) Report the process is done
+			self.writeToLog('MSG', 'Project [' + pid + '] removed from system configuration.', mod)
+			return
 
 
 	def addNewComponent(self, idCode, compType) :
-		'''Add a new component id to the binding order and create a new component config section for it'''
+		'''Add a new component id to the binding order and create a new
+		component config section for it'''
 
 		# We don't want to do this is the component already exists
 		if not idCode in self._compConf :
@@ -544,6 +637,63 @@ class Project (object) :
 			return None
 
 
+	def changeSystemDefault (self, settings='') :
+		'''Change global system default settings.  These are specific settings
+		that users are allowed to make if needed.  This command takes the
+		following parameters:
+			-uname "text"       The name of the system user'''
+
+		mod = 'project.changeSystemDefault()'
+
+		# Load user config object
+		if os.path.isfile(self.tipeUserConf) :
+			cf = ConfigObj(self.tipeUserConf)
+
+		# Collect our parameters (add as needed)
+		c = 0; uname = ''
+		commands = ['-uname', '-loglimit', '-language']
+		for s in settings :
+			if s in commands :
+				if s == '-uname' :
+					cf['System']['userName'] = settings[c+1]
+					self._sysConfig['System']['userName'] = settings[c+1]
+					self.writeToLog('MSG', 'Changed user name to: ' + settings[c+1], mod)
+				elif s == '-loglimit' :
+					cf['System']['projLogLineLimit'] = settings[c+1]
+					self.writeToLog('MSG', 'Changed log file line limit to: ' + settings[c+1], mod)
+				elif s == '-language' :
+					cf['System']['langID'] = settings[c+1]
+					self.writeToLog('MSG', 'Changed log file line limit to: ' + settings[c+1], mod)
+			else :
+				if s[0] == '-' :
+					self.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
+					return
+			c+=1
+
+		date_time, secs = str(datetime.now()).split(".")
+		self._sysConfig['System']['tipeEditDate'] = date_time
+		self.tipeEditDate = date_time
+		cf['System']['userEditDate'] = date_time
+		cf.write()
+
+
+
+
+#        self._sysConfig['System']['userName'] = argv[0]
+#        self._sysConfig['System']['userEditDate'] = date_time
+#        userConfig = ConfigObj(self.tipeUserConf)
+#        if userConfig['System']['userName'] == self._sysConfig['System']['userName'] :
+#            self.writeToLog('MSG', 'Name already in use: ' + self._sysConfig['System']['userName'], mod)
+#        else :
+#            userConfig.filename = self.tipeUserConf
+#            userConfig['System']['userEditDate'] = self._sysConfig['System']['userEditDate']
+#            userConfig['System']['userName'] = self._sysConfig['System']['userName']
+#            userConfig.write()
+#            self.writeToLog('MSG', 'User name changed to: ' + self._sysConfig['System']['userName'], mod)
+
+
+
+
 	# These are Report mod functions that are exposed to the project class
 	def terminal(self, msg) : self.report.terminal(msg)
 	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
@@ -571,38 +721,11 @@ class Project (object) :
 
 		self._book.removeFromBinding(argv[0])
 
-	def _command_changeUser (self, argv) :
-		'''Change the user name of this specific installation of TIPE.'''
+	def _command_changeSystemSetting (self, argv) :
+		'''Change specific global system default settings in TIPE.'''
 
-		mod = 'project.changeUser'
-		date_time, secs = str(datetime.now()).split(".")
-		self._sysConfig['System']['userName'] = argv[0]
-		self._sysConfig['System']['userEditDate'] = date_time
-		userConfig = ConfigObj(self.tipeUserConf)
-		if userConfig['System']['userName'] == self._sysConfig['System']['userName'] :
-			self.writeToLog('MSG', 'Name already in use: ' + self._sysConfig['System']['userName'], mod)
-		else :
-			userConfig.filename = self.tipeUserConf
-			userConfig['System']['userEditDate'] = self._sysConfig['System']['userEditDate']
-			userConfig['System']['userName'] = self._sysConfig['System']['userName']
-			userConfig.write()
-			self.writeToLog('MSG', 'User name changed to: ' + self._sysConfig['System']['userName'], mod)
-
-
-	def _command_changeSetting (self, argv) :
-		'''Usage: changeSetting [section] [key] [value] | Change a system
-		setting.  To use this you need to know exactly what the setting is and
-		where it is located in the configuration object.  Use at your own
-		risk.'''
-
-		mod = 'project._command_changeSetting()'
-		new = argv[2]
-		old = self._sysConfig[argv[0]][argv[1]]
-		if new != old :
-			self._sysConfig[argv[0]][argv[1]] = argv[2]
-			self.writeToLog('MSG', 'Changed ' + argv[1] + ' from [' + old + '] to ' + self._sysConfig[argv[0]][argv[1]], mod)
-		else :
-			self.writeToLog('WRN', 'New setting is the same, no need to change.', mod)
+		if self.changeSystemDefault(argv) :
+			self.writeToLog('MSG', 'Setting changed.')
 
 
 	def _command_render(self, argv) :
@@ -716,13 +839,14 @@ class Project (object) :
 class Report (object) :
 
 	# Intitate the whole class
-	def __init__(self, projLogFile = None, projErrFile = None, debug = False, projectConfFile = None) :
+	def __init__(self, projLogFile = None, projErrFile = None,
+					debug = False, projectName = None) :
 
 		self._debugging         = False
 		self._projLogFile       = projLogFile
 		self._projErrorLogFile  = projErrFile
 		self._debugging         = debug
-		self._projectConfFile   = projectConfFile
+		self._projectName       = projectName
 
 
 	def terminal (self, msg) :
@@ -811,9 +935,9 @@ class Report (object) :
 		if code != 'LOG' :
 			self.terminal(code + ' - ' + msg)
 
-		# If the project type is set then this is a live project and we can
-		# write out log files.  Otherwise, why bother?
-		if self._projectConfFile :
+		# Test to see if this is a live project by seeing if the project name is
+		# set.  If it is, we can write out log files.  Otherwise, why bother?
+		if self._projectName != 'None' :
 			# When are we doing this?
 			date_time, secs = str(datetime.now()).split(".")
 

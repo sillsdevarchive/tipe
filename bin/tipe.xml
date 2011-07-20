@@ -101,6 +101,13 @@ Todo:
             <type>string</type>
             <value></value>
         </setting>
+        <setting>
+            <name>System Initialization Date</name>
+            <key>initDate</key>
+            <description>Time stamp of when the system was installed.</description>
+            <type>string</type>
+            <value></value>
+        </setting>
     </section>
     <section>
         <name>System File Names</name>

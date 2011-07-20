@@ -138,7 +138,11 @@ if command == 'help' :
 		print 'How can we get a list of commands and iterate over them for this call?'
 
 elif hasattr(aProject, "_command_" + command) :
-	getattr(aProject, "_command_" + command)(opts)
+	if len(opts) < 0 :
+		getattr(aProject, "_command_" + command)(opts)
+	else :
+		getattr(aProject, "_command_" + command)
+
 else :
 	aProject.terminal('ERROR: This command does not exist: ' + command)
 

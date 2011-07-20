@@ -342,41 +342,41 @@ class Project (object) :
 		self.userCompTypes      = os.path.join(userHome, 'resources', 'lib_compTypes')
 		self.userProjTypes      = os.path.join(userHome, 'resources', 'lib_projTypes')
 		# Config files (These are hardwired, should they be?)
-		self.tipeUserConf               = os.path.join(self.userHome, 'tipe.conf')
-		self.tipeProjConf               = os.path.join(self.projHome, '.tipe.conf')
-		self.projectConfFile            = os.path.join(self.projHome, '.project.conf')
+		self.tipeUserConf       = os.path.join(self.userHome, 'tipe.conf')
+		self.tipeProjConf       = os.path.join(self.projHome, '.tipe.conf')
+		self.projectConfFile    = os.path.join(self.projHome, '.project.conf')
+		self.lockExt            = '.locked'
 
 		# Load the TIPE config settings and do a safe start
-		self._sysConfig                     = safeStart(projHome, userHome, tipeHome)
+		self._sysConfig         = safeStart(projHome, userHome, tipeHome)
 
 		# Set all the system settings
 		if self._sysConfig :
-			self.version                    = self._sysConfig['System']['systemVersion']
-			self.userName                   = self._sysConfig['System']['userName']
-			self.tipeEditDate               = self._sysConfig['System']['tipeEditDate']
-			self.orgTipeEditDate            = self.tipeEditDate
+			self.version            = self._sysConfig['System']['systemVersion']
+			self.userName           = self._sysConfig['System']['userName']
+			self.tipeEditDate       = self._sysConfig['System']['tipeEditDate']
+			self.orgTipeEditDate    = self.tipeEditDate
 			# File paths
-			self.projErrorLogFile           = os.path.join(self.projHome, self._sysConfig['FileNames']['projErrorLogFile'])
-			self.projLogLineLimit           = self._sysConfig['System']['projLogLineLimit']
+			self.projErrorLogFile   = os.path.join(self.projHome, self._sysConfig['FileNames']['projErrorLogFile'])
+			self.projLogLineLimit   = self._sysConfig['System']['projLogLineLimit']
 
 		# Look for a project in the current location and load the settings
 		if os.path.isfile(self.projectConfFile) :
 			self._projConfig = loadProjectSettings(self.tipeUserConf, self.projHome, self.userHome, self.tipeHome)
 			if self._projConfig :
-				self.projectType                = self._projConfig['ProjectInfo']['projectType']
-				self.projectName                = self._projConfig['ProjectInfo']['projectName']
-				self.projectEditDate            = self._projConfig['ProjectInfo']['projectEditDate']
-				self.orgProjectEditDate         = self.projectEditDate
-				self.projectCreateDate          = self._projConfig['ProjectInfo']['projCreateDate']
-				self.projectIDCode              = self._projConfig['ProjectInfo']['projectIDCode']
+				self.projectType        = self._projConfig['ProjectInfo']['projectType']
+				self.projectName        = self._projConfig['ProjectInfo']['projectName']
+				self.projectEditDate    = self._projConfig['ProjectInfo']['projectEditDate']
+				self.orgProjectEditDate = self.projectEditDate
+				self.projectCreateDate  = self._projConfig['ProjectInfo']['projCreateDate']
+				self.projectIDCode      = self._projConfig['ProjectInfo']['projectIDCode']
 		else :
 			# Set this in case there is no project present
-			self.projectName                    = 'None'
-			self.projectIDCode                  = ''
+			self.projectName            = 'None'
+			self.projectIDCode          = ''
 
 		# Initialize any needed services
 		self.initLogging(self.projHome)
-
 
 
 ###############################################################################
@@ -397,7 +397,6 @@ class Project (object) :
 			if self.orgProjectEditDate != self.projectEditDate :
 				self._projConfig.filename = self.projectConfFile
 				self._projConfig.write()
-
 
 
 	def initLogging (self, dir) :
@@ -450,7 +449,7 @@ class Project (object) :
 			-ctype "text"   Component type to add to this project
 			-comp file      File name of a component to add
 
-		This process will fail if a valid .project.conf (or .project.conf.bak)
+		This process will fail if a valid .project.conf (or .project.conf.locked)
 		file is found in the cwd or if the pid is already found in the user
 		config file.  It will also fail if one on the required parameters are
 		missing.'''
@@ -486,7 +485,7 @@ class Project (object) :
 			return
 
 		# See if a project is already here by looking for a .project.conf file
-		if os.path.isfile(self.projectConfFile) or os.path.isfile(self.projectConfFile + '.bak')  :
+		if os.path.isfile(self.projectConfFile) or os.path.isfile(self.projectConfFile + self.lockExt)  :
 			self.writeToLog('ERR', 'Hault! A project is already defined in this location.', mod)
 			return
 
@@ -565,9 +564,9 @@ class Project (object) :
 			projTipeConf = os.path.join(projPath, '.tipe.conf')
 			projProjConf = os.path.join(projPath, '.project.conf')
 			if os.path.isfile(projTipeConf) :
-				os.rename(projTipeConf, projTipeConf + '.bak')
+				os.rename(projTipeConf, projTipeConf + self.lockExt)
 			if os.path.isfile(projProjConf) :
-				os.rename(projProjConf, projProjConf + '.bak')
+				os.rename(projProjConf, projProjConf + self.lockExt)
 
 			# 3) Remove references from user tipe.conf
 			del cf['Projects'][pid]
@@ -576,6 +575,16 @@ class Project (object) :
 			# 4) Report the process is done
 			self.writeToLog('MSG', 'Project [' + pid + '] removed from system configuration.', mod)
 			return
+
+
+	def restoreProject (self) :
+		'''Restore a project in the current folder'''
+
+		if os.path.isfile(self.projTipeConf) :
+			os.rename(projTipeConf + self.lockExt, projTipeConf)
+
+		if os.path.isfile(self.projProjConf) :
+			os.rename(projProjConf + self.lockExt, projProjConf)
 
 
 	def addNewComponent(self, idCode, compType) :
@@ -675,24 +684,6 @@ class Project (object) :
 		self.tipeEditDate = date_time
 		cf['System']['userEditDate'] = date_time
 		cf.write()
-
-
-
-
-#        self._sysConfig['System']['userName'] = argv[0]
-#        self._sysConfig['System']['userEditDate'] = date_time
-#        userConfig = ConfigObj(self.tipeUserConf)
-#        if userConfig['System']['userName'] == self._sysConfig['System']['userName'] :
-#            self.writeToLog('MSG', 'Name already in use: ' + self._sysConfig['System']['userName'], mod)
-#        else :
-#            userConfig.filename = self.tipeUserConf
-#            userConfig['System']['userEditDate'] = self._sysConfig['System']['userEditDate']
-#            userConfig['System']['userName'] = self._sysConfig['System']['userName']
-#            userConfig.write()
-#            self.writeToLog('MSG', 'User name changed to: ' + self._sysConfig['System']['userName'], mod)
-
-
-
 
 	# These are Report mod functions that are exposed to the project class
 	def terminal(self, msg) : self.report.terminal(msg)
@@ -801,12 +792,20 @@ class Project (object) :
 				self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'project.newProject()')
 
 
-	def _command_removeProject (self, argv) :
+	def _command_removeProject (self) :
 		'''Usage: removeProject ProjectType | Remove an existing project in
 		the current directory.'''
 
-		if self.removeProject(argv) :
-				self.writeToLog('MSG', 'Removed project at: ' + os.getcwd(), 'project.newProject()')
+		if self.removeProject() :
+				self.writeToLog('MSG', 'Removed project at: ' + os.getcwd(), 'project.removeProject()')
+
+
+	def _command_restoreProject (self) :
+		'''Usage: restorProject -pid | Restore an existing project in
+		the current directory.'''
+
+		if self.restoreProject() :
+				self.writeToLog('MSG', 'Restored project at: ' + os.getcwd(), 'project.restoreProject()')
 
 
 #    def _command_reInitComponentFiles (self, argv) :

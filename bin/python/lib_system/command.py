@@ -21,10 +21,11 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os
 from optparse import OptionParser
+from report import Report
 
 # Load the local classes
+
 
 commands = {}
 
@@ -36,8 +37,10 @@ class MetaCommand(type) :
 		if c.type :
 			commands[c.type] = c.__call__()
 
+
 class Command (object) :
 	'''Documentation goes here'''
+
 	__metaclass__ = MetaCommand
 	type = None
 
@@ -45,6 +48,15 @@ class Command (object) :
 	def __init__(self) :
 		self.parser = OptionParser(self.__doc__)
 		self.setupOptions(self.parser)
+
+		# FIXME: Need to find a way to get the vars for initializing reporting
+		# Initialize reporting
+#        report = Report(
+#            projLogFile         = os.path.join(aProject.projHome, aProject._sysConfig['FileNames']['projLogFile']) if aProject._sysConfig else None,
+#            projErrFile         = os.path.join(aProject.projHome, aProject._sysConfig['FileNames']['projErrorLogFile']) if aProject._sysConfig else None,
+#            debug               = aProject._sysConfig and aProject._sysConfig['System']['debugging'],
+#            projectName         = aProject.projectName)
+
 
 	def run(self, args) :
 		(self.options, self.args) = self.parser.parse_args(args = args)
@@ -54,6 +66,7 @@ class Command (object) :
 
 	def help(self) :
 		self.parser.print_help()
+
 
 class Setup (Command) :
 	'''Setup creates a new object'''
@@ -66,15 +79,10 @@ class Setup (Command) :
 	def setupOptions(self, parser) :
 		self.parser.add_option("-d", "--dir", action="store", help="Create project in this directory")
 
-class Run () :
-	'''Documentation goes here'''
-
-	def __init__(self) :
-		pass
-
 
 class Help (Command) :
 	'''Documentation goes here'''
+
 	type = "help"
 
 	def run(self, args) :
@@ -84,7 +92,13 @@ class Help (Command) :
 			cmd.help()
 		else :
 			for c in commands.keys() :
+				# FIXME: How can I hook in the report class here so the following works?
+				#aProject.terminal(c + '\n')
 				print c
+
+			if len(commands) == 0 :
+				print "\nType [help command] for more general command information."
+
 
 ###############################################################################
 ####################### TIPE System Command Classes ###########################

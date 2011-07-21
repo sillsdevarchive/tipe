@@ -400,6 +400,7 @@ class Project (object) :
 
 
 	def initLogging (self, dir) :
+
 		'''Initialize the log file system.'''
 
 		self.report = Report(
@@ -685,149 +686,12 @@ class Project (object) :
 		cf['System']['userEditDate'] = date_time
 		cf.write()
 
+
 	# These are Report mod functions that are exposed to the project class
 	def terminal(self, msg) : self.report.terminal(msg)
 	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
 	def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
 	def trimLog(self, projLogLineLimit) : self.report.trimLog(projLogLineLimit)
-
-
-###############################################################################
-########################### TIPE System Commands ##############################
-###############################################################################
-
-# Here go all the commands that TIPE knows how to use.  If it isn't defined
-# here, it will not work.  The documentation for each command goes in the
-# command so when the user types 'help' followed by the command they will get
-# whatever documentation there is for that command.  Each command funtion must
-# be prefixed by '_command_'.  After that goes the actual command.
-
-
-	def _command_addToBinding (self, argv) :
-
-		self._book.addToBinding(argv[0])
-
-
-	def _command_removeFromBinding (self, argv) :
-
-		self._book.removeFromBinding(argv[0])
-
-	def _command_changeSystemSetting (self, argv) :
-		'''Change specific global system default settings in TIPE.'''
-
-		if self.changeSystemDefault(argv) :
-			self.writeToLog('MSG', 'Setting changed.')
-
-
-	def _command_render(self, argv) :
-		'''Usage: render [compID] | Render the current component.'''
-
-		mod = 'tipe.render()'
-
-		# First check our project setup and try to auto correct any problems that
-		# might be caused from missing project assets.  This can include files
-		# like.sty, .tex, .usfm, and folders, etc.
-		if not self.checkProject(aProject.self) :
-			self.writeToLog('ERR', 'No project found!', mod)
-			return
-
-		aDoc = self.getDoc(argv[0])
-		if not aDoc :
-			self.writeToLog('ERR', 'Component [' + argv[0] + '] not found in project', mod)
-			return
-
-		#FIXME: What does this next line do?
-		aDoc.render()
-
-		# Create the makefile for processing this particular component.  This is
-		# done every time TIPE is run.
-		if aDoc.createMakefile(thisComponent, command) :
-			if runMake() :
-				self.writeToLog('MSG', 'Process completed successful!', mod)
-			else :
-				self.writeToLog('ERR', 'Process did not complete successfuly. Check logs for more information.', mod)
-
-		# Collect the results and report them in the log
-
-		return True
-
-
-	def _command_addComponent (self, argv) :
-		'''Usage: addComponent [CompID] [CompType] | Add a new component to the
-		project.'''
-
-		# FIXME: Should add some code to catch bad params
-
-		if self.addNewComponent(argv[0], argv[1]) :
-			self.writeToLog('MSG', 'Added component: ' + argv[0] + ' | Type = ' + argv[1], 'tipe.addComponent()')
-		else :
-			if self._compConf[argv[0]] :
-				self.writeToLog('WRN', 'Component: [' + argv[0] + '] already exists, no changes made.', 'tipe.addComponent()')
-
-
-	def _command_removeComponent (self, argv) :
-		'''Usage: removeComponent [CompID] | Remove a component from the
-		project.'''
-
-		if argv[0] in self._compConf :
-			if self.removeComponent(argv[0]) :
-				self.writeToLog('MSG', 'Removed component: ' + argv[0], 'tipe.removeComponent()')
-			else :
-				self.writeToLog('WRN', 'Component: ' + argv[0] + ' cannot be removed.', 'tipe.removeComponent()')
-		else :
-			self.writeToLog('WRN', 'Component: ' + argv[0] + ' not found.', 'tipe.removeComponent()')
-
-
-	def _command_tipeManager (self, argv) :
-		'''Usage: tipeManager | Start the TIPE Manager GUI'''
-
-		self.terminal('SORRY: Manager GUI has not been implemented yet.')
-
-
-	def _command_newProject (self, argv) :
-		'''Usage: newProject ProjectType [ProjectName] | Setup a new project in the
-		current directory.'''
-
-		if self.makeProject(argv) :
-				self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'project.newProject()')
-
-
-	def _command_removeProject (self) :
-		'''Usage: removeProject ProjectType | Remove an existing project in
-		the current directory.'''
-
-		if self.removeProject() :
-				self.writeToLog('MSG', 'Removed project at: ' + os.getcwd(), 'project.removeProject()')
-
-
-	def _command_restoreProject (self) :
-		'''Usage: restorProject -pid | Restore an existing project in
-		the current directory.'''
-
-		if self.restoreProject() :
-				self.writeToLog('MSG', 'Restored project at: ' + os.getcwd(), 'project.restoreProject()')
-
-
-#    def _command_reInitComponentFiles (self, argv) :
-#        '''Usage: reInitComponentFiles [CompID] [CompType] | This is a way to
-#        call initComponentFiles to replace any missing component files.'''
-#
-#        self.initComponentFiles(argv[0], argv[1])
-
-
-#    def _command_runMake () :
-#        '''Usage: runMake | All component processes are expected to be run via
-#        makefile.  This is a generic makefile running function.'''
-
-#        # Send off the command return error code
-#        error = os.system(sysConfig['System']['makeStartParams'] + os.getcwd() + '/' + sysConfig['System']['makefileFile'])
-#
-#        if error == 0 :
-#            return True
-#        else :
-#            report.terminal('ERROR: tipe.runMake: ' + str(error))
-#            return
-
 
 
 ###############################################################################

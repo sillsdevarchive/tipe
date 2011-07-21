@@ -83,6 +83,7 @@ sys.path.insert(0, os.path.join(basePath, 'bin', 'python', 'lib_system'))
 
 # Now that our path is good we can load the local classes
 from project import Project
+from command import Command, commands
 
 # Create a basic TIPE project object that will enable it to start
 aProject = Project(os.getcwd(), userPath, basePath)
@@ -101,15 +102,21 @@ aProject.terminal('\t\tCurrent User: ' + aProject.userName)
 aProject.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
 
 # TIPE Command Line Syntax
-# The command line will have no more than four parameters and can run with less.
+# The tipe program can take numerious command.  Each command has two parts, a
+# command name, and a set of 0 or more options.  A command option starts with
+# "-" and is followed by a parameter.  If a wrong parameter is entered that will
+# be caught by the command when it tries to run.
 # They are:
-#   tipe [command] [component] [options]
+#   tipe [command] [-optA param] [-optB param]
 #
 # Whereas:
-# tipe = the script name, which is always "tipe"
-# command = tipe command (none = manager)
-# [component] = A specified component
-# [options] = Any special options that go with the command/component
+# tipe          = the script name, which is always "tipe"
+# [command]     = tipe command (none = manager)
+# [-optA param] = A specified option and parameter
+#
+# If no command is given, then a list of commands will be given.  If the user
+# wants specific help on a command they would type:
+#   tipe command -help
 
 command = ""
 opts = []
@@ -119,30 +126,17 @@ if len(sys.argv) > 1 :
 	opts = sys.argv[2:]
 else :
 	# If there isn't anything then we'll just go to the projects manager
-	command = "tipeManager"
+	command = "help"
 
 
 
 ###############################################################################
-########################## Main Body of the Script ############################
+##################### Prepare and Process TIPE Commands #######################
 ###############################################################################
 
 
-# You can get specific help on one command or by just typing help, you can get
-# a listing of all the commands.
-if command == 'help' :
-	try :
-		msg = getattr(aProject, "_command_" + opts[0]).__doc__.split()
-		aProject.terminal(' '.join(msg))
-	except :
-		print 'How can we get a list of commands and iterate over them for this call?'
-
-elif hasattr(aProject, "_command_" + command) :
-	if len(opts) < 0 :
-		getattr(aProject, "_command_" + command)(opts)
-	else :
-		getattr(aProject, "_command_" + command)
-
+if command in commands :
+	commands[command].run(opts)
 else :
 	aProject.terminal('ERROR: This command does not exist: ' + command)
 

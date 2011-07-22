@@ -440,31 +440,36 @@ class Project (object) :
 				os.mkdir(thisFolder)
 				self.report.writeToLog('LOG', 'Created folder: ' + value, mod)
 
+		self.writeProjConfFiles()
+
 
 	def makeProject (self, pType='', pName='', pID='', pDir='') :
 		'''Create a new publishing project.  If parms are blank defaults will be
 		substituted'''
 
 		mod = 'project.makeProject()'
+		date_time, secs = str(datetime.now()).split(".")
 
 		# It is required that there be at least a project type defined we will
 		# look for that here and fail if we don't find it
 		if pType == '' :
 			pType = 'bookTex'
-			self.report.writeToLog('WRN', 'Project type parameter missing, using default of bookTex', mod)
+			self.report.writeToLog('WRN', 'Type parameter missing, using default of bookTex', mod)
 
 		if pName == '' :
-			pName = 'None'
-			self.report.writeToLog('WRN', 'Project name parameter missing, setting to None', mod)
+			pName = 'Missing Name'
+			self.report.writeToLog('WRN', 'Name parameter missing, setting to None', mod)
 
 		if pID == '' :
-			pID = 'None'
-			self.report.writeToLog('WRN', 'Project ID parameter missing, setting to None', mod)
+			# create a simple short guid
+			import time
+			pID = hex(int(time.time()))
+			self.report.writeToLog('WRN', 'ID parameter missing, setting to [' + pID + ']', mod)
 
 		# This can create a project in directory other than the current one.
 		if pDir == '' :
 			pDir = self.projHome
-			self.report.writeToLog('WRN', 'Project directory parameter missing, setting to current directory', mod)
+			self.report.writeToLog('WRN', 'Directory parameter missing, set to CWD', mod)
 
 		if not os.path.isdir(pDir) :
 			os.mkdir(pDir)
@@ -478,7 +483,7 @@ class Project (object) :
 
 		# Test if this project already exists in the user's config file.
 		if isRecordedProject(self.tipeUserConf, pID) :
-			self.report.writeToLog('ERR', 'Hault! Project ID already defined for another project.', mod)
+			self.report.writeToLog('ERR', 'Hault! ID [' + pID + '] already defined for another project', mod)
 			return
 
 		# A new project will need to be based on a predefined type.  First check
@@ -497,7 +502,6 @@ class Project (object) :
 		# Initialize new project now
 		self._projConfig = makeProjectSettings(pDir, self.userHome, self.tipeHome, pType)
 		if self._projConfig :
-			date_time, secs = str(datetime.now()).split(".")
 			self.projectType = pType
 			self.projectConfFile = os.path.join(pDir, '.project.conf')
 			self._projConfig['ProjectInfo']['projectName'] = pName
@@ -509,6 +513,7 @@ class Project (object) :
 			self._projConfig['ProjectInfo']['projectEditDate'] = date_time
 			self.projectEditDate = date_time
 			self.orgProjectEditDate = ''
+			self.tipeEditDate = date_time
 			self.orgTipeEditDate = ''
 			self.initLogging(pDir)
 			self.initProject(pDir)

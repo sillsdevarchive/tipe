@@ -144,9 +144,9 @@ else :
 ##################### Prepare and Process TIPE Commands #######################
 ###############################################################################
 
-
+# Run the command and pass along the aProject object
 if command in commands :
-	commands[command].run(opts)
+	commands[command].run(aProject, opts)
 else :
 	report.terminal('ERROR: This command does not exist: ' + command)
 

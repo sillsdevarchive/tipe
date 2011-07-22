@@ -16,7 +16,7 @@
 
 
 ###############################################################################
-################################ Component Class ##############################
+################################# Command Class ###############################
 ###############################################################################
 # Firstly, import all the standard Python modules we need for
 # this process
@@ -49,16 +49,7 @@ class Command (object) :
 		self.parser = OptionParser(self.__doc__)
 		self.setupOptions(self.parser)
 
-		# FIXME: Need to find a way to get the vars for initializing reporting
-		# Initialize reporting
-#        report = Report(
-#            projLogFile         = os.path.join(aProject.projHome, aProject._sysConfig['FileNames']['projLogFile']) if aProject._sysConfig else None,
-#            projErrFile         = os.path.join(aProject.projHome, aProject._sysConfig['FileNames']['projErrorLogFile']) if aProject._sysConfig else None,
-#            debug               = aProject._sysConfig and aProject._sysConfig['System']['debugging'],
-#            projectName         = aProject.projectName)
-
-
-	def run(self, args) :
+	def run(self, aProject, args) :
 		(self.options, self.args) = self.parser.parse_args(args = args)
 
 	def setupOptions(self, parser) :
@@ -68,36 +59,145 @@ class Command (object) :
 		self.parser.print_help()
 
 
-class Setup (Command) :
-	'''Setup creates a new object'''
-	type = "setup"
+###############################################################################
+########################### Command Classes Go Here ###########################
+###############################################################################
+# Insert the commands you want visable to the system here in the order you want
+# them to appear when listed.
 
-	def run(self, args) :
-		super(Setup, self).run(args)
+
+class About (Command) :
+	'''Display the system's About text'''
+
+	type = "about"
+	def run(self, aProject, args) :
+		super(About, self).run(aProject, args)
 		# do something here, options are in self.options
+		aProject.terminal(aProject._sysConfig['System']['aboutText'])
+
+
+class ChangeSettings (Command) :
+	'''Change a system setting.'''
+
+	type = "change"
+	def run(self, aProject, args) :
+		super(ChangeSettings, self).run(aProject, args)
+		# do something here, options are in self.options
+		aProject.changeSystemSetting(args[0][2:], args[1])
 
 	def setupOptions(self, parser) :
-		self.parser.add_option("-d", "--dir", action="store", help="Create project in this directory")
+		self.parser.add_option("--userName", action="store", help="Change the system user name.")
+		self.parser.add_option("--language", action="store", help="Change the interface language.")
+		self.parser.add_option("--loglimit", action="store", help="Set the number of lines the log file is allowed to have.")
+
+
+class Debugging (Command) :
+	'''Turn on debugging (verbose output) in the logging.'''
+
+	type = "debug"
+	def run(self, aProject, args) :
+		super(Debugging, self).run(aProject, args)
+		if args[0][2:] == 'on' :
+			aProject.changeSystemSetting("debugging", "True")
+
+		if args[0][2:] == 'off' :
+			aProject.changeSystemSetting("debugging", "False")
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("--on", action="store_true", help="Turn on debugging for the log file output.")
+		self.parser.add_option("--off", action="store_false", help="Turn off debugging for the log file output.")
 
 
 class Help (Command) :
-	'''Documentation goes here'''
+	'''Provide user with information on a specific command.'''
 
 	type = "help"
-
-	def run(self, args) :
+	def run(self, aProject, args) :
 		global commands
 		if len(args) :
 			cmd = commands[args[0]]
 			cmd.help()
 		else :
 			for c in commands.keys() :
-				# FIXME: How can I hook in the report class here so the following works?
-				#aProject.terminal(c + '\n')
-				print c
+				aProject.terminal(c)
 
-			if len(commands) == 0 :
-				print "\nType [help command] for more general command information."
+			if len(commands) <= 2 :
+				aProject.terminal("\nType [help command] for more general command information.")
+
+
+class GUIManager (Command) :
+	'''Start a TIPE GUI manager program'''
+
+	type = "manager"
+
+	def run(self, aProject, args) :
+		super(GUIManager, self).run(aProject, args)
+		# do something here, options are in self.options
+		if args[1].lower() == 'standard' :
+			aProject.terminal("Sorry, this GUI Manager has not been implemented yet.")
+		elif args[1].lower() == 'web' :
+			aProject.terminal("Sorry, the web client has not been implemented yet.")
+		else :
+			aProject.terminal("Not a recognized GUI Manager.")
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("-c", "--client", action="store", type="string", help="Start up the TIPE client.")
+
+
+class CreateProject (Command) :
+	'''Create a new project based on a predefined project type.'''
+
+	type = "create"
+	def run(self, aProject, args) :
+		super(CreateProject, self).run(aProject, args)
+
+		c = 0; ptype = ''; pname = ''; pid = ''; pdir = ''
+		for o in args :
+			if o == '-t' or o == '--ptype' :
+				ptype = args[c+1]
+			elif o == '-n' or o == '--pname' :
+				pname = args[c+1]
+			elif o == '-i' or o == '--pid' :
+				pid = args[c+1]
+			elif o == '-d' or o == '--pdir' :
+				pdir = args[c+1]
+
+			c+=1
+
+		print ptype, pname, pid, pdir
+		if aProject.makeProject(ptype, pname, pid, pdir) :
+				aProject.writeToLog('MSG', 'Created new project!', 'project.newProject()')
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")
+		self.parser.add_option("-n", "--pname", action="store", help="Set the name of project this will be, this is required.")
+		self.parser.add_option("-i", "--pid", action="store", help="Set the type of project this will be, this is required.")
+		self.parser.add_option("-d", "--pdir", action="store", help="Create project in this directory, default is current directory.")
+
+
+# This is an example command class
+#class Setup (Command) :
+#    '''Setup creates a new object'''
+#    type = "setup"
+#    def run(self, aProject, args) :
+#        super(Setup, self).run(aProject, args)
+#        # do something here, options are in self.options
+#
+#    def setupOptions(self, parser) :
+#        self.parser.add_option("-d", "--dir", type="string", action="store", help="Create project in this directory")
+
+
+class RemoveProject (Command) :
+	'''Documentation goes here'''
+
+	def removeProject (self) :
+		'''Usage: removeProject ProjectType | Remove an existing project in
+		the current directory.'''
+
+		if self.removeProject() :
+				self.writeToLog('MSG', 'Removed project at: ' + os.getcwd(), 'project.removeProject()')
+
+
 
 
 ###############################################################################
@@ -110,48 +210,9 @@ class Help (Command) :
 # get whatever documentation there is for that command.
 
 
-class ChangeSettings (object) :
-	'''Documentation goes here'''
-
-	def changeSystemSetting (self, argv) :
-		'''Change specific global system default settings in TIPE.'''
-
-		if self.changeSystemDefault(argv) :
-			self.writeToLog('MSG', 'Setting changed.')
 
 
-class GUIManager (object) :
-	'''Documentation goes here'''
-
-	def tipeManager (self, argv) :
-		'''Usage: tipeManager | Start the TIPE Manager GUI'''
-
-		self.terminal('SORRY: Manager GUI has not been implemented yet.')
-
-
-class CreateProject (object) :
-	'''Documentation goes here'''
-
-	def newProject (self, argv) :
-		'''Usage: newProject ProjectType [ProjectName] | Setup a new project in the
-		current directory.'''
-
-		if self.makeProject(argv) :
-				self.writeToLog('MSG', 'Created new project at: ' + os.getcwd(), 'project.newProject()')
-
-
-class RemoveProject (object) :
-	'''Documentation goes here'''
-
-	def removeProject (self) :
-		'''Usage: removeProject ProjectType | Remove an existing project in
-		the current directory.'''
-
-		if self.removeProject() :
-				self.writeToLog('MSG', 'Removed project at: ' + os.getcwd(), 'project.removeProject()')
-
-
-class RestoreProject (object) :
+class RestoreProject (Command) :
 	'''Documentation goes here'''
 
 	def restoreProject (self) :
@@ -162,7 +223,7 @@ class RestoreProject (object) :
 				self.writeToLog('MSG', 'Restored project at: ' + os.getcwd(), 'project.restoreProject()')
 
 
-class Render (object) :
+class Render (Command) :
 	'''Documentation goes here'''
 
 	def render(self, argv) :

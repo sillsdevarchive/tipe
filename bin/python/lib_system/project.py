@@ -378,16 +378,21 @@ class Project (object) :
 			self.projectIDCode          = ''
 
 		# Initialize any needed services
-		report = Report(
-			projLogFile         = os.path.join(self.projHome, self._sysConfig['FileNames']['projLogFile']) if self._sysConfig else None,
-			projErrFile         = os.path.join(self.projHome, self._sysConfig['FileNames']['projErrorLogFile']) if self._sysConfig else None,
-			debug               = self._sysConfig and self._sysConfig['System']['debugging'],
-			projectName         = self.projectName)
-
+		self.initLogging(self.projHome)
 
 ###############################################################################
 ############################# Begin Main Functions ############################
 ###############################################################################
+
+	def initLogging (self, pHome) :
+		'''Initialize logging functions'''
+
+		self.report = Report(
+			projLogFile         = os.path.join(pHome, self._sysConfig['FileNames']['projLogFile']) if self._sysConfig else None,
+			projErrFile         = os.path.join(pHome, self._sysConfig['FileNames']['projErrorLogFile']) if self._sysConfig else None,
+			debug               = self._sysConfig and self._sysConfig['System']['debugging'],
+			projectName         = self.projectName)
+
 
 	def writeProjConfFiles (self) :
 		'''Write out all relevent project conf files if there is at least
@@ -433,61 +438,47 @@ class Project (object) :
 			thisFolder = os.path.join(home, value)
 			if not os.path.isdir(thisFolder) :
 				os.mkdir(thisFolder)
-				report.writeToLog('LOG', 'Created folder: ' + value, mod)
+				self.report.writeToLog('LOG', 'Created folder: ' + value, mod)
 
 
-	def makeProject (self, settings="") :
-		'''Create a new publishing project based on a specific predefined
-		project type. This command will take the following parameters:
-			-ptype "text"   The project type (required)
-			-pname "text"   The human readable name of the project
-			-pid "text"     The project ID code
-			-ctype "text"   Component type to add to this project
-			-comp file      File name of a component to add
-
-		This process will fail if a valid .project.conf (or .project.conf.locked)
-		file is found in the cwd or if the pid is already found in the user
-		config file.  It will also fail if one on the required parameters are
-		missing.'''
+	def makeProject (self, pType='', pName='', pID='', pDir='') :
+		'''Create a new publishing project.  If parms are blank defaults will be
+		substituted'''
 
 		mod = 'project.makeProject()'
 
-		# Collect our parameters
-		c = 0; ptype = ''; pname = ''; pid = ''; ctype = ''; comp = ''
-		commands = ['-ptype', '-pname', '-pid', '-ctype', '-comp']
-		for s in settings :
-			if s in commands :
-				if s == '-ptype' :
-					ptype = settings[c+1]
-				elif s == '-pname' :
-					pname = settings[c+1]
-				elif s == '-pid' :
-					pid = settings[c+1]
-				elif s == '-ctype' :
-					ctype = settings[c+1]
-				elif s == '-comp' :
-					comp = settings[c+1]
-			else :
-				if s[0] == '-' :
-					report.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
-					return
-
-			c+=1
-
 		# It is required that there be at least a project type defined we will
 		# look for that here and fail if we don't find it
-		if ptype == '' or pname == '' or pid == '' :
-			report.writeToLog('ERR', 'Missing required parameter (-ptype, -pname, -pid), process failed!', mod)
-			return
+		if pType == '' :
+			pType = 'bookTex'
+			self.report.writeToLog('WRN', 'Project type parameter missing, using default of bookTex', mod)
+
+		if pName == '' :
+			pName = 'None'
+			self.report.writeToLog('WRN', 'Project name parameter missing, setting to None', mod)
+
+		if pID == '' :
+			pID = 'None'
+			self.report.writeToLog('WRN', 'Project ID parameter missing, setting to None', mod)
+
+		# This can create a project in directory other than the current one.
+		if pDir == '' :
+			pDir = self.projHome
+			self.report.writeToLog('WRN', 'Project directory parameter missing, setting to current directory', mod)
+
+		if not os.path.isdir(pDir) :
+			os.mkdir(pDir)
+
+		pConf = os.path.join(pDir, '.project.conf')
 
 		# See if a project is already here by looking for a .project.conf file
-		if os.path.isfile(self.projectConfFile) or os.path.isfile(self.projectConfFile + self.lockExt)  :
-			report.writeToLog('ERR', 'Hault! A project is already defined in this location.', mod)
+		if os.path.isfile(pConf) or os.path.isfile(pConf + self.lockExt)  :
+			self.report.writeToLog('ERR', 'Hault! A project is already defined in this location.', mod)
 			return
 
 		# Test if this project already exists in the user's config file.
-		if isRecordedProject(self.tipeUserConf, pid) :
-			report.writeToLog('ERR', 'Hault! Project ID already defined for another project.', mod)
+		if isRecordedProject(self.tipeUserConf, pID) :
+			self.report.writeToLog('ERR', 'Hault! Project ID already defined for another project.', mod)
 			return
 
 		# A new project will need to be based on a predefined type.  First check
@@ -495,37 +486,37 @@ class Project (object) :
 		# in two places, they users settings area and the system.  We will use
 		# the first instance we find and we will look in the user's settings
 		# area first.
-		if os.path.isdir(os.path.join(self.userProjTypes, ptype)) :
-			projTypeToUse = os.path.join(self.userProjTypes, ptype)
-		elif os.path.isdir(os.path.join(self.tipeProjTypes, ptype)) :
-			projTypeToUse = os.path.join(self.tipeProjTypes, ptype)
+		if os.path.isdir(os.path.join(self.userProjTypes, pType)) :
+			projTypeToUse = os.path.join(self.userProjTypes, pType)
+		elif os.path.isdir(os.path.join(self.tipeProjTypes, pType)) :
+			projTypeToUse = os.path.join(self.tipeProjTypes, pType)
 		else :
-			report.writeToLog('ERR', 'Project type does not exist: ' + ptype, mod)
+			self.report.writeToLog('ERR', 'Project type does not exist: ' + pType, mod)
 			return
 
 		# Initialize new project now
-		self._projConfig = makeProjectSettings(self.projHome, self.userHome, self.tipeHome, ptype)
+		self._projConfig = makeProjectSettings(pDir, self.userHome, self.tipeHome, pType)
 		if self._projConfig :
 			date_time, secs = str(datetime.now()).split(".")
-			self.projectType = ptype
-			self.projectConfFile = os.path.join(self.projHome, '.project.conf')
-			self._projConfig['ProjectInfo']['projectName'] = pname
-			self.projectName = pname
-			self._projConfig['ProjectInfo']['projectIDCode'] = pid
-			self.projectIDCode = pid
+			self.projectType = pType
+			self.projectConfFile = os.path.join(pDir, '.project.conf')
+			self._projConfig['ProjectInfo']['projectName'] = pName
+			self.projectName = pName
+			self._projConfig['ProjectInfo']['projectIDCode'] = pID
+			self.projectIDCode = pID
 			self._projConfig['ProjectInfo']['projCreateDate'] = date_time
 			self.projectCreateDate = date_time
 			self._projConfig['ProjectInfo']['projectEditDate'] = date_time
 			self.projectEditDate = date_time
 			self.orgProjectEditDate = ''
 			self.orgTipeEditDate = ''
-			self.initLogging(self.projHome)
-			self.initProject(self.projHome)
+			self.initLogging(pDir)
+			self.initProject(pDir)
 			# Record the project with the system
-			recordProject(self.tipeUserConf, self.projHome, pname, ptype, pid, date_time)
+			recordProject(self.tipeUserConf, pDir, pName, pType, pID, date_time)
 			return True
 		else :
-			report.writeToLog('ERR', 'Failed to initialize project.', mod)
+			self.report.writeToLog('ERR', 'Failed to initialize project.', mod)
 			return
 
 
@@ -546,12 +537,12 @@ class Project (object) :
 					pid = settings[c+1]
 			else :
 				if s[0] == '-' :
-					report.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
+					self.report.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
 					return
 
 		# 1) Check the user's conf file to see if the project actually exists
 		if not isRecordedProject(self.tipeUserConf, pid) :
-			report.writeToLog('ERR', 'Project ID [' + pid + '] not found in system configuration.', mod)
+			self.report.writeToLog('ERR', 'Project ID [' + pid + '] not found in system configuration.', mod)
 			return
 		else :
 			# 2) If the project does exist in the user config, disable the project
@@ -569,12 +560,13 @@ class Project (object) :
 			cf.write()
 
 			# 4) Report the process is done
-			report.writeToLog('MSG', 'Project [' + pid + '] removed from system configuration.', mod)
+			self.report.writeToLog('MSG', 'Project [' + pid + '] removed from system configuration.', mod)
 			return
 
 
 	def restoreProject (self) :
 		'''Restore a project in the current folder'''
+
 
 		if os.path.isfile(self.projTipeConf) :
 			os.rename(projTipeConf + self.lockExt, projTipeConf)
@@ -642,11 +634,8 @@ class Project (object) :
 			return None
 
 
-	def changeSystemDefault (self, settings='') :
-		'''Change global system default settings.  These are specific settings
-		that users are allowed to make if needed.  This command takes the
-		following parameters:
-			-uname "text"       The name of the system user'''
+	def changeSystemSetting (self, key, value) :
+		'''Change global default setting (key, value) in the System section'''
 
 		mod = 'project.changeSystemDefault()'
 
@@ -654,27 +643,10 @@ class Project (object) :
 		if os.path.isfile(self.tipeUserConf) :
 			cf = ConfigObj(self.tipeUserConf)
 
-		# Collect our parameters (add as needed)
-		c = 0; uname = ''
-		commands = ['-uname', '-loglimit', '-language']
-		for s in settings :
-			if s in commands :
-				if s == '-uname' :
-					cf['System']['userName'] = settings[c+1]
-					self._sysConfig['System']['userName'] = settings[c+1]
-					report.writeToLog('MSG', 'Changed user name to: ' + settings[c+1], mod)
-				elif s == '-loglimit' :
-					cf['System']['projLogLineLimit'] = settings[c+1]
-					report.writeToLog('MSG', 'Changed log file line limit to: ' + settings[c+1], mod)
-				elif s == '-language' :
-					cf['System']['langID'] = settings[c+1]
-					report.writeToLog('MSG', 'Changed log file line limit to: ' + settings[c+1], mod)
-			else :
-				if s[0] == '-' :
-					report.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
-					return
-			c+=1
-
+		# Change the setting here
+		cf['System'][key] = value
+		self._sysConfig['System'][key] = value
+		self.report.writeToLog('MSG', 'Changed ' + key + ' to: ' + value, mod)
 		date_time, secs = str(datetime.now()).split(".")
 		self._sysConfig['System']['tipeEditDate'] = date_time
 		self.tipeEditDate = date_time
@@ -683,10 +655,10 @@ class Project (object) :
 
 
 	# These are Report mod functions that are exposed to the project class
-#    def terminal(self, msg) : self.report.terminal(msg)
-#    def terminalCentered(self, msg) : self.report.terminalCentered(msg)
-#    def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
-#    def trimLog(self, projLogLineLimit) : self.report.trimLog(projLogLineLimit)
+	def terminal(self, msg) : self.report.terminal(msg)
+	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
+	def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
+	def trimLog(self, projLogLineLimit) : self.report.trimLog(projLogLineLimit)
 
 
 

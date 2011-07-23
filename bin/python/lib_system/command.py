@@ -21,6 +21,7 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
+import os
 from optparse import OptionParser
 from report import Report
 
@@ -39,7 +40,7 @@ class MetaCommand(type) :
 
 
 class Command (object) :
-	'''Documentation goes here'''
+	'''The main command object class.'''
 
 	__metaclass__ = MetaCommand
 	type = None
@@ -70,9 +71,10 @@ class About (Command) :
 	'''Display the system's About text'''
 
 	type = "about"
+
 	def run(self, aProject, args) :
+		mod = 'command.About()'
 		super(About, self).run(aProject, args)
-		# do something here, options are in self.options
 		aProject.terminal(aProject._sysConfig['System']['aboutText'])
 
 
@@ -80,9 +82,10 @@ class ChangeSettings (Command) :
 	'''Change a system setting.'''
 
 	type = "change"
+
 	def run(self, aProject, args) :
+		mod = 'command.ChangeSettings()'
 		super(ChangeSettings, self).run(aProject, args)
-		# do something here, options are in self.options
 		aProject.changeSystemSetting(args[0][2:], args[1])
 
 	def setupOptions(self, parser) :
@@ -95,7 +98,9 @@ class Debugging (Command) :
 	'''Turn on debugging (verbose output) in the logging.'''
 
 	type = "debug"
+
 	def run(self, aProject, args) :
+		mod = 'command.Debugging()'
 		super(Debugging, self).run(aProject, args)
 		if args[0][2:] == 'on' :
 			aProject.changeSystemSetting("debugging", "True")
@@ -112,6 +117,7 @@ class Help (Command) :
 	'''Provide user with information on a specific command.'''
 
 	type = "help"
+
 	def run(self, aProject, args) :
 		global commands
 		if len(args) :
@@ -132,7 +138,6 @@ class GUIManager (Command) :
 
 	def run(self, aProject, args) :
 		super(GUIManager, self).run(aProject, args)
-		# do something here, options are in self.options
 		if args[1].lower() == 'standard' :
 			aProject.terminal("Sorry, this GUI Manager has not been implemented yet.")
 		elif args[1].lower() == 'web' :
@@ -148,9 +153,10 @@ class CreateProject (Command) :
 	'''Create a new project based on a predefined project type.'''
 
 	type = "create"
-	def run(self, aProject, args) :
-		super(CreateProject, self).run(aProject, args)
 
+	def run(self, aProject, args) :
+		mod = 'command.CreateProject()'
+		super(CreateProject, self).run(aProject, args)
 		c = 0; ptype = ''; pname = ''; pid = ''; pdir = ''
 		for o in args :
 			if o == '-t' or o == '--ptype' :
@@ -166,7 +172,7 @@ class CreateProject (Command) :
 
 		print ptype, pname, pid, pdir
 		if aProject.makeProject(ptype, pname, pid, pdir) :
-				aProject.writeToLog('MSG', 'Created new project!', 'project.newProject()')
+				aProject.writeToLog('MSG', 'Created new project!', mod)
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")
@@ -188,14 +194,59 @@ class CreateProject (Command) :
 
 
 class RemoveProject (Command) :
-	'''Documentation goes here'''
+	'''Remove an active project from the system and lock the working conf files.
+	If no project ID is given the default is the project in the cwd.  If there
+	is no project in the cwd it will fail.'''
 
-	def removeProject (self) :
-		'''Usage: removeProject ProjectType | Remove an existing project in
-		the current directory.'''
+	type = "remove"
 
-		if self.removeProject() :
-				self.writeToLog('MSG', 'Removed project at: ' + os.getcwd(), 'project.removeProject()')
+	def run(self, aProject, args) :
+		mod = 'command.RemoveProject()'
+		super(RemoveProject, self).run(aProject, args)
+		if len(args) :
+			pID = args[1]
+		else :
+			if aProject.projectIDCode != '' :
+				pID = aProject.projectIDCode
+			else :
+				aProject.writeToLog('ERR', 'Project ID code not given or found. Remove project failed.', mod)
+
+		if aProject.removeProject(pID) :
+			aProject.writeToLog('MSG', 'Removed project: [' + pID + ']', mod)
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
+
+
+class RestoreProject (Command) :
+	'''Restores a project in the dir given. The default dir is cwd.'''
+
+	type = "restore"
+
+	def run(self, aProject, args) :
+		mod = 'command.RestoreProject()'
+		super(RestoreProject, self).run(aProject, args)
+		if len(args) :
+			print args[1], os.path.split(os.getcwd())[1]
+
+			if os.path.split(os.getcwd())[1] == args[1] :
+				pDir = os.getcwd()
+			else :
+				pDir = os.path.abspath(args[1])
+		else :
+			pDir = os.getcwd()
+
+		if aProject.restoreProject(pDir) :
+			aProject.writeToLog('MSG', 'Restored project at: ' + pDir, mod)
+		else :
+			aProject.writeToLog('ERR', 'Restoring project at: ' + pDir + ' failed.', mod)
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
+
+
+
+
 
 
 
@@ -208,19 +259,6 @@ class RemoveProject (Command) :
 # defined here, it will not work.  The documentation for each command goes in
 # the command so when the user types 'help' followed by the command they will
 # get whatever documentation there is for that command.
-
-
-
-
-class RestoreProject (Command) :
-	'''Documentation goes here'''
-
-	def restoreProject (self) :
-		'''Usage: restorProject -pid | Restore an existing project in
-		the current directory.'''
-
-		if self.restoreProject() :
-				self.writeToLog('MSG', 'Restored project at: ' + os.getcwd(), 'project.restoreProject()')
 
 
 class Render (Command) :

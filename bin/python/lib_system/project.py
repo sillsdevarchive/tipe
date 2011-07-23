@@ -410,23 +410,23 @@ class Project (object) :
 				self._projConfig.write()
 
 
-	def checkProject (self, home) :
-		'''Check to see if all the project assets are present wherever "home"
-		is.  At a bare minimum we must have a project.conf file.  This will
-		return Null if that is not found.'''
+#    def checkProject (self, home) :
+#        '''Check to see if all the project assets are present wherever "home"
+#        is.  At a bare minimum we must have a project.conf file.  This will
+#        return Null if that is not found.'''
 
-		mod = 'project.checkProject()'
+#        mod = 'project.checkProject()'
 
-		# Look to see if all three conf files exist
-		if os.path.isfile(self.projConfFile) :
-			# From this point we will check for and add all the necessary project
-			# assets.  Anything that is missing will be replaced by a default
-			# version of the asset.
-			self.initProject(home)
+#        # Look to see if all three conf files exist
+#        if os.path.isfile(self.projConfFile) :
+#            # From this point we will check for and add all the necessary project
+#            # assets.  Anything that is missing will be replaced by a default
+#            # version of the asset.
+#            self.initProject(home)
 
-			# Check for key settings files
+#            # Check for key settings files
 
-			return True
+#            return True
 
 
 	def initProject (self, home) :
@@ -533,34 +533,20 @@ class Project (object) :
 			return
 
 
-	def removeProject (self, settings="") :
+	def removeProject (self, pID) :
 		'''Remove the project from the TIPE system.  This will not remove the
-		project data but will 'disable' the project.  This command takes the
-		following parameters:
-			-pid "text"     The project ID code (required)'''
+		project data but will 'disable' the project.'''
 
 		mod = 'project.removeProject()'
 
-		# Collect our parameters
-		c = 0; pid = ''
-		commands = ['-pid']
-		for s in settings :
-			if s in commands :
-				if s == '-pid' :
-					pid = settings[c+1]
-			else :
-				if s[0] == '-' :
-					self.report.writeToLog('ERR', 'Command (' + s + ') not found, process failed!', mod)
-					return
-
 		# 1) Check the user's conf file to see if the project actually exists
-		if not isRecordedProject(self.tipeUserConf, pid) :
-			self.report.writeToLog('ERR', 'Project ID [' + pid + '] not found in system configuration.', mod)
+		if not isRecordedProject(self.tipeUserConf, pID) :
+			self.report.writeToLog('ERR', 'Project ID [' + pID + '] not found in system configuration.', mod)
 			return
 		else :
 			# 2) If the project does exist in the user config, disable the project
 			cf = ConfigObj(self.tipeUserConf)
-			projPath = cf['Projects'][pid]['projectPath']
+			projPath = cf['Projects'][pID]['projectPath']
 			projTipeConf = os.path.join(projPath, '.tipe.conf')
 			projProjConf = os.path.join(projPath, '.project.conf')
 			if os.path.isfile(projTipeConf) :
@@ -569,23 +555,23 @@ class Project (object) :
 				os.rename(projProjConf, projProjConf + self.lockExt)
 
 			# 3) Remove references from user tipe.conf
-			del cf['Projects'][pid]
+			del cf['Projects'][pID]
 			cf.write()
 
 			# 4) Report the process is done
-			self.report.writeToLog('MSG', 'Project [' + pid + '] removed from system configuration.', mod)
+			self.report.writeToLog('MSG', 'Project [' + pID + '] removed from system configuration.', mod)
 			return
 
 
-	def restoreProject (self) :
+	def restoreProject (self, pDir) :
 		'''Restore a project in the current folder'''
 
-
-		if os.path.isfile(self.projTipeConf) :
+		projTipeConf = os.path.join(pDir, '.tipe.conf')
+		projProjConf = os.path.join(pDir, '.project.conf')
+		if os.path.isfile(projTipeConf + self.lockExt) and os.path.isfile(projProjConf + self.lockExt) :
 			os.rename(projTipeConf + self.lockExt, projTipeConf)
-
-		if os.path.isfile(self.projProjConf) :
 			os.rename(projProjConf + self.lockExt, projProjConf)
+			return True
 
 
 	def addNewComponent(self, idCode, compType) :

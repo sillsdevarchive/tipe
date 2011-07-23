@@ -468,17 +468,22 @@ class Project (object) :
 
 		# This can create a project in directory other than the current one.
 		if pDir == '' :
-			pDir = self.projHome
-			self.report.writeToLog('WRN', 'Directory parameter missing, set to CWD', mod)
+			pDir = os.path.join(self.projHome, pID)
+			self.tipeProjConf = os.path.join(pDir, '.tipe.conf')
+			self.report.writeToLog('WRN', 'Directory parameter missing, set to: ' + pDir , mod)
 
-		if not os.path.isdir(pDir) :
-			os.mkdir(pDir)
 
+		# See if a project is already in the target dir by looking for a
+		# .project.conf file
 		pConf = os.path.join(pDir, '.project.conf')
-
-		# See if a project is already here by looking for a .project.conf file
 		if os.path.isfile(pConf) or os.path.isfile(pConf + self.lockExt)  :
-			self.report.writeToLog('ERR', 'Hault! A project is already defined in this location.', mod)
+			self.report.writeToLog('ERR', 'Hault! A project is already defined in this folder.', mod)
+			return
+
+		# See if a project is in the parent dir by looking for a .project.conf file
+		(head, tail) = os.path.split(pDir)
+		if os.path.isfile(os.path.join(head, '.project.conf')) :
+			self.report.writeToLog('ERR', 'Hault! A project is already defined in the parent folder', mod)
 			return
 
 		# Test if this project already exists in the user's config file.
@@ -500,6 +505,9 @@ class Project (object) :
 			return
 
 		# Initialize new project now
+		if not os.path.isdir(pDir) :
+			os.mkdir(pDir)
+
 		self._projConfig = makeProjectSettings(pDir, self.userHome, self.tipeHome, pType)
 		if self._projConfig :
 			self.projectType = pType

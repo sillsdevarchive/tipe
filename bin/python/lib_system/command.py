@@ -67,6 +67,9 @@ class Command (object) :
 # them to appear when listed.
 
 
+# FIXME: To enable more flexibility, we need to move the command parameters out
+# to the XML files.  How do we do that?
+
 class About (Command) :
 	'''Display the system's About text'''
 

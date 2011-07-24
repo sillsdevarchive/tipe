@@ -110,9 +110,49 @@ Todo:
         </setting>
     </section>
     <section>
-        <name>System File Names</name>
-        <sectionID>FileNames</sectionID>
-        <description>This section contains the names of all the TIPE system files.</description>
+        <name>Files</name>
+        <sectionID>Files</sectionID>
+        <description>This section contains the names of all the TIPE system files used in all projects.</description>
+        <section>
+            <name>Project Log</name>
+            <sectionID>ProjectLog</sectionID>
+            <description>The project log file.</description>
+            <setting>
+                <name>File Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <version>False</version>
+                <value>.tipe.log</value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>False</value>
+            </setting>
+        </section>
+        <section>
+            <name>Project Error Log</name>
+            <sectionID>ProjectErrorLog</sectionID>
+            <description>The project error log file.</description>
+            <setting>
+                <name>File Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <version>False</version>
+                <value>.error.log</value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>False</value>
+            </setting>
+        </section>
         <setting>
             <name>Project Log File Name</name>
             <key>projLogFile</key>

@@ -108,7 +108,7 @@ from xml.etree import ElementTree
 #    # object.  Otherwise, the default settings from the XML will be good enough
 #    # to get going.
 #    if not projconf : projconf = res
-#    f = projconf['System']['FileNames'][setting]
+#    f = projconf['System']['Files'][setting]
 
 #    # If dealing with a components we'll use the same process but just create an
 #    # empty object if no components have been defined for the project or a
@@ -359,7 +359,10 @@ class Project (object) :
 			self.tipeEditDate       = self._sysConfig['System']['tipeEditDate']
 			self.orgTipeEditDate    = self.tipeEditDate
 			# File paths
-			self.projErrorLogFile   = os.path.join(self.projHome, self._sysConfig['FileNames']['projErrorLogFile'])
+#            self.tipeProjConf       = os.path.join(self.projHome, self._sysConfig['Files']['ProjectLog']['name'])
+			self.projLogFile        = os.path.join(self.projHome, self._sysConfig['Files']['ProjectLog']['name'])
+#            self.projErrorLogFile   = os.path.join(self.projHome, self._sysConfig['Files']['ProjectErrorLog']['name'])
+			self.projErrorLogFile   = os.path.join(self.projHome, self._sysConfig['Files']['projErrorLogFile'])
 			self.projLogLineLimit   = self._sysConfig['System']['projLogLineLimit']
 
 		# Look for a project in the current location and load the settings
@@ -388,8 +391,8 @@ class Project (object) :
 		'''Initialize logging functions'''
 
 		self.report = Report(
-			projLogFile         = os.path.join(pHome, self._sysConfig['FileNames']['projLogFile']) if self._sysConfig else None,
-			projErrFile         = os.path.join(pHome, self._sysConfig['FileNames']['projErrorLogFile']) if self._sysConfig else None,
+			projLogFile         = self.projLogFile if self._sysConfig else None,
+			projErrFile         = self.projErrorLogFile if self._sysConfig else None,
 			debug               = self._sysConfig and self._sysConfig['System']['debugging'],
 			projectName         = self.projectName)
 
@@ -651,6 +654,9 @@ class Project (object) :
 		self.tipeEditDate = date_time
 		cf['System']['userEditDate'] = date_time
 		cf.write()
+
+		# Write the change out right a way
+		self.writeProjConfFiles()
 
 
 	# These are Report mod functions that are exposed to the project class

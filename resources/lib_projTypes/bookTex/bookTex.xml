@@ -73,10 +73,14 @@ Todo:
             <value></value>
         </setting>
     </section>
+
+
+
+
     <section>
         <name>Files</name>
         <sectionID>Files</sectionID>
-        <description>This section contains the names of all the TIPE system files used in all projects.</description>
+        <description>This section contains the names of all the bookTex files the TIPE system will use in this projects.</description>
         <section>
             <name>Project Log</name>
             <sectionID>ProjectLog</sectionID>
@@ -90,11 +94,25 @@ Todo:
                 <value>.tipe.log</value>
             </setting>
             <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
                 <name>Version Control</name>
                 <key>versionControl</key>
                 <description>Is this file under version control?</description>
                 <type>boolean</type>
                 <value>False</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
             </setting>
         </section>
         <section>
@@ -106,8 +124,14 @@ Todo:
                 <key>name</key>
                 <description>The name of this file.</description>
                 <type>string</type>
-                <version>False</version>
                 <value>.error.log</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
             </setting>
             <setting>
                 <name>Version Control</name>
@@ -116,138 +140,84 @@ Todo:
                 <type>boolean</type>
                 <value>False</value>
             </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
+            </setting>
         </section>
-
-    <!-- Add the file names that need to go here for processing
-
-        <setting>
-            <name>Project Log File Name</name>
-            <key>projLogFile</key>
-            <description>The name of the project log file.</description>
-            <type>string</type>
-            <version>False</version>
-            <value>.tipe.log</value>
-        </setting>
-        <setting>
-            <name>Project Error Log File Name</name>
-            <key>projErrorLogFile</key>
-            <description>The name of the project error log file where errors are collected from a single session.</description>
-            <type>string</type>
-            <version>False</version>
-            <value>.error.log</value>
-        </setting>
-        <setting>
-            <name>MAKEFILE NAME</name>
-            <key>makefileFile</key>
-            <description>The name of the makefile file that will be run.  Normally that would be '.makefile' but for various reasons it may need to be changed.</description>
-            <type>string</type>
-            <version>False</version>
-            <value>.makefile</value>
-        </setting>
-        <setting>
-            <name>TIPE Project Configuration Settings</name>
-            <key>tipeProjConfFile</key>
-            <description>The name of the TIPE settings file. This is created when a project is started.</description>
-            <type>string</type>
-            <version>True</version>
-            <value>.tipe.conf</value>
-        </setting>
-        <setting>
-            <name>TIPE User Configuration Settings</name>
-            <key>tipeUserConfFile</key>
-            <description>The name of the TIPE user settings file. This is created when type is run for the first time and contains global override settings for default system settings.</description>
-            <type>string</type>
-            <version>False</version>
-            <value>tipe.conf</value>
-        </setting>
-    
-    -->
-
-    </section>
-
-    <section>
-        <name>Folders</name>
-        <sectionID>Folders</sectionID>
-        <description>This section contains the settings for all the folders needed for bookTex processing.</description>
         <section>
-            <name>Project Log Folder</name>
-            <sectionID>ProjectLog</sectionID>
-            <description>The project log file.</description>
+            <name>System Configuration File</name>
+            <sectionID>tipeProjConfFile</sectionID>
+            <description>The system configuration file stored in the project.</description>
             <setting>
                 <name>Name</name>
                 <key>name</key>
-                <description>The name of the folder that all project administrative documents will be kept.</description>
+                <description>The name of this file.</description>
                 <type>string</type>
-                <value>Admin</value>
+                <value>.tipe.conf</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>True</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
+            </setting>
+        </section>
+        <section>
+            <name>Makefile File</name>
+            <sectionID>makefileFile</sectionID>
+            <description>Makefile file settings that may need to be changed.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>.makefile</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>False</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
             </setting>
         </section>
     </section>
 
 <!--
 
-    <section>
-        <name>Project Folder Names</name>
-        <sectionID>Folders</sectionID>
-        <description>This section contains the names of all the folders used by the TIPE system for this type of project.</description>
-        <setting>
-            <name>Fonts Folder Name</name>
-            <key>fontsFolder</key>
-            <description>The name of the folder that all project fonts will be kept.</description>
-            <type>string</type>
-            <value>Fonts</value>
-        </setting>
-        <setting>
-            <name>Process Folder Name</name>
-            <key>processFolder</key>
-            <description>The name of the folder that the processes are run.</description>
-            <type>string</type>
-            <value>Process</value>
-        </setting>
-        <setting>
-            <name>Report Folder Name</name>
-            <key>reportFolder</key>
-            <description>The name of the folder that reports are kept.</description>
-            <type>string</type>
-            <value>Reports</value>
-        </setting>
-        <setting>
-            <name>Regression Testing Folder Name</name>
-            <key>regressionFolder</key>
-            <description>The name of the folder that all project regression base files will be kept.</description>
-            <type>string</type>
-            <value>.regression</value>
-        </setting>
-        <setting>
-            <name>Wiki Notes Folder Name</name>
-            <key>wikiFolder</key>
-            <description>The name of the folder that all project notes will be kept.</description>
-            <type>string</type>
-            <value>.wiki</value>
-        </setting>
-    </section>
-    
-    
-    -->
-    
-    <section>
-        <name>Format</name>
-        <sectionID>Format</sectionID>
-        <description>Settings having to do with the formating of this publication.</description>
-        <setting>
-            <name>Page Width</name>
-            <key>pageWidth</key>
-            <description>The trimmed width of the page.</description>
-            <type>integer</type>
-            <value>150</value>
-        </setting>
-        <setting>
-            <name>Page Height</name>
-            <key>pageHeight</key>
-            <description>The trimmed height of the page.</description>
-            <type>integer</type>
-            <value>210</value>
-        </setting>
-    </section>
     <section>
         <name>File Relationships</name>
         <sectionID>FileNames</sectionID>
@@ -296,17 +266,6 @@ Todo:
             <type>string</type>
             <value>bookTex.xml</value>
         </setting>
-<!--        <setting>-->
-<!--            <name>[font]</name>-->
-<!--            <key></key>-->
-<!--            <fileType>ttf</fileType>-->
-<!--            <location>Fonts</location>-->
-<!--            <dependents>none</dependents>-->
-<!--            <createdBy>system</createdBy>-->
-<!--            <description>Fonts used for rendering all the components in the project.</description>-->
-<!--            <type>string</type>-->
-<!--            <value></value>-->
-<!--        </setting>-->
         <setting>
             <name>Hyphenation TeX File</name>
             <key>hyphenationTex</key>
@@ -340,6 +299,113 @@ Todo:
             <type>string</type>
             <value>lccode.tex</value>
         </setting>
+
+-->
+
+
+    <section>
+        <name>Folders</name>
+        <sectionID>Folders</sectionID>
+        <description>This section contains the settings for all the folders needed for bookTex processing.</description>
+        <section>
+            <name>Project Admin Folder</name>
+            <sectionID>AdminFolder</sectionID>
+            <description>The project administrative folder.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of the folder that all project administrative documents will be kept.</description>
+                <type>string</type>
+                <value>Admin</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+        </section>
+        <section>
+            <name>Project Process Folder</name>
+            <sectionID>ProcessFolder</sectionID>
+            <description>The project process folder.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The folder where all processing happens.</description>
+                <type>string</type>
+                <value>Process</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+        </section>
+        <section>
+            <name>Project Font Folder</name>
+            <sectionID>FontFolder</sectionID>
+            <description>The project font folder.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The folder where all the project fonts are kept.</description>
+                <type>string</type>
+                <value>Fonts</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+        </section>
+        <section>
+            <name>Project Wiki Folder</name>
+            <sectionID>WikiFolder</sectionID>
+            <description>The project wiki notes folder.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The folder where all the project notes are kept.</description>
+                <type>string</type>
+                <value>.wiki</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+        </section>
+    </section>
+    <section>
+        <name>Format</name>
+        <sectionID>Format</sectionID>
+        <description>Settings having to do with the formating of this publication.</description>
+        <setting>
+            <name>Page Width</name>
+            <key>pageWidth</key>
+            <description>The trimmed width of the page.</description>
+            <type>integer</type>
+            <value>150</value>
+        </setting>
+        <setting>
+            <name>Page Height</name>
+            <key>pageHeight</key>
+            <description>The trimmed height of the page.</description>
+            <type>integer</type>
+            <value>210</value>
+        </setting>
+    </section>
+
+
+
     </section>
 </root>
 

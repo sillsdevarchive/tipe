@@ -73,6 +73,27 @@ Todo:
             <description>???</description>
         </process>
     </section>
+
+<!--
+
+Put the folders here
+        <setting>
+            <name>Report Folder Name</name>
+            <key>reportFolder</key>
+            <description>The name of the folder that reports are kept.</description>
+            <type>string</type>
+            <value>Reports</value>
+        </setting>
+        <setting>
+            <name>Regression Testing Folder Name</name>
+            <key>regressionFolder</key>
+            <description>The name of the folder that all project regression base files will be kept.</description>
+            <type>string</type>
+            <value>.regression</value>
+        </setting>
+    -->
+
+
     <section>
         <name>Dependents</name>
         <sectionID></sectionID>

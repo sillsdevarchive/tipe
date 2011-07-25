@@ -440,14 +440,15 @@ class Project (object) :
 		folders, etc.'''
 
 		mod = 'project.initProject()'
-		print self._projConfig['Folders'].values()
-
-
-#            for key, value in i.iteritems() :
-#                thisFolder = os.path.join(home, value)
-#                if not os.path.isdir(thisFolder) :
-#                    os.mkdir(thisFolder)
-#                    self.report.writeToLog('LOG', 'Created folder: ' + value, mod)
+		print self.projectName
+		f = self._projConfig['Folders'].__iter__()
+		for i in f :
+			g = self._projConfig['Folders'][i]
+			for key, value in g.iteritems() :
+				thisFolder = os.path.join(home, value)
+				if not os.path.isdir(thisFolder) :
+					os.mkdir(thisFolder)
+					self.report.writeToLog('LOG', 'Created folder: ' + value, mod)
 
 #        self.writeProjConfFiles()
 
@@ -466,7 +467,7 @@ class Project (object) :
 			self.report.writeToLog('WRN', 'Type parameter missing, using default of bookTex', mod)
 
 		if pName == '' :
-			pName = 'Missing Name'
+			pName = 'None'
 			self.report.writeToLog('WRN', 'Name parameter missing, setting to None', mod)
 
 		if pID == '' :

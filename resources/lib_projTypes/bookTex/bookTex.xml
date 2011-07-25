@@ -170,7 +170,7 @@ Todo:
         <sectionID>Folders</sectionID>
         <description>This section contains the settings for all the folders needed for bookTex processing.</description>
         <section>
-            <name>Administrative Folder</name>
+            <name>Project Log Folder</name>
             <sectionID>ProjectLog</sectionID>
             <description>The project log file.</description>
             <setting>

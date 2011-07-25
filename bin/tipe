@@ -92,8 +92,8 @@ aProject = Project(os.getcwd(), userPath, basePath)
 
 # Initialize reporting
 report = Report(
-	projLogFile         = os.path.join(aProject.projHome, aProject._sysConfig['Files']['projLogFile']) if aProject._sysConfig else None,
-	projErrFile         = os.path.join(aProject.projHome, aProject._sysConfig['Files']['projErrorLogFile']) if aProject._sysConfig else None,
+	projLogFile         = aProject.projLogFile if aProject._sysConfig else None,
+	projErrFile         = aProject.projErrorLogFile if aProject._sysConfig else None,
 	debug               = aProject._sysConfig and aProject._sysConfig['System']['debugging'],
 	projectName         = aProject.projectName)
 

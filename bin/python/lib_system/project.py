@@ -358,17 +358,16 @@ class Project (object) :
 			self.userName           = self._sysConfig['System']['userName']
 			self.tipeEditDate       = self._sysConfig['System']['tipeEditDate']
 			self.orgTipeEditDate    = self.tipeEditDate
-			# File paths
-#            self.tipeProjConf       = os.path.join(self.projHome, self._sysConfig['Files']['ProjectLog']['name'])
-			self.projLogFile        = os.path.join(self.projHome, self._sysConfig['Files']['ProjectLog']['name'])
-#            self.projErrorLogFile   = os.path.join(self.projHome, self._sysConfig['Files']['ProjectErrorLog']['name'])
-			self.projErrorLogFile   = os.path.join(self.projHome, self._sysConfig['Files']['projErrorLogFile'])
 			self.projLogLineLimit   = self._sysConfig['System']['projLogLineLimit']
+			# File paths
 
 		# Look for a project in the current location and load the settings
 		if os.path.isfile(self.projectConfFile) :
 			self._projConfig = loadProjectSettings(self.tipeUserConf, self.projHome, self.userHome, self.tipeHome)
 			if self._projConfig :
+				self.tipeProjConf       = os.path.join(self.projHome, self._projConfig['Files']['ProjectLog']['name'])
+				self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['ProjectLog']['name'])
+				self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['ProjectErrorLog']['name'])
 				self.projectType        = self._projConfig['ProjectInfo']['projectType']
 				self.projectName        = self._projConfig['ProjectInfo']['projectName']
 				self.projectEditDate    = self._projConfig['ProjectInfo']['projectEditDate']
@@ -376,9 +375,13 @@ class Project (object) :
 				self.projectCreateDate  = self._projConfig['ProjectInfo']['projCreateDate']
 				self.projectIDCode      = self._projConfig['ProjectInfo']['projectIDCode']
 		else :
-			# Set this in case there is no project present
+			# Set this in case there is no real project present (the system kind
+			# has to pretend there always is a project, or at least the prospect
+			# of one.)
 			self.projectName            = 'None'
 			self.projectIDCode          = ''
+			self.projLogFile            = ''
+			self.projErrorLogFile       = ''
 
 		# Initialize any needed services
 		self.initLogging(self.projHome)
@@ -437,13 +440,16 @@ class Project (object) :
 		folders, etc.'''
 
 		mod = 'project.initProject()'
-		for key, value in self._projConfig['Folders'].iteritems() :
-			thisFolder = os.path.join(home, value)
-			if not os.path.isdir(thisFolder) :
-				os.mkdir(thisFolder)
-				self.report.writeToLog('LOG', 'Created folder: ' + value, mod)
+		print self._projConfig['Folders'].values()
 
-		self.writeProjConfFiles()
+
+#            for key, value in i.iteritems() :
+#                thisFolder = os.path.join(home, value)
+#                if not os.path.isdir(thisFolder) :
+#                    os.mkdir(thisFolder)
+#                    self.report.writeToLog('LOG', 'Created folder: ' + value, mod)
+
+#        self.writeProjConfFiles()
 
 
 	def makeProject (self, pType='', pName='', pID='', pDir='') :

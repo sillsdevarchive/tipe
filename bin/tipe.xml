@@ -183,7 +183,7 @@ class GUIManager (Command) :
             aProject.terminal("Not a recognized GUI Manager.")
 
     def setupOptions(self, parser) :
-        self.parser.add_option("-c", "--client", action="store", type="string", help="Start up the TIPE client.")
+        self.parser.add_option("-c", "\-\-client", action="store", type="string", help="Start up the TIPE client.")
 
 
 class CreateProject (Command) :
@@ -196,13 +196,13 @@ class CreateProject (Command) :
         super(CreateProject, self).run(aProject, args)
         c = 0; ptype = ''; pname = ''; pid = ''; pdir = ''
         for o in args :
-            if o == '-t' or o == '--ptype' :
+            if o == '-t' or o == '-\-ptype' :
                 ptype = args[c+1]
-            elif o == '-n' or o == '--pname' :
+            elif o == '-n' or o == '-\-pname' :
                 pname = args[c+1]
-            elif o == '-i' or o == '--pid' :
+            elif o == '-i' or o == '-\-pid' :
                 pid = args[c+1]
-            elif o == '-d' or o == '--pdir' :
+            elif o == '-d' or o == '-\-pdir' :
                 pdir = args[c+1]
 
             c+=1
@@ -212,10 +212,10 @@ class CreateProject (Command) :
                 aProject.writeToLog('MSG', 'Created new project!', mod)
 
     def setupOptions(self, parser) :
-        self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")
-        self.parser.add_option("-n", "--pname", action="store", help="Set the name of project this will be, this is required.")
-        self.parser.add_option("-i", "--pid", action="store", help="Set the type of project this will be, this is required.")
-        self.parser.add_option("-d", "--pdir", action="store", help="Create project in this directory, default is current directory.")
+        self.parser.add_option("-t", "-\-ptype", action="store", help="Set the type of project this will be, this is required.")
+        self.parser.add_option("-n", "-\-pname", action="store", help="Set the name of project this will be, this is required.")
+        self.parser.add_option("-i", "-\-pid", action="store", help="Set the type of project this will be, this is required.")
+        self.parser.add_option("-d", "-\-pdir", action="store", help="Create project in this directory, default is current directory.")
 
 
 class RemoveProject (Command) :
@@ -240,7 +240,7 @@ class RemoveProject (Command) :
             aProject.writeToLog('MSG', 'Removed project: [' + pID + ']', mod)
         
     def setupOptions(self, parser) :
-        self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
+        self.parser.add_option("-i", "-\-pid", type="string", action="store", help="The ID code of the project to be removed.")
 
 
 class RestoreProject (Command) :
@@ -267,7 +267,7 @@ class RestoreProject (Command) :
             aProject.writeToLog('ERR', 'Restoring project at: ' + pDir + ' failed.', mod)
 
     def setupOptions(self, parser) :
-        self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
+        self.parser.add_option("-d", "-\-dir", type="string", action="store", help="Restore a project in this directory")
 
 
 -->

@@ -364,16 +364,19 @@ class Project (object) :
 				self.orgProjectEditDate = self.projectEditDate
 				self.projectCreateDate  = self._projConfig['ProjectInfo']['projCreateDate']
 				self.projectIDCode      = self._projConfig['ProjectInfo']['projectIDCode']
-		else :
-			# Set this in case there is no real project present (the system kind
-			# has to pretend there always is a project, or at least the prospect
-			# of one.)
-			self.projectName            = 'None'
-			self.projectIDCode          = ''
-			self.projLogFile            = ''
-			self.projErrorLogFile       = ''
-			self.orgProjectEditDate     = 'None'
-			self.projectEditDate        = ''
+#        else :
+#            # Set this in case there is no real project present (the system kind
+#            # has to pretend there always is a project, or at least the prospect
+#            # of one.)
+#            self.projectName            = 'None'
+#            self.projectIDCode          = ''
+#            self.projLogFile            = ''
+#            self.projErrorLogFile       = ''
+#            self.orgProjectEditDate     = 'None'
+#            self.projectEditDate        = ''
+
+		if self._projConfig :
+			print "It is here!"
 
 		# Initialize any needed services
 		self.initLogging(self.projHome)
@@ -386,8 +389,11 @@ class Project (object) :
 		'''Initialize logging functions'''
 
 		self.report = Report(
-			projLogFile         = self.projLogFile if self._sysConfig else None,
-			projErrFile         = self.projErrorLogFile if self._sysConfig else None,
+#            projLogFile         = self.projLogFile if self._sysConfig else None,
+#            projErrFile         = self.projErrorLogFile if self._sysConfig else None,
+#            debug               = self._sysConfig and self._sysConfig['System']['debugging'],
+			projLogFile         = self.projLogFile if self._projConfig else None,
+			projErrFile         = self.projErrorLogFile if self._projConfig else None,
 			debug               = self._sysConfig and self._sysConfig['System']['debugging'],
 			projectName         = self.projectName)
 

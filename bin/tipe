@@ -108,7 +108,7 @@ if aProject.projectIDCode != '' :
 
 report.terminal('\n\t\tWelcome to TIPE ' + aProject.version)
 report.terminal('\t\tCurrent User: ' + aProject.userName)
-if aProject.projectName != 'None' :
+if aProject.thisProjectType != '' :
 	report.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
 
 # TIPE Command Line Syntax

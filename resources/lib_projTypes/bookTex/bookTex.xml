@@ -214,69 +214,184 @@ Todo:
                 <value></value>
             </setting>
         </section>
+
+<!--
+        <section>
+            <name>xxx</name>
+            <sectionID>xxx</sectionID>
+            <description>xxx</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>xxx</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>False</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
+            </setting>
+        </section>
+-->
+
+        <section>
+            <name>GlobalTex TeX File</name>
+            <sectionID>globalTex</sectionID>
+            <description>The global contol file that feeds into the the component control file.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>global.tex</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value>Process</value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>True</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value>*.ttf, ptx2pdf.tex, hyphenation.tex, .book.conf, global.sty</value>
+            </setting>
+        </section>
+
+
+        <section>
+            <name>BookTex TeX File</name>
+            <sectionID>bookTexTex</sectionID>
+            <description>The master TeX macro contol file that feeds into the the global control file.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>bookTex.tex</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>True</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
+            </setting>
+        </section>
+
+        <section>
+            <name>Hyphenation TeX File</name>
+            <sectionID>hyphenationTex</sectionID>
+            <description>Hyphenation file for project which is used by the renderer.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>hyphenation.tex</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value>Hyphenation</value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>False</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value>wordlist.txt, lccode.tex</value>
+            </setting>
+        </section>
+
+        <section>
+            <name>xxx</name>
+            <sectionID>xxx</sectionID>
+            <description>xxx</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>xxx</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>False</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
+            </setting>
+        </section>
+
     </section>
 
 <!--
 
-    <section>
-        <name>File Relationships</name>
-        <sectionID>FileNames</sectionID>
-        <description>Project file relationships are described in this section.</description>
-        <setting>
-            <name>GlobalTex TeX File</name>
-            <key>globalTex</key>
-            <fileType>tex</fileType>
-            <location>Process</location>
-            <dependents>*.ttf, ptx2pdf.tex, hyphenation.tex, .book.conf, global.sty</dependents>
-            <createdBy>autoConfigProj</createdBy>
-            <description>The global contol file that feeds into the the component control file.</description>
-            <type>string</type>
-            <value>global.tex</value>
-        </setting>
-        <setting>
-            <name>BookTex TeX File</name>
-            <key>bookTexTex</key>
-            <fileType>tex</fileType>
-            <location>Process</location>
-            <dependents>none</dependents>
-            <createdBy>readOnly</createdBy>
-            <description>The master TeX macro contol file that feeds into the the global control file.</description>
-            <type>string</type>
-            <value>bookTex.tex</value>
-        </setting>
-        <setting>
-            <name>BookTex Configuration File</name>
-            <key>bookTexConf</key>
-            <fileType>conf</fileType>
-            <location>root</location>
-            <dependents>book.xml</dependents>
-            <createdBy>system</createdBy>
-            <description>The project (book) configuration file that is created from the project type xml file.</description>
-            <type>string</type>
-            <value>.bookTex.conf</value>
-        </setting>
-        <setting>
-            <name>BookTex XML File</name>
-            <key>bookTexXml</key>
-            <fileType>xml</fileType>
-            <location>[tipe]</location>
-            <dependents>none</dependents>
-            <createdBy>readOnly</createdBy>
-            <description>The project (book) master XML configuration file that is used by the system to setup projects with default settings.</description>
-            <type>string</type>
-            <value>bookTex.xml</value>
-        </setting>
-        <setting>
-            <name>Hyphenation TeX File</name>
-            <key>hyphenationTex</key>
-            <fileType>tex</fileType>
-            <location>Hyphenation</location>
-            <dependents>book.conf, wordlist.txt, lccode.tex</dependents>
-            <createdBy>system</createdBy>
-            <description>Hyphenation file for project which is used by the renderer.</description>
-            <type>string</type>
-            <value>hyphenation.tex</value>
-        </setting>
         <setting>
             <name>Wordlist File</name>
             <key>wordlistTxt</key>
@@ -288,6 +403,8 @@ Todo:
             <type>string</type>
             <value>wordlist.txt</value>
         </setting>
+
+
         <setting>
             <name>Lccode TeX File</name>
             <key>lccodeTex</key>

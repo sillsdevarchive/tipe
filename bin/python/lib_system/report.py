@@ -145,6 +145,7 @@ class Report (object) :
 				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg + '\"'
 
 			# Do we need a log file made?
+			print 'xxxxxxxxxxxxxxxxxx', self._projLogFile, 'xxxxxxxxxxxxxxxxxxxxxxxxx'
 			if not os.path.isfile(self._projLogFile) or os.path.getsize(self._projLogFile) == 0 :
 				writeObject = codecs.open(self._projLogFile, "w", encoding='utf_8')
 				writeObject.write('TIPE event log file created: ' + date_time + '\n')

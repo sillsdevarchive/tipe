@@ -108,7 +108,8 @@ if aProject.projectIDCode != '' :
 
 report.terminal('\n\t\tWelcome to TIPE ' + aProject.version)
 report.terminal('\t\tCurrent User: ' + aProject.userName)
-report.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
+if aProject.projectName != 'None' :
+	report.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
 
 # TIPE Command Line Syntax
 # The tipe program can take numerious command.  Each command has two parts, a

@@ -74,16 +74,13 @@ Todo:
         </setting>
     </section>
 
-
-
-
     <section>
         <name>Files</name>
         <sectionID>Files</sectionID>
         <description>This section contains the names of all the bookTex files the TIPE system will use in this projects.</description>
         <section>
             <name>Project Log</name>
-            <sectionID>ProjectLog</sectionID>
+            <sectionID>projectLog</sectionID>
             <description>The project log file.</description>
             <setting>
                 <name>Name</name>
@@ -117,7 +114,7 @@ Todo:
         </section>
         <section>
             <name>Project Error Log</name>
-            <sectionID>ProjectErrorLog</sectionID>
+            <sectionID>projectErrorLog</sectionID>
             <description>The project error log file.</description>
             <setting>
                 <name>Name</name>
@@ -139,39 +136,6 @@ Todo:
                 <description>Is this file under version control?</description>
                 <type>boolean</type>
                 <value>False</value>
-            </setting>
-            <setting>
-                <name>Dependent Files</name>
-                <key>dependents</key>
-                <description>The file(s) this file is dependent on.</description>
-                <type>list</type>
-                <value></value>
-            </setting>
-        </section>
-        <section>
-            <name>System Configuration File</name>
-            <sectionID>tipeProjConfFile</sectionID>
-            <description>The system configuration file stored in the project.</description>
-            <setting>
-                <name>Name</name>
-                <key>name</key>
-                <description>The name of this file.</description>
-                <type>string</type>
-                <value>.tipe.conf</value>
-            </setting>
-            <setting>
-                <name>Location</name>
-                <key>location</key>
-                <description>The location of the folder.</description>
-                <type>string</type>
-                <value></value>
-            </setting>
-            <setting>
-                <name>Version Control</name>
-                <key>versionControl</key>
-                <description>Is this file under version control?</description>
-                <type>boolean</type>
-                <value>True</value>
             </setting>
             <setting>
                 <name>Dependent Files</name>
@@ -215,42 +179,6 @@ Todo:
             </setting>
         </section>
 
-<!--
-        <section>
-            <name>xxx</name>
-            <sectionID>xxx</sectionID>
-            <description>xxx</description>
-            <setting>
-                <name>Name</name>
-                <key>name</key>
-                <description>The name of this file.</description>
-                <type>string</type>
-                <value>xxx</value>
-            </setting>
-            <setting>
-                <name>Location</name>
-                <key>location</key>
-                <description>The location of the folder.</description>
-                <type>string</type>
-                <value></value>
-            </setting>
-            <setting>
-                <name>Version Control</name>
-                <key>versionControl</key>
-                <description>Is this file under version control?</description>
-                <type>boolean</type>
-                <value>False</value>
-            </setting>
-            <setting>
-                <name>Dependent Files</name>
-                <key>dependents</key>
-                <description>The file(s) this file is dependent on.</description>
-                <type>list</type>
-                <value></value>
-            </setting>
-        </section>
--->
-
         <section>
             <name>GlobalTex TeX File</name>
             <sectionID>globalTex</sectionID>
@@ -284,7 +212,6 @@ Todo:
                 <value>*.ttf, ptx2pdf.tex, hyphenation.tex, .book.conf, global.sty</value>
             </setting>
         </section>
-
 
         <section>
             <name>BookTex TeX File</name>
@@ -355,22 +282,22 @@ Todo:
         </section>
 
         <section>
-            <name>xxx</name>
-            <sectionID>xxx</sectionID>
-            <description>xxx</description>
+            <name>Wordlist File</name>
+            <sectionID>wordlistTxt</sectionID>
+            <description>Wordlist for all components used in this project.</description>
             <setting>
                 <name>Name</name>
                 <key>name</key>
                 <description>The name of this file.</description>
                 <type>string</type>
-                <value>xxx</value>
+                <value>wordlist.txt</value>
             </setting>
             <setting>
                 <name>Location</name>
                 <key>location</key>
                 <description>The location of the folder.</description>
                 <type>string</type>
-                <value></value>
+                <value>Hyphenation</value>
             </setting>
             <setting>
                 <name>Version Control</name>
@@ -388,37 +315,40 @@ Todo:
             </setting>
         </section>
 
-    </section>
-
-<!--
-
-        <setting>
-            <name>Wordlist File</name>
-            <key>wordlistTxt</key>
-            <fileType>txt</fileType>
-            <location>Hyphenation</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>Wordlist for all components in this project. </description>
-            <type>string</type>
-            <value>wordlist.txt</value>
-        </setting>
-
-
-        <setting>
+        <section>
             <name>Lccode TeX File</name>
-            <key>lccodeTex</key>
-            <fileType>tex</fileType>
-            <location>Hyphenation</location>
-            <dependents>.book.conf</dependents>
-            <createdBy>system</createdBy>
+            <sectionID>lccodeTex</sectionID>
             <description>The lccode is a file used to declair non-word-forming characters.</description>
-            <type>string</type>
-            <value>lccode.tex</value>
-        </setting>
-
--->
-
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>lccode.tex</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value>Hyphenation</value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>False</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value>.project.conf</value>
+            </setting>
+        </section>
+    </section>
 
     <section>
         <name>Folders</name>
@@ -463,25 +393,6 @@ Todo:
             </setting>
         </section>
         <section>
-            <name>Project Font Folder</name>
-            <sectionID>FontFolder</sectionID>
-            <description>The project font folder.</description>
-            <setting>
-                <name>Name</name>
-                <key>name</key>
-                <description>The folder where all the project fonts are kept.</description>
-                <type>string</type>
-                <value>Fonts</value>
-            </setting>
-            <setting>
-                <name>Location</name>
-                <key>location</key>
-                <description>The location of the folder.</description>
-                <type>string</type>
-                <value></value>
-            </setting>
-        </section>
-        <section>
             <name>Project Wiki Folder</name>
             <sectionID>WikiFolder</sectionID>
             <description>The project wiki notes folder.</description>
@@ -500,7 +411,27 @@ Todo:
                 <value></value>
             </setting>
         </section>
+        <section>
+            <name>Project Font Folder</name>
+            <sectionID>FontFolder</sectionID>
+            <description>The project font folder.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The folder where all the project fonts are kept.</description>
+                <type>string</type>
+                <value>Fonts</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+        </section>
     </section>
+
     <section>
         <name>Format</name>
         <sectionID>Format</sectionID>
@@ -521,8 +452,5 @@ Todo:
         </setting>
     </section>
 
-
-
-    </section>
 </root>
 

@@ -200,7 +200,7 @@ def safeStart (projHome, userHome, tipeHome) :
 	return res
 
 
-def loadProjectSettings (tipeUserConf, projHome, userHome, tipeHome) :
+def loadProjectSettings (tipeProj, projHome, userHome, tipeHome) :
 	'''Load up the project.conf settings.  This will first look in the current
 	folder for the .project.conf file.  One exsits then we will first load the
 	system defaults, then override with the user settings (if any) then finally
@@ -208,17 +208,9 @@ def loadProjectSettings (tipeUserConf, projHome, userHome, tipeHome) :
 	if the project exists in the user's config file.  If not, we'll add it in
 	the projects section.'''
 
-	# Set path to project config file
+	# Set paths
 	projProjConf    = os.path.join(projHome, '.project.conf')
-
-	# Do a quick load to get the project type, then we'll reload in order
-	tipeProj = ''
-	if os.path.isfile(projProjConf) :
-		temp = ConfigObj(projProjConf)
-		tipeProj = temp['ProjectInfo']['projectType']
-	else :
-		raise IOError, "Can't open " + projProjConf
-
+	tipeUser        = os.path.join(userHome, 'tipe.conf')
 	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
 	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
 
@@ -247,20 +239,20 @@ def loadProjectSettings (tipeUserConf, projHome, userHome, tipeHome) :
 	ptype = res['ProjectInfo']['projectType']
 	pid = res['ProjectInfo']['projectIDCode']
 	date = res['ProjectInfo']['projCreateDate']
-	if not isRecordedProject(tipeUserConf, pid) == True :
-		recordProject(tipeUserConf, projHome, pname, ptype, pid, date)
+	if not isRecordedProject(tipeUserConfFile, pid) == True :
+		recordProject(tipeUserConfFile, projHome, pname, ptype, pid, date)
 
 	# Return the final results of the conf settings
 	return res
 
 
-def recordProject (tipeUserConf, projHome, pname, ptype, pid, date) :
+def recordProject (tipeUserConfFile, projHome, pname, ptype, pid, date) :
 	'''Add information about this project to the user's tipe.conf located in
 	the home config folder.'''
 
 	mod = 'project.recordProject()'
-	if os.path.isfile(tipeUserConf) :
-		cf = ConfigObj(tipeUserConf)
+	if os.path.isfile(tipeUserConfFile) :
+		cf = ConfigObj(tipeUserConfFile)
 
 		# FIXME: Before we create a project entry we want to be sure that
 		# the projects section already exsists.  There might be a better way
@@ -282,11 +274,11 @@ def recordProject (tipeUserConf, projHome, pname, ptype, pid, date) :
 		return False
 
 
-def isRecordedProject (tipeUserConf, pid) :
+def isRecordedProject (tipeUserConfFile, pid) :
 	'''Check to see if this project is recorded in the user's config'''
 
-	if os.path.isfile(tipeUserConf) :
-		cf = ConfigObj(tipeUserConf)
+	if os.path.isfile(tipeUserConfFile) :
+		cf = ConfigObj(tipeUserConfFile)
 		try :
 			isConfPID = cf['Projects'][pid]
 			return True
@@ -343,29 +335,27 @@ class Project (object) :
 		self.userAdmin          = os.path.join(userHome, 'resources', 'lib_admin')
 		self.userCompTypes      = os.path.join(userHome, 'resources', 'lib_compTypes')
 		self.userProjTypes      = os.path.join(userHome, 'resources', 'lib_projTypes')
-		# Config files (These are hardwired, should they be?)
-		self.tipeUserConf       = os.path.join(self.userHome, 'tipe.conf')
-		self.tipeProjConf       = os.path.join(self.projHome, '.tipe.conf')
-		self.projectConfFile    = os.path.join(self.projHome, '.project.conf')
-		self.lockExt            = '.locked'
 
 		# Load the TIPE config settings and do a safe start
 		self._sysConfig         = safeStart(projHome, userHome, tipeHome)
 
 		# Set all the system settings
 		if self._sysConfig :
+			self.tipeProjConfFile   = os.path.join(self.projHome, self._sysConfig['Files']['tipeProjConfFile']['name'])
+			self.projectConfFile    = os.path.join(self.projHome, self._sysConfig['Files']['projectConfFile']['name'])
+			self.tipeUserConfFile   = os.path.join(self.projHome, self._sysConfig['Files']['tipeUserConfFile']['name'])
 			self.version            = self._sysConfig['System']['systemVersion']
 			self.userName           = self._sysConfig['System']['userName']
 			self.tipeEditDate       = self._sysConfig['System']['tipeEditDate']
 			self.orgTipeEditDate    = self.tipeEditDate
 			self.projLogLineLimit   = self._sysConfig['System']['projLogLineLimit']
+			self.lockExt            = self._sysConfig['System']['lockExt']
 			# File paths
 
 		# Look for a project in the current location and load the settings
 		if os.path.isfile(self.projectConfFile) :
-			self._projConfig = loadProjectSettings(self.tipeUserConf, self.projHome, self.userHome, self.tipeHome)
+			self._projConfig = loadProjectSettings(self.tipeUserConfFile, self.projHome, self.userHome, self.tipeHome)
 			if self._projConfig :
-				self.tipeProjConf       = os.path.join(self.projHome, self._projConfig['Files']['ProjectLog']['name'])
 				self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['ProjectLog']['name'])
 				self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['ProjectErrorLog']['name'])
 				self.projectType        = self._projConfig['ProjectInfo']['projectType']
@@ -382,6 +372,8 @@ class Project (object) :
 			self.projectIDCode          = ''
 			self.projLogFile            = ''
 			self.projErrorLogFile       = ''
+			self.orgProjectEditDate     = 'None'
+			self.projectEditDate        = ''
 
 		# Initialize any needed services
 		self.initLogging(self.projHome)
@@ -408,7 +400,7 @@ class Project (object) :
 		if self.projectName != 'None' :
 			# Write out config files only if the edit date has changed
 			if self.orgTipeEditDate != self.tipeEditDate :
-				self._sysConfig.filename = self.tipeProjConf
+				self._sysConfig.filename = self.tipeProjConfFile
 				self._sysConfig.write()
 
 			if self.orgProjectEditDate != self.projectEditDate :
@@ -440,17 +432,56 @@ class Project (object) :
 		folders, etc.'''
 
 		mod = 'project.initProject()'
-		print self.projectName
-		f = self._projConfig['Folders'].__iter__()
-		for i in f :
-			g = self._projConfig['Folders'][i]
-			for key, value in g.iteritems() :
-				thisFolder = os.path.join(home, value)
-				if not os.path.isdir(thisFolder) :
-					os.mkdir(thisFolder)
-					self.report.writeToLog('LOG', 'Created folder: ' + value, mod)
 
-#        self.writeProjConfFiles()
+		# Create all necessary folders
+		fldrs = self._projConfig['Folders'].__iter__()
+		for f in fldrs :
+			folderName = ''; parentFolder = ''
+			fGroup = self._projConfig['Folders'][f]
+			for key, value in fGroup.iteritems() :
+				if key == 'name' :
+					folderName = value
+				elif key == 'location' :
+					if value :
+						parentFolder = value
+				else :
+					pass
+
+			if parentFolder :
+				thisFolder = os.path.join(home, parentFolder, folderName)
+			else :
+				thisFolder = os.path.join(home, folderName)
+
+			if not os.path.isdir(thisFolder) :
+				os.mkdir(thisFolder)
+				self.report.terminal('Created folder: ' + folderName)
+
+		# Create some necessary files
+		fls = self._projConfig['Files'].__iter__()
+		for f in fls :
+			fileName = ''; parentFolder = ''
+			fGroup = self._projConfig['Files'][f]
+			for key, value in fGroup.iteritems() :
+				if key == 'name' :
+					fileName = value
+				elif key == 'location' :
+					if value :
+						parentFolder = value
+						if value == 'projectLog' :
+							self.projLogFile = os.path.join(home, value)
+						elif value == 'projectErrorLog' :
+							self.projErrorLogFile = os.path.join(home, value)
+				else :
+					pass
+
+			if parentFolder :
+				thisFile = os.path.join(home, parentFolder, fileName)
+			else :
+				thisFile = os.path.join(home, fileName)
+
+		self._projConfig = loadProjectSettings(self.tipeUserConfFile, home, self.userHome, self.tipeHome)
+
+		self.writeProjConfFiles()
 
 
 	def makeProject (self, pType='', pName='', pID='', pDir='') :
@@ -460,45 +491,52 @@ class Project (object) :
 		mod = 'project.makeProject()'
 		date_time, secs = str(datetime.now()).split(".")
 
+
 		# It is required that there be at least a project type defined we will
 		# look for that here and fail if we don't find it
 		if pType == '' :
 			pType = 'bookTex'
-			self.report.writeToLog('WRN', 'Type parameter missing, using default of bookTex', mod)
+			self.report.terminal('Type parameter missing, using default of bookTex')
 
 		if pName == '' :
-			pName = 'None'
-			self.report.writeToLog('WRN', 'Name parameter missing, setting to None', mod)
+			pName = 'Missing Name'
+			self.projectName = pName
+			self.report.terminal('Name parameter missing, setting to None')
 
 		if pID == '' :
 			# create a simple short guid
 			import time
 			pID = hex(int(time.time()))
-			self.report.writeToLog('WRN', 'ID parameter missing, setting to [' + pID + ']', mod)
+			self.report.terminal('ID parameter missing, setting to [' + pID + ']')
+
+		self.projectIDCode = pID
 
 		# This can create a project in directory other than the current one.
 		if pDir == '' :
 			pDir = os.path.join(self.projHome, pID)
-			self.tipeProjConf = os.path.join(pDir, '.tipe.conf')
-			self.report.writeToLog('WRN', 'Directory parameter missing, set to: ' + pDir , mod)
+			# FIXME: Does this need to be hardwired
+			self.tipeProjConfFile = os.path.join(pDir, '.tipe.conf')
+			self.report.terminal('Directory parameter missing, set to: ' + pDir)
 
 
 		# See if a project is already in the target dir by looking for a
 		# .project.conf file
+		# FIXME: Does this need to be hardwired
 		pConf = os.path.join(pDir, '.project.conf')
 		if os.path.isfile(pConf) or os.path.isfile(pConf + self.lockExt)  :
-			self.report.writeToLog('ERR', 'Hault! A project is already defined in this folder.', mod)
+			self.report.terminal('Hault! A project is already defined in this folder.')
 			return
 
 		# See if a project is in the parent dir by looking for a .project.conf file
 		(head, tail) = os.path.split(pDir)
+		# FIXME: Does this need to be hardwired
 		if os.path.isfile(os.path.join(head, '.project.conf')) :
-			self.report.writeToLog('ERR', 'Hault! A project is already defined in the parent folder', mod)
+			self.report.terminal('Hault! A project is already defined in the parent folder')
 			return
 
 		# Test if this project already exists in the user's config file.
-		if isRecordedProject(self.tipeUserConf, pID) :
-			self.report.writeToLog('ERR', 'Hault! ID [' + pID + '] already defined for another project', mod)
+		if isRecordedProject(self.tipeUserConfFile, pID) :
+			self.report.terminal('Hault! ID [' + pID + '] already defined for another project')
 			return
 
 		# A new project will need to be based on a predefined type.  First check
@@ -511,7 +549,7 @@ class Project (object) :
 		elif os.path.isdir(os.path.join(self.tipeProjTypes, pType)) :
 			projTypeToUse = os.path.join(self.tipeProjTypes, pType)
 		else :
-			self.report.writeToLog('ERR', 'Project type does not exist: ' + pType, mod)
+			self.report.terminal('Error: Project type does not exist: ')
 			return
 
 		# Initialize new project now
@@ -536,10 +574,10 @@ class Project (object) :
 			self.initLogging(pDir)
 			self.initProject(pDir)
 			# Record the project with the system
-			recordProject(self.tipeUserConf, pDir, pName, pType, pID, date_time)
+			recordProject(self.tipeUserConfFile, pDir, pName, pType, pID, date_time)
 			return True
 		else :
-			self.report.writeToLog('ERR', 'Failed to initialize project.', mod)
+			self.report.terminal('ERR', 'Failed to initialize project.', mod)
 			return
 
 
@@ -550,12 +588,12 @@ class Project (object) :
 		mod = 'project.removeProject()'
 
 		# 1) Check the user's conf file to see if the project actually exists
-		if not isRecordedProject(self.tipeUserConf, pID) :
+		if not isRecordedProject(self.tipeUserConfFile, pID) :
 			self.report.writeToLog('ERR', 'Project ID [' + pID + '] not found in system configuration.', mod)
 			return
 		else :
 			# 2) If the project does exist in the user config, disable the project
-			cf = ConfigObj(self.tipeUserConf)
+			cf = ConfigObj(self.tipeUserConfFile)
 			projPath = cf['Projects'][pID]['projectPath']
 			projTipeConf = os.path.join(projPath, '.tipe.conf')
 			projProjConf = os.path.join(projPath, '.project.conf')
@@ -649,8 +687,8 @@ class Project (object) :
 		mod = 'project.changeSystemDefault()'
 
 		# Load user config object
-		if os.path.isfile(self.tipeUserConf) :
-			cf = ConfigObj(self.tipeUserConf)
+		if os.path.isfile(self.tipeUserConfFile) :
+			cf = ConfigObj(self.tipeUserConfFile)
 
 		# Change the setting here
 		cf['System'][key] = value

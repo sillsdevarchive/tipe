@@ -108,11 +108,84 @@ Todo:
             <type>string</type>
             <value></value>
         </setting>
+        <setting>
+            <name>Lock Extention Name</name>
+            <key>lockExt</key>
+            <description>File lock extention. Files that are locked in the system must have a lock extention.</description>
+            <type>string</type>
+            <value>.locked</value>
+        </setting>
     </section>
     <section>
         <name>Files</name>
         <sectionID>Files</sectionID>
         <description>This section contains the names of all the default TIPE system files.</description>
+        <section>
+            <name>System Configuration File</name>
+            <sectionID>tipeProjConfFile</sectionID>
+            <description>The system configuration file stored in the project.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>.tipe.conf</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>True</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
+            </setting>
+        </section>
+        <section>
+            <name>Project Configuration File</name>
+            <sectionID>projectConfFile</sectionID>
+            <description>The project configuration settings file stored in the project.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The name of this file.</description>
+                <type>string</type>
+                <value>.project.conf</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+            <setting>
+                <name>Version Control</name>
+                <key>versionControl</key>
+                <description>Is this file under version control?</description>
+                <type>boolean</type>
+                <value>True</value>
+            </setting>
+            <setting>
+                <name>Dependent Files</name>
+                <key>dependents</key>
+                <description>The file(s) this file is dependent on.</description>
+                <type>list</type>
+                <value></value>
+            </setting>
+        </section>
         <section>
             <name>TIPE User Configuration Settings</name>
             <sectionID>tipeUserConfFile</sectionID>

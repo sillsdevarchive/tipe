@@ -209,10 +209,10 @@ def loadProjectSettings (tipeProj, projHome, userHome, tipeHome) :
 	the projects section.'''
 
 	# Set paths
-	projProjConf    = os.path.join(projHome, '.project.conf')
-	tipeUser        = os.path.join(userHome, 'tipe.conf')
-	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
-	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
+	projProjConf        = os.path.join(projHome, '.project.conf')
+	tipeUserConfFile    = os.path.join(userHome, 'tipe.conf')
+	tipeProjXML         = os.path.join(tipeHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
+	userProjXML         = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
 
 	# Check first to see if this project type exsits in the user area.  That
 	# project def. will get priority over system defs.  We use one or the other,
@@ -350,14 +350,14 @@ class Project (object) :
 			self.orgTipeEditDate    = self.tipeEditDate
 			self.projLogLineLimit   = self._sysConfig['System']['projLogLineLimit']
 			self.lockExt            = self._sysConfig['System']['lockExt']
-			# File paths
+			self.thisProjectType    = self._sysConfig['System']['thisProjectType']
 
 		# Look for a project in the current location and load the settings
 		if os.path.isfile(self.projectConfFile) :
-			self._projConfig = loadProjectSettings(self.tipeUserConfFile, self.projHome, self.userHome, self.tipeHome)
+			self._projConfig = loadProjectSettings(self.thisProjectType, self.projHome, self.userHome, self.tipeHome)
 			if self._projConfig :
-				self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['ProjectLog']['name'])
-				self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['ProjectErrorLog']['name'])
+				self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['projLogFile']['name'])
+				self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['projErrorLogFile']['name'])
 				self.projectType        = self._projConfig['ProjectInfo']['projectType']
 				self.projectName        = self._projConfig['ProjectInfo']['projectName']
 				self.projectEditDate    = self._projConfig['ProjectInfo']['projectEditDate']
@@ -408,25 +408,6 @@ class Project (object) :
 				self._projConfig.write()
 
 
-#    def checkProject (self, home) :
-#        '''Check to see if all the project assets are present wherever "home"
-#        is.  At a bare minimum we must have a project.conf file.  This will
-#        return Null if that is not found.'''
-
-#        mod = 'project.checkProject()'
-
-#        # Look to see if all three conf files exist
-#        if os.path.isfile(self.projConfFile) :
-#            # From this point we will check for and add all the necessary project
-#            # assets.  Anything that is missing will be replaced by a default
-#            # version of the asset.
-#            self.initProject(home)
-
-#            # Check for key settings files
-
-#            return True
-
-
 	def initProject (self, home) :
 		'''Initialize a new project by creating all necessary global items like
 		folders, etc.'''
@@ -458,19 +439,19 @@ class Project (object) :
 
 		# Create some necessary files
 		fls = self._projConfig['Files'].__iter__()
-		for f in fls :
+		for fs in fls :
 			fileName = ''; parentFolder = ''
-			fGroup = self._projConfig['Files'][f]
+			fGroup = self._projConfig['Files'][fs]
 			for key, value in fGroup.iteritems() :
 				if key == 'name' :
 					fileName = value
+					if fs == 'projLogFile' :
+						self.projLogFile = os.path.join(home, value)
+					elif fs == 'projErrorLogFile' :
+						self.projErrorLogFile = os.path.join(home, value)
 				elif key == 'location' :
 					if value :
 						parentFolder = value
-						if value == 'projectLog' :
-							self.projLogFile = os.path.join(home, value)
-						elif value == 'projectErrorLog' :
-							self.projErrorLogFile = os.path.join(home, value)
 				else :
 					pass
 
@@ -479,7 +460,9 @@ class Project (object) :
 			else :
 				thisFile = os.path.join(home, fileName)
 
-		self._projConfig = loadProjectSettings(self.tipeUserConfFile, home, self.userHome, self.tipeHome)
+		self._projConfig = loadProjectSettings(self.thisProjectType, home, self.userHome, self.tipeHome)
+
+		self.initLogging(home)
 
 		self.writeProjConfFiles()
 
@@ -501,7 +484,7 @@ class Project (object) :
 		if pName == '' :
 			pName = 'Missing Name'
 			self.projectName = pName
-			self.report.terminal('Name parameter missing, setting to None')
+			self.report.terminal('Name parameter missing, setting to \"Missing Name\"')
 
 		if pID == '' :
 			# create a simple short guid
@@ -559,6 +542,7 @@ class Project (object) :
 		self._projConfig = makeProjectSettings(pDir, self.userHome, self.tipeHome, pType)
 		if self._projConfig :
 			self.projectType = pType
+			self.thisProjectType = pType
 			self.projectConfFile = os.path.join(pDir, '.project.conf')
 			self._projConfig['ProjectInfo']['projectName'] = pName
 			self.projectName = pName
@@ -571,7 +555,6 @@ class Project (object) :
 			self.orgProjectEditDate = ''
 			self.tipeEditDate = date_time
 			self.orgTipeEditDate = ''
-			self.initLogging(pDir)
 			self.initProject(pDir)
 			# Record the project with the system
 			recordProject(self.tipeUserConfFile, pDir, pName, pType, pID, date_time)

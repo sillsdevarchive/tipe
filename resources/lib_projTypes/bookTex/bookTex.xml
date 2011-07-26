@@ -79,8 +79,8 @@ Todo:
         <sectionID>Files</sectionID>
         <description>This section contains the names of all the bookTex files the TIPE system will use in this projects.</description>
         <section>
-            <name>Project Log</name>
-            <sectionID>projectLog</sectionID>
+            <name>Project Log File</name>
+            <sectionID>projLogFile</sectionID>
             <description>The project log file.</description>
             <setting>
                 <name>Name</name>
@@ -113,8 +113,8 @@ Todo:
             </setting>
         </section>
         <section>
-            <name>Project Error Log</name>
-            <sectionID>projectErrorLog</sectionID>
+            <name>Project Error Log File</name>
+            <sectionID>projErrorLogFile</sectionID>
             <description>The project error log file.</description>
             <setting>
                 <name>Name</name>

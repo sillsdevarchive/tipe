@@ -115,6 +115,13 @@ Todo:
             <type>string</type>
             <value>.locked</value>
         </setting>
+        <setting>
+            <name>This Project Type</name>
+            <key>thisProjectType</key>
+            <description>The type of project this is. This is to help load a project on start up.</description>
+            <type>string</type>
+            <value></value>
+        </setting>
     </section>
     <section>
         <name>Files</name>

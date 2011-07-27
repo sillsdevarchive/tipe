@@ -84,7 +84,7 @@ sys.path.insert(0, os.path.join(basePath, 'bin', 'python'))
 sys.path.insert(0, os.path.join(basePath, 'bin', 'python', 'lib_system'))
 
 # Now that our path is good we can load the local classes
-from command import Command, commands
+from sys_command import Command, commands
 from project import Project
 
 # Create a basic TIPE project object that will enable it to start

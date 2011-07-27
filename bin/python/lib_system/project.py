@@ -27,7 +27,6 @@ from configobj import ConfigObj, Section
 
 
 # Load the local classes
-from report import Report
 from component import Component
 from book import Book
 from xml.etree import ElementTree
@@ -272,16 +271,26 @@ class Project (object) :
 		'''Write out all relevent project conf files if there is at least
 		project in memory.'''
 
+		ts = self.tStamp()
+
 		# Check the "thisProjectType" for existence of a project
 		if self.thisProjectType :
 			# Write out config files only if the edit date has changed
 			if self.orgTipeEditDate != self.tipeEditDate :
 				self._sysConfig.filename = self.tipeProjConfFile
+				self.tipeEditDate = ts
+				self.orgTipeEditDate = ts
 				self._sysConfig.write()
+				if self.debugging == 'True' :
+					self.writeToLog('LOG', 'Updated .tipe.conf file.', 'project.writeProjConfFiles')
 
 			if self.orgProjectEditDate != self.projectEditDate :
 				self._projConfig.filename = self.projectConfFile
+				self.projectEditDate = ts
+				self.orgProjectEditDate = ts
 				self._projConfig.write()
+				if self.debugging == 'True' :
+					self.writeToLog('LOG', 'Updated .project.conf file.', 'project.writeProjConfFiles')
 
 
 	def initProject (self, home) :
@@ -347,8 +356,7 @@ class Project (object) :
 		substituted'''
 
 		mod = 'project.makeProject()'
-		date_time, secs = str(datetime.now()).split(".")
-
+		ts = self.tStamp()
 
 		# It is required that there be at least a project type defined we will
 		# look for that here and fail if we don't find it
@@ -426,17 +434,17 @@ class Project (object) :
 			self.projectName = pName
 			self._projConfig['ProjectInfo']['projectIDCode'] = pID
 			self.projectIDCode = pID
-			self._projConfig['ProjectInfo']['projCreateDate'] = date_time
-			self.projectCreateDate = date_time
-			self._projConfig['ProjectInfo']['projectEditDate'] = date_time
-			self.projectEditDate = date_time
+			self._projConfig['ProjectInfo']['projCreateDate'] = ts
+			self.projectCreateDate = ts
+			self._projConfig['ProjectInfo']['projectEditDate'] = ts
+			self.projectEditDate = ts
 			self.orgProjectEditDate = ''
-			self.tipeEditDate = date_time
+			self.tipeEditDate = ts
 			self.orgTipeEditDate = ''
 			self.writeProjConfFiles()
 			self.initProject(pDir)
 			# Record the project with the system
-			recordProject(self.tipeUserConfFile, pDir, pName, pType, pID, date_time)
+			recordProject(self.tipeUserConfFile, pDir, pName, pType, pID, ts)
 			return True
 		else :
 			self.terminal('ERR', 'Failed to initialize project.', mod)
@@ -554,10 +562,10 @@ class Project (object) :
 		cf['System'][key] = value
 		self._sysConfig['System'][key] = value
 		self.writeToLog('MSG', 'Changed ' + key + ' to: ' + value, mod)
-		date_time, secs = str(datetime.now()).split(".")
-		self._sysConfig['System']['tipeEditDate'] = date_time
-		self.tipeEditDate = date_time
-		cf['System']['userEditDate'] = date_time
+		ts = self.tStamp()
+		self._sysConfig['System']['tipeEditDate'] = ts
+		self.tipeEditDate = ts
+		cf['System']['userEditDate'] = ts
 		cf.write()
 
 		# Write the change out right a way
@@ -604,6 +612,13 @@ class Project (object) :
 		return text[0]
 
 
+	def tStamp (self) :
+		'''Create a simple time stamp for logging and timing purposes.'''
+
+		date_time, secs = str(datetime.now()).split(".")
+
+		return date_time
+
 
 ###############################################################################
 ################################# Logging routines ############################
@@ -640,30 +655,35 @@ class Project (object) :
 		# Test to see if this is a live project by seeing if the project type is
 		# set.  If it is, we can write out log files.  Otherwise, why bother?
 		if self.thisProjectType :
+
 			# When are we doing this?
-			date_time, secs = str(datetime.now()).split(".")
+			ts = self.tStamp()
 
 			# Build the event line
 			if code == 'ERR' :
-				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + mod + msg + '\"'
+				eventLine = '\"' + ts + '\", \"' + code + '\", \"' + mod + msg + '\"'
 			else :
-				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg + '\"'
+				eventLine = '\"' + ts + '\", \"' + code + '\", \"' + msg + '\"'
 
 			# Do we need a log file made?
-			if not os.path.isfile(self._projLogFile) or os.path.getsize(self._projLogFile) == 0 :
-				writeObject = codecs.open(self._projLogFile, "w", encoding='utf_8')
-				writeObject.write('TIPE event log file created: ' + date_time + '\n')
-				writeObject.close()
+			try :
+				if not os.path.isfile(self.projLogFile) or os.path.getsize(self.projLogFile) == 0 :
+					writeObject = codecs.open(self.projLogFile, "w", encoding='utf_8')
+					writeObject.write('TIPE event log file created: ' + ts + '\n')
+					writeObject.close()
 
-			# Now log the event to the top of the log file using preAppend().
-			self.preAppend(eventLine, self._projLogFile)
+				# Now log the event to the top of the log file using preAppend().
+				self.preAppend(eventLine, self.projLogFile)
 
-			# Write errors and warnings to the error log file
-			if code == 'WRN' and self._debugging :
-				self.writeToErrorLog(eventLine)
+				# Write errors and warnings to the error log file
+				if code == 'WRN' and self.debugging == 'True':
+					self.writeToErrorLog(eventLine)
 
-			if code == 'ERR' :
-				self.writeToErrorLog(eventLine)
+				if code == 'ERR' :
+					self.writeToErrorLog(eventLine)
+
+			except :
+				self.terminal(msg)
 
 		return
 
@@ -674,16 +694,19 @@ class Project (object) :
 		process is run.  The error file from the previous session is deleted at
 		the begining of each new run.'''
 
-		# Because we want to read errors from top to bottom, we don't pre append
-		# them to the error log file.
-		if not os.path.isfile(self._projErrorLogFile) :
-			writeObject = codecs.open(self._projErrorLogFile, "w", encoding='utf_8')
-		else :
-			writeObject = codecs.open(self._projErrorLogFile, "a", encoding='utf_8')
+		try :
+			# Because we want to read errors from top to bottom, we don't pre append
+			# them to the error log file.
+			if not os.path.isfile(self.projErrorLogFile) :
+				writeObject = codecs.open(self.projErrorLogFile, "w", encoding='utf_8')
+			else :
+				writeObject = codecs.open(self.projErrorLogFile, "a", encoding='utf_8')
 
-		# Write and close
-		writeObject.write(eventLine + '\n')
-		writeObject.close()
+			# Write and close
+			writeObject.write(eventLine + '\n')
+			writeObject.close()
+		except :
+			self.terminal('eventLine')
 
 		return
 
@@ -693,20 +716,20 @@ class Project (object) :
 		trim it to the amount specified in the system file.'''
 
 		# Of course this isn't needed if there isn't even a log file
-		if os.path.isfile(self._projLogFile) :
+		if os.path.isfile(self.projLogFile) :
 
 			# Change this to an int()
 			projLogLineLimit = int(projLogLineLimit)
 
 			# Read in the existing log file
-			readObject = codecs.open(self._projLogFile, "r", encoding='utf_8')
+			readObject = codecs.open(self.projLogFile, "r", encoding='utf_8')
 			lines = readObject.readlines()
 			readObject.close()
 
 			# Process only if we have enough lines
 			if len(lines) > projLogLineLimit :
 
-				writeObject = codecs.open(self._projLogFile, "w", encoding='utf_8')
+				writeObject = codecs.open(self.projLogFile, "w", encoding='utf_8')
 				lineCount = 0
 				for line in lines :
 					if projLogLineLimit > lineCount :

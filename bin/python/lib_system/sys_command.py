@@ -23,7 +23,6 @@
 
 import os
 from optparse import OptionParser
-from report import Report
 
 # Load the local classes
 
@@ -169,9 +168,8 @@ class CreateProject (Command) :
 
 			c+=1
 
-		print ptype, pname, pid, pdir
 		if aProject.makeProject(ptype, pname, pid, pdir) :
-				aProject.terminal('Created new project:' + pname + ' (' + pid + ')')
+				aProject.terminal('Success! New project created.')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")
@@ -292,8 +290,3 @@ class Render (Command) :
 		# Collect the results and report them in the log
 
 		return True
-
-
-
-
-

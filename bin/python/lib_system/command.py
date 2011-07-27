@@ -76,7 +76,6 @@ class About (Command) :
 	type = "about"
 
 	def run(self, aProject, args) :
-		mod = 'command.About()'
 		super(About, self).run(aProject, args)
 		aProject.terminal(aProject._sysConfig['System']['aboutText'])
 
@@ -87,7 +86,6 @@ class ChangeSettings (Command) :
 	type = "change"
 
 	def run(self, aProject, args) :
-		mod = 'command.ChangeSettings()'
 		super(ChangeSettings, self).run(aProject, args)
 		aProject.changeSystemSetting(args[0][2:], args[1])
 
@@ -103,7 +101,6 @@ class Debugging (Command) :
 	type = "debug"
 
 	def run(self, aProject, args) :
-		mod = 'command.Debugging()'
 		super(Debugging, self).run(aProject, args)
 		if args[0][2:] == 'on' :
 			aProject.changeSystemSetting("debugging", "True")
@@ -158,7 +155,6 @@ class CreateProject (Command) :
 	type = "create"
 
 	def run(self, aProject, args) :
-		mod = 'command.CreateProject()'
 		super(CreateProject, self).run(aProject, args)
 		c = 0; ptype = ''; pname = ''; pid = ''; pdir = ''
 		for o in args :
@@ -175,7 +171,7 @@ class CreateProject (Command) :
 
 		print ptype, pname, pid, pdir
 		if aProject.makeProject(ptype, pname, pid, pdir) :
-				aProject.writeToLog('MSG', 'Created new project!', mod)
+				aProject.terminal('Created new project:' + pname + ' (' + pid + ')')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")
@@ -204,7 +200,6 @@ class RemoveProject (Command) :
 	type = "remove"
 
 	def run(self, aProject, args) :
-		mod = 'command.RemoveProject()'
 		super(RemoveProject, self).run(aProject, args)
 		if len(args) :
 			pID = args[1]
@@ -212,10 +207,10 @@ class RemoveProject (Command) :
 			if aProject.projectIDCode != '' :
 				pID = aProject.projectIDCode
 			else :
-				aProject.writeToLog('ERR', 'Project ID code not given or found. Remove project failed.', mod)
+				aProject.terminal('Project ID code not given or found. Remove project failed.')
 
 		if aProject.removeProject(pID) :
-			aProject.writeToLog('MSG', 'Removed project: [' + pID + ']', mod)
+			aProject.terminal('Removed project: [' + pID + ']')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
@@ -227,7 +222,6 @@ class RestoreProject (Command) :
 	type = "restore"
 
 	def run(self, aProject, args) :
-		mod = 'command.RestoreProject()'
 		super(RestoreProject, self).run(aProject, args)
 		if len(args) :
 			print args[1], os.path.split(os.getcwd())[1]
@@ -240,9 +234,9 @@ class RestoreProject (Command) :
 			pDir = os.getcwd()
 
 		if aProject.restoreProject(pDir) :
-			aProject.writeToLog('MSG', 'Restored project at: ' + pDir, mod)
+			aProject.terminal('Restored project at: ' + pDir)
 		else :
-			aProject.writeToLog('ERR', 'Restoring project at: ' + pDir + ' failed.', mod)
+			aProject.terminal('Restoring project at: ' + pDir + ' failed.')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")

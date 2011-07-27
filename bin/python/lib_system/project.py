@@ -39,95 +39,6 @@ from xml.etree import ElementTree
 
 # These root level functions work at a fundamental level of the system
 
-
-
-# REFACTOR
-# Not sure yet what all is needed in the following commented code
-###############################################################################
-
-#def override(sysConfig, fname) :
-#    '''Subprocess of override_components().  The purpose is to override default
-#    settings taken from the TIPE system (sysConfig) file with those found in the
-#    project.conf file (projConfig).'''
-
-#    # Read in the project.conf file and create an object
-#    projConfig = ConfigObj(fname)
-#    res = ConfigObj(sysConfig.dict())
-
-#    # Recall this function to override the default settings
-#    res.override(projConfig)
-#    return res
-
-
-#def override_components(aConfig, fname) :
-#    '''Overrides component settings that we got from the default XML system
-#    settings file.'''
-#    res = ConfigObj()
-#    projConfig = ConfigObj(fname)
-#    for s, v in projConfig.items() :
-#        newtype = v['Type']
-#        old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
-#        old.override(v)
-#        oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
-#        oldtype.override(newtype)
-#        res[s] = old
-#        res[s]['Type'] = oldtype
-#    return res
-
-
-#def override_section(self, aSection) :
-#    '''Overrides an entire setting section.'''
-
-#    for k, v in self.items() :
-#        if k in aSection :
-#            if isinstance(v, dict) and isinstance(aSection[k], dict) :
-#                v.override(aSection[k])
-#            elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
-#                self[k] = aSection[k]
-
-
-## This will reasign the standard ConfigObj function that works much like ours
-## but not quite what we need for working with XML as one of the inputs.
-#Section.override = override_section
-
-
-#def safeConfig(dir, fname, tipedir, setting, projconf = None) :
-#    '''This is the main function for reading in the XML data and overriding
-#    default settings with the current project settings.  This works with both
-#    the project.conf file and the components.conf files.'''
-
-#    # Check to see if the file is there, then read it in and break it into
-#    # sections. If it fails, scream really loud!
-#    f = os.path.join(tipedir, fname)
-#    if os.path.exists(f) :
-#        res = xml_to_section(f)
-#    else :
-#        raise IOError, "Can't open " + f
-
-#    # If this is a live project it should have been passed a valid project.conf
-#    # object.  Otherwise, the default settings from the XML will be good enough
-#    # to get going.
-#    if not projconf : projconf = res
-#    f = projconf['System']['Files'][setting]
-
-#    # If dealing with a components we'll use the same process but just create an
-#    # empty object if no components have been defined for the project or a
-#    # project doesn't exist.
-#    if fname == 'components.xml' :
-#        if os.path.exists(f) :
-#            conf = override_components(res, f)
-#        else :
-#            conf = ConfigObj()
-#    else :
-#        if os.path.exists(f) :
-#            conf = override(res, f)
-#        else :
-#            conf = res
-
-#    return (conf, res)
-
-###############################################################################
-
 def xml_to_section(fname) :
 	'''Read in our default settings from the XML system settings file'''
 
@@ -211,36 +122,23 @@ def loadProjectSettings (tipeProj, projHome, userHome, tipeHome) :
 	# Set paths
 	projProjConf        = os.path.join(projHome, '.project.conf')
 	tipeUserConfFile    = os.path.join(userHome, 'tipe.conf')
-	tipeProjXML         = os.path.join(tipeHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
-	userProjXML         = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
 
-	# Check first to see if this project type exsits in the user area.  That
-	# project def. will get priority over system defs.  We use one or the other,
-	# not both.
-	if  os.path.exists(tipeProjXML) :
-		res = xml_to_section(tipeProjXML)
-	else :
-		raise IOError, "Can't open " + tipeProjXML
-
-	# The user overrides are not required
-	try :
-		if os.path.exists(userProjXML) :
-			res = xml_to_section(userProjXML)
-	except :
-		pass
+	# Get the default settings.  Check the system, then override with the users
+	# if needed
+	res = getDefaultProjSettings(projHome, userHome, tipeHome, tipeProj)
 
 	# Now get the settings from the .project.conf file if there is one.
 	if os.path.exists(projProjConf) :
 		# Merge default settings with global settings
 		res.merge(ConfigObj(projProjConf))
 
-	# Check the user's config for this project, silently add if needed
-	pname = res['ProjectInfo']['projectName']
-	ptype = res['ProjectInfo']['projectType']
-	pid = res['ProjectInfo']['projectIDCode']
-	date = res['ProjectInfo']['projCreateDate']
-	if not isRecordedProject(tipeUserConfFile, pid) == True :
-		recordProject(tipeUserConfFile, projHome, pname, ptype, pid, date)
+		# Check the user's config for this project, silently add if needed
+		pname = res['ProjectInfo']['projectName']
+		ptype = res['ProjectInfo']['projectType']
+		pid = res['ProjectInfo']['projectIDCode']
+		date = res['ProjectInfo']['projCreateDate']
+		if not isRecordedProject(tipeUserConfFile, pid) == True :
+			recordProject(tipeUserConfFile, projHome, pname, ptype, pid, date)
 
 	# Return the final results of the conf settings
 	return res
@@ -286,7 +184,7 @@ def isRecordedProject (tipeUserConfFile, pid) :
 			return False
 
 
-def makeProjectSettings (projHome, userHome, tipeHome, tipeProj) :
+def getDefaultProjSettings (projHome, userHome, tipeHome, tipeProj) :
 
 	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
 	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', tipeProj, tipeProj + '.xml')
@@ -343,67 +241,39 @@ class Project (object) :
 		if self._sysConfig :
 			self.tipeProjConfFile   = os.path.join(self.projHome, self._sysConfig['Files']['tipeProjConfFile']['name'])
 			self.projectConfFile    = os.path.join(self.projHome, self._sysConfig['Files']['projectConfFile']['name'])
-			self.tipeUserConfFile   = os.path.join(self.projHome, self._sysConfig['Files']['tipeUserConfFile']['name'])
-			self.version            = self._sysConfig['System']['systemVersion']
-			self.userName           = self._sysConfig['System']['userName']
-			self.tipeEditDate       = self._sysConfig['System']['tipeEditDate']
+			self.tipeUserConfFile   = os.path.join(self.userHome, self._sysConfig['Files']['tipeUserConfFile']['name'])
+			for k in ('systemVersion',      'userName',
+					  'debugging',          'tipeEditDate',
+					  'projLogLineLimit',   'lockExt',
+					  'thisProjectType') :
+				setattr(self, k, self._sysConfig['System'][k] if self._sysConfig else None)
+
 			self.orgTipeEditDate    = self.tipeEditDate
-			self.projLogLineLimit   = self._sysConfig['System']['projLogLineLimit']
-			self.lockExt            = self._sysConfig['System']['lockExt']
-			self.thisProjectType    = self._sysConfig['System']['thisProjectType']
 
 		# Look for a project in the current location and load the settings
 		if os.path.isfile(self.projectConfFile) :
 			self._projConfig = loadProjectSettings(self.thisProjectType, self.projHome, self.userHome, self.tipeHome)
+			for k in ('projectType',        'projectName',
+					  'projectEditDate',    'projCreateDate',
+					  'projectIDCode') :
+				setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
 			if self._projConfig :
 				self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['projLogFile']['name'])
 				self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['projErrorLogFile']['name'])
-				self.projectType        = self._projConfig['ProjectInfo']['projectType']
-				self.projectName        = self._projConfig['ProjectInfo']['projectName']
-				self.projectEditDate    = self._projConfig['ProjectInfo']['projectEditDate']
 				self.orgProjectEditDate = self.projectEditDate
-				self.projectCreateDate  = self._projConfig['ProjectInfo']['projCreateDate']
-				self.projectIDCode      = self._projConfig['ProjectInfo']['projectIDCode']
-#        else :
-#            # Set this in case there is no real project present (the system kind
-#            # has to pretend there always is a project, or at least the prospect
-#            # of one.)
-#            self.projectName            = 'None'
-#            self.projectIDCode          = ''
-#            self.projLogFile            = ''
-#            self.projErrorLogFile       = ''
-#            self.orgProjectEditDate     = 'None'
-#            self.projectEditDate        = ''
 
-		if self._projConfig :
-			print "It is here!"
-
-		# Initialize any needed services
-		self.initLogging(self.projHome)
 
 ###############################################################################
 ############################# Begin Main Functions ############################
 ###############################################################################
-
-	def initLogging (self, pHome) :
-		'''Initialize logging functions'''
-
-		self.report = Report(
-#            projLogFile         = self.projLogFile if self._sysConfig else None,
-#            projErrFile         = self.projErrorLogFile if self._sysConfig else None,
-#            debug               = self._sysConfig and self._sysConfig['System']['debugging'],
-			projLogFile         = self.projLogFile if self._projConfig else None,
-			projErrFile         = self.projErrorLogFile if self._projConfig else None,
-			debug               = self._sysConfig and self._sysConfig['System']['debugging'],
-			projectName         = self.projectName)
 
 
 	def writeProjConfFiles (self) :
 		'''Write out all relevent project conf files if there is at least
 		project in memory.'''
 
-		# We'll test for a project by looking for a name
-		if self.projectName != 'None' :
+		# Check the "thisProjectType" for existence of a project
+		if self.thisProjectType :
 			# Write out config files only if the edit date has changed
 			if self.orgTipeEditDate != self.tipeEditDate :
 				self._sysConfig.filename = self.tipeProjConfFile
@@ -441,7 +311,8 @@ class Project (object) :
 
 			if not os.path.isdir(thisFolder) :
 				os.mkdir(thisFolder)
-				self.report.terminal('Created folder: ' + folderName)
+				if self.debugging == 'True' :
+					self.terminal('Created folder: ' + folderName)
 
 		# Create some necessary files
 		fls = self._projConfig['Files'].__iter__()
@@ -468,8 +339,6 @@ class Project (object) :
 
 		self._projConfig = loadProjectSettings(self.thisProjectType, home, self.userHome, self.tipeHome)
 
-		self.initLogging(home)
-
 		self.writeProjConfFiles()
 
 
@@ -485,18 +354,20 @@ class Project (object) :
 		# look for that here and fail if we don't find it
 		if pType == '' :
 			pType = 'bookTex'
-			self.report.terminal('Type parameter missing, using default of bookTex')
+			self.thisProjectType = pType
+			self._sysConfig['System']['thisProjectType'] = pType
+			self.terminal('Type parameter missing, using default of bookTex')
 
 		if pName == '' :
 			pName = 'Missing Name'
 			self.projectName = pName
-			self.report.terminal('Name parameter missing, setting to \"Missing Name\"')
+			self.terminal('Name parameter missing, setting to \"Missing Name\"')
 
 		if pID == '' :
 			# create a simple short guid
 			import time
 			pID = hex(int(time.time()))
-			self.report.terminal('ID parameter missing, setting to [' + pID + ']')
+			self.terminal('ID parameter missing, setting to [' + pID + ']')
 
 		self.projectIDCode = pID
 
@@ -505,7 +376,7 @@ class Project (object) :
 			pDir = os.path.join(self.projHome, pID)
 			# FIXME: Does this need to be hardwired
 			self.tipeProjConfFile = os.path.join(pDir, '.tipe.conf')
-			self.report.terminal('Directory parameter missing, set to: ' + pDir)
+			self.terminal('Directory parameter missing, set to: ' + pDir)
 
 
 		# See if a project is already in the target dir by looking for a
@@ -513,19 +384,19 @@ class Project (object) :
 		# FIXME: Does this need to be hardwired
 		pConf = os.path.join(pDir, '.project.conf')
 		if os.path.isfile(pConf) or os.path.isfile(pConf + self.lockExt)  :
-			self.report.terminal('Hault! A project is already defined in this folder.')
+			self.terminal('Hault! A project is already defined in this folder.')
 			return
 
 		# See if a project is in the parent dir by looking for a .project.conf file
 		(head, tail) = os.path.split(pDir)
 		# FIXME: Does this need to be hardwired
 		if os.path.isfile(os.path.join(head, '.project.conf')) :
-			self.report.terminal('Hault! A project is already defined in the parent folder')
+			self.terminal('Hault! A project is already defined in the parent folder')
 			return
 
 		# Test if this project already exists in the user's config file.
 		if isRecordedProject(self.tipeUserConfFile, pID) :
-			self.report.terminal('Hault! ID [' + pID + '] already defined for another project')
+			self.terminal('Hault! ID [' + pID + '] already defined for another project')
 			return
 
 		# A new project will need to be based on a predefined type.  First check
@@ -538,18 +409,19 @@ class Project (object) :
 		elif os.path.isdir(os.path.join(self.tipeProjTypes, pType)) :
 			projTypeToUse = os.path.join(self.tipeProjTypes, pType)
 		else :
-			self.report.terminal('Error: Project type does not exist: ')
+			self.terminal('Error: Project type does not exist: ')
 			return
 
 		# Initialize new project now
 		if not os.path.isdir(pDir) :
 			os.mkdir(pDir)
 
-		self._projConfig = makeProjectSettings(pDir, self.userHome, self.tipeHome, pType)
+		# Pull in default settings and update project settings
+		self._projConfig = getDefaultProjSettings(pDir, self.userHome, self.tipeHome, pType)
 		if self._projConfig :
-			self.projectType = pType
-			self.thisProjectType = pType
 			self.projectConfFile = os.path.join(pDir, '.project.conf')
+			self._projConfig['ProjectInfo']['projectType'] = pType
+			self.projectType = pType
 			self._projConfig['ProjectInfo']['projectName'] = pName
 			self.projectName = pName
 			self._projConfig['ProjectInfo']['projectIDCode'] = pID
@@ -561,12 +433,13 @@ class Project (object) :
 			self.orgProjectEditDate = ''
 			self.tipeEditDate = date_time
 			self.orgTipeEditDate = ''
+			self.writeProjConfFiles()
 			self.initProject(pDir)
 			# Record the project with the system
 			recordProject(self.tipeUserConfFile, pDir, pName, pType, pID, date_time)
 			return True
 		else :
-			self.report.terminal('ERR', 'Failed to initialize project.', mod)
+			self.terminal('ERR', 'Failed to initialize project.', mod)
 			return
 
 
@@ -574,11 +447,9 @@ class Project (object) :
 		'''Remove the project from the TIPE system.  This will not remove the
 		project data but will 'disable' the project.'''
 
-		mod = 'project.removeProject()'
-
 		# 1) Check the user's conf file to see if the project actually exists
 		if not isRecordedProject(self.tipeUserConfFile, pID) :
-			self.report.writeToLog('ERR', 'Project ID [' + pID + '] not found in system configuration.', mod)
+			self.terminal('Project ID [' + pID + '] not found in system configuration.')
 			return
 		else :
 			# 2) If the project does exist in the user config, disable the project
@@ -596,7 +467,7 @@ class Project (object) :
 			cf.write()
 
 			# 4) Report the process is done
-			self.report.writeToLog('MSG', 'Project [' + pID + '] removed from system configuration.', mod)
+			self.terminal('Project [' + pID + '] removed from system configuration.')
 			return
 
 
@@ -682,7 +553,7 @@ class Project (object) :
 		# Change the setting here
 		cf['System'][key] = value
 		self._sysConfig['System'][key] = value
-		self.report.writeToLog('MSG', 'Changed ' + key + ' to: ' + value, mod)
+		self.writeToLog('MSG', 'Changed ' + key + ' to: ' + value, mod)
 		date_time, secs = str(datetime.now()).split(".")
 		self._sysConfig['System']['tipeEditDate'] = date_time
 		self.tipeEditDate = date_time
@@ -694,10 +565,169 @@ class Project (object) :
 
 
 	# These are Report mod functions that are exposed to the project class
-	def terminal(self, msg) : self.report.terminal(msg)
-	def terminalCentered(self, msg) : self.report.terminalCentered(msg)
-	def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
-	def trimLog(self, projLogLineLimit) : self.report.trimLog(projLogLineLimit)
+#    def terminal(self, msg) : self.report.terminal(msg)
+#    def terminalCentered(self, msg) : self.report.terminalCentered(msg)
+#    def writeToLog(self, code, msg, mod) : self.report.writeToLog(code, msg, mod)
+#    def trimLog(self, projLogLineLimit) : self.report.trimLog(projLogLineLimit)
 
+
+
+###############################################################################
+############################# Report/Log Functions ############################
+###############################################################################
+
+
+	def terminal (self, msg) :
+		'''Send a message to the terminal with a little formating to make it
+		look nicer.'''
+
+		# Output the message and wrap it if it is over 60 chars long.
+		print self.wordWrap(msg, 60)
+
+
+	def wordWrap (self, text, width) :
+		'''A word-wrap function that preserves existing line breaks
+			and most spaces in the text. Expects that existing line
+			breaks are linux style newlines (\n).'''
+
+		def func(line, word) :
+			nextword = word.split("\n", 1)[0]
+			n = len(line) - line.rfind('\n') - 1 + len(nextword)
+			if n >= width:
+				sep = "\n"
+			else:
+				sep = " "
+			return '%s%s%s' % (line, sep, word)
+		text = text.split(" ")
+		while len(text) > 1:
+			text[0] = func(text.pop(0), text[0])
+		return text[0]
+
+
+
+###############################################################################
+################################# Logging routines ############################
+###############################################################################
+
+# These have to do with keeping a running log file.  Everything done is recorded
+# in the log file and that file is trimmed to a length that is specified in the
+# system settings.  Everything is channeled to the log file but depending on
+# what has happened, they are classed in three levels:
+#   1) Common event going to log and terminal
+#   2) Warning event going to log and terminal if debugging is turned on
+#   3) Error event going to the log and terminal
+
+	def writeToLog (self, code, msg, mod = None) :
+		'''Send an event to the log file. and the terminal if specified.
+		Everything gets written to the log.  Whether a message gets written to
+		the terminal or not depends on what type (code) it is.  There are four
+		codes:
+			MSG = General messages go to both the terminal and log file
+			LOG = Messages that go only to the log file
+			WRN = Warnings that go to the terminal and log file
+			ERR = Errors that go to both the terminal and log file.'''
+
+		# Build the mod line
+		if mod :
+			mod = mod + ': '
+		else :
+			mod = ''
+
+		# Write out everything but LOG messages to the terminal
+		if code != 'LOG' :
+			self.terminal(code + ' - ' + msg)
+
+		# Test to see if this is a live project by seeing if the project type is
+		# set.  If it is, we can write out log files.  Otherwise, why bother?
+		if self.thisProjectType :
+			# When are we doing this?
+			date_time, secs = str(datetime.now()).split(".")
+
+			# Build the event line
+			if code == 'ERR' :
+				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + mod + msg + '\"'
+			else :
+				eventLine = '\"' + date_time + '\", \"' + code + '\", \"' + msg + '\"'
+
+			# Do we need a log file made?
+			if not os.path.isfile(self._projLogFile) or os.path.getsize(self._projLogFile) == 0 :
+				writeObject = codecs.open(self._projLogFile, "w", encoding='utf_8')
+				writeObject.write('TIPE event log file created: ' + date_time + '\n')
+				writeObject.close()
+
+			# Now log the event to the top of the log file using preAppend().
+			self.preAppend(eventLine, self._projLogFile)
+
+			# Write errors and warnings to the error log file
+			if code == 'WRN' and self._debugging :
+				self.writeToErrorLog(eventLine)
+
+			if code == 'ERR' :
+				self.writeToErrorLog(eventLine)
+
+		return
+
+
+	def writeToErrorLog (self, eventLine) :
+		'''In a perfect world there would be no errors, but alas there are and
+		we need to put them in a special file that can be accessed after the
+		process is run.  The error file from the previous session is deleted at
+		the begining of each new run.'''
+
+		# Because we want to read errors from top to bottom, we don't pre append
+		# them to the error log file.
+		if not os.path.isfile(self._projErrorLogFile) :
+			writeObject = codecs.open(self._projErrorLogFile, "w", encoding='utf_8')
+		else :
+			writeObject = codecs.open(self._projErrorLogFile, "a", encoding='utf_8')
+
+		# Write and close
+		writeObject.write(eventLine + '\n')
+		writeObject.close()
+
+		return
+
+
+	def trimLog (self, projLogLineLimit = 1000) :
+		'''Trim the system log file.  This will take an existing log file and
+		trim it to the amount specified in the system file.'''
+
+		# Of course this isn't needed if there isn't even a log file
+		if os.path.isfile(self._projLogFile) :
+
+			# Change this to an int()
+			projLogLineLimit = int(projLogLineLimit)
+
+			# Read in the existing log file
+			readObject = codecs.open(self._projLogFile, "r", encoding='utf_8')
+			lines = readObject.readlines()
+			readObject.close()
+
+			# Process only if we have enough lines
+			if len(lines) > projLogLineLimit :
+
+				writeObject = codecs.open(self._projLogFile, "w", encoding='utf_8')
+				lineCount = 0
+				for line in lines :
+					if projLogLineLimit > lineCount :
+						writeObject.write(line)
+						lineCount +=1
+
+				writeObject.close()
+
+		return
+
+
+	def preAppend (self, line, file_name) :
+		'''Got the following code out of a Python forum.  This will pre-append a
+		line to the begining of a file.'''
+
+		fobj = fileinput.FileInput(file_name, inplace=1)
+		first_line = fobj.readline()
+		sys.stdout.write("%s\n%s" % (line, first_line))
+		for line in fobj:
+			sys.stdout.write("%s" % line)
+
+		fobj.close()
 
 

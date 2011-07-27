@@ -28,8 +28,10 @@ import sys, os, codecs, shutil, operator
 from datetime import *
 from configobj import ConfigObj
 
-# Dumb user home init function
+# Basic startup functions
+
 def initUserHome (userHome) :
+	'''Dumb user home init function'''
 
 	# Create user folder components
 	tipeFile            = os.path.join(userHome, 'tipe.conf')
@@ -82,34 +84,31 @@ sys.path.insert(0, os.path.join(basePath, 'bin', 'python'))
 sys.path.insert(0, os.path.join(basePath, 'bin', 'python', 'lib_system'))
 
 # Now that our path is good we can load the local classes
-from report import Report
-report = Report()
 from command import Command, commands
 from project import Project
 
 # Create a basic TIPE project object that will enable it to start
 aProject = Project(os.getcwd(), userPath, basePath)
 
-# Initialize reporting
-report = Report(
-	projLogFile         = aProject.projLogFile if aProject._sysConfig else None,
-	projErrFile         = aProject.projErrorLogFile if aProject._sysConfig else None,
-	debug               = aProject._sysConfig and aProject._sysConfig['System']['debugging'],
-	projectName         = aProject.projectName)
-
 # Do some cleanup like getting rid of the last sessions error log file.
-if os.path.isfile(aProject.projErrorLogFile) :
-	os.remove(aProject.projErrorLogFile)
+try :
+	if os.path.isfile(aProject.projErrorLogFile) :
+		os.remove(aProject.projErrorLogFile)
+except :
+	pass
 
 # Give a welcome message
 idCode = ''
-if aProject.projectIDCode != '' :
-	idCode = ' (' + aProject.projectIDCode + ')'
+try :
+	if aProject.projectIDCode != '' :
+		idCode = ' (' + aProject.projectIDCode + ')'
+except :
+	pass
 
-report.terminal('\n\t\tWelcome to TIPE ' + aProject.version)
-report.terminal('\t\tCurrent User: ' + aProject.userName)
-if aProject.thisProjectType != '' :
-	report.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
+aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.systemVersion)
+aProject.terminal('\t\tCurrent User: ' + aProject.userName)
+if idCode :
+	aProject.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
 
 # TIPE Command Line Syntax
 # The tipe program can take numerious command.  Each command has two parts, a
@@ -137,7 +136,7 @@ if len(sys.argv) > 1 :
 else :
 	# If there isn't anything then we'll just go to the projects manager
 	command = "help"
-	report.terminal('Available commands:')
+	aProject.terminal('\nAvailable commands:')
 
 
 
@@ -149,7 +148,7 @@ else :
 if command in commands :
 	commands[command].run(aProject, opts)
 else :
-	report.terminal('ERROR: This command does not exist: ' + command)
+	aProject.terminal('ERROR: This command does not exist: ' + command)
 
 
 ## Write out all the current settings
@@ -159,5 +158,5 @@ aProject.writeProjConfFiles()
 #aProject.trimLog(aProject.projLogLineLimit)
 
 ## Politely say good bye
-report.terminal('\n\t\tThank you, please come again!\n')
+aProject.terminal('\n\t\tThank you, please come again!\n')
 

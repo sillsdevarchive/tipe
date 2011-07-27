@@ -48,7 +48,7 @@ Todo:
         <setting>
             <name>Debugging</name>
             <key>debugging</key>
-            <description>If set to true, all events will be recorded to the log file for the purpose of debugging errors.</description>
+            <description>If set to true, reporting will be verbose and all events will be recorded to the log file for the purpose of debugging errors.</description>
             <type>boolean</type>
             <value>False</value>
         </setting>

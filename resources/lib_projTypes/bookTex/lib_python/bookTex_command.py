@@ -23,41 +23,7 @@
 
 import os
 from optparse import OptionParser
-
-# Load the local classes
-
-
-commands = {}
-
-class MetaCommand(type) :
-
-	def __init__(c, namestring, t, d) :
-		global commands
-		super(MetaCommand, c).__init__(namestring, t, d)
-		if c.type :
-			commands[c.type] = c.__call__()
-
-
-class Command (object) :
-	'''The main command object class.'''
-
-	__metaclass__ = MetaCommand
-	type = None
-
-	# Intitate the whole class
-	def __init__(self) :
-		self.parser = OptionParser(self.__doc__)
-		self.setupOptions(self.parser)
-
-	def run(self, aProject, args) :
-		(self.options, self.args) = self.parser.parse_args(args = args)
-
-	def setupOptions(self, parser) :
-		pass
-
-	def help(self) :
-		self.parser.print_help()
-
+from sys_command import Command
 
 ###############################################################################
 ########################### Command Classes Go Here ###########################
@@ -73,13 +39,13 @@ class ChangeProjSettings (Command) :
 
 	def run(self, aProject, args) :
 		super(ChangeProjSettings, self).run(aProject, args)
-		aProject.changeProjectSetting(args[0][2:], args[1])
+		aProject.changeProjectSetting()
+
+
 
 	def setupOptions(self, parser) :
-#        self.parser.add_option("--userName", action="store", help="Change the system user name.")
-#        self.parser.add_option("--language", action="store", help="Change the interface language.")
-#        self.parser.add_option("--loglimit", action="store", help="Set the number of lines the log file is allowed to have.")
-		pass
+		self.parser.add_option("--projectName", action="store", help="Change the name of the current project.")
+		self.parser.add_option("--projectID", action="store", help="Change the ID code of the current project.")
 
 
 # This is an example command class
@@ -133,3 +99,8 @@ class Render (Command) :
 		# Collect the results and report them in the log
 
 		return True
+
+
+
+
+

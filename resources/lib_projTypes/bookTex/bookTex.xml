@@ -72,6 +72,13 @@ Todo:
             <type>string</type>
             <value></value>
         </setting>
+        <setting>
+            <name>Project Component Types</name>
+            <key>projectComponentTypes</key>
+            <description>A list of component types that are used in this project (one or more).</description>
+            <type>list</type>
+            <value></value>
+        </setting>
     </section>
 
     <section>

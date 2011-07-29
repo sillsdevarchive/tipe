@@ -21,7 +21,7 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os, sys, fileinput
+import codecs, os, sys, fileinput, imp
 from datetime import *
 from configobj import ConfigObj, Section
 
@@ -30,6 +30,7 @@ from configobj import ConfigObj, Section
 from component import Component
 from book import Book
 from xml.etree import ElementTree
+#from sys_command import Command, commands
 
 
 ###############################################################################
@@ -254,12 +255,38 @@ class Project (object) :
 			self._projConfig = loadProjectSettings(self.thisProjectType, self.projHome, self.userHome, self.tipeHome)
 			for k in ('projectType',        'projectName',
 					  'projectEditDate',    'projCreateDate',
-					  'projectIDCode') :
+					  'projectIDCode',      'projectComponentTypes') :
 				setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
 			if self._projConfig :
 				self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['projLogFile']['name'])
 				self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['projErrorLogFile']['name'])
 				self.orgProjectEditDate = self.projectEditDate
+
+				# Set the system paths for whatever project types and components that
+				# were found in the conf.
+				self.thisTipeProjTypeLib = os.path.join(self.tipeProjTypes, self.projectType, 'lib_python')
+				sys.path.insert(0, self.thisTipeProjTypeLib)
+				self.thisUserProjTypeLib = os.path.join(self.userProjTypes, self.projectType, 'lib_python')
+				if os.path.isdir(self.thisUserProjTypeLib) :
+					sys.path.insert(0, self.thisUserProjTypeLib)
+				if len(self.projectComponentTypes) != 0 :
+					for cType in self.projectComponentTypes :
+						self.thisUserCompTypeLib = os.path.join(self.userCompTypes, cType)
+						sys.path.insert(0, self.thisTipeProjTypeLib)
+						self.thisUserProjTypeLib = os.path.join(self.userProjTypes, cType)
+						if os.path.isdir(self.thisUserProjTypeLib) :
+							sys.path.insert(0, self.thisUserProjTypeLib)
+
+				# Load project type commands
+				try :
+#                    print "Loading: " + os.path.join(self.thisTipeProjTypeLib, self.projectType)
+#                    imp.load_source(self.projectType, os.path.join(self.thisTipeProjTypeLib, self.projectType))
+					__import__(self.projectType)
+				except Exception, e:
+#                    print sys.path
+					print e
+					self.terminal('Failed to load ' + self.projectType + ' project commands')
+
 
 
 ###############################################################################

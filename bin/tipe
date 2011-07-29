@@ -88,7 +88,7 @@ from sys_command import Command, commands
 from project import Project
 
 # Create a basic TIPE project object that will enable it to start
-aProject = Project(os.getcwd(), userPath, basePath)
+aProject = make_me_a_project(os.getcwd(), userPath, basePath)
 
 # Do some cleanup like getting rid of the last sessions error log file.
 try :

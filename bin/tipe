@@ -116,12 +116,11 @@ else :
 
 # Now get the settings from the users global tipe.conf file
 tipeUser = os.path.join(userHome, 'tipe.conf')
-if os.path.exists(tipeUser) :
-	sysConfig = safeConfLoad(tipeUser, sysXmlConfig)
-else :
+if not os.path.exists(tipeUser) :
 	initUserHome(userHome)
-	sysConfig = safeConfLoad(tipeUser, sysXmlConfig)
+#    sysConfig = safeConfLoad(tipeUser, sysXmlConfig)
 
+sysConfig = override_components(sysXmlConfig, tipeUser)
 
 ###############################################################################
 ############################### Terminal Startup ##############################

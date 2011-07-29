@@ -73,21 +73,53 @@ def xml_add_section(data, doc) :
 		xml_add_section(nd, s)
 
 
+def override(sysConfig, fname) :
+	'''Subprocess of override_components().  The purpose is to override default
+	settings taken from the TIPE system (sysConfig) file with those found in the
+	project.conf file (projConfig).'''
+
+	# Read in the project.conf file and create an object
+	projConfig = ConfigObj(fname)
+	res = ConfigObj(sysConfig.dict())
+
+	# Recall this function to override the default settings
+	res.override(projConfig)
+
+	return res
+
+
 def override_components(aConfig, fname) :
 	'''Overrides component settings that we got from the default XML system
 	settings file.'''
+
 	res = ConfigObj()
 	projConfig = ConfigObj(fname)
 	for s, v in projConfig.items() :
-		newtype = v['type']
+		newtype = v['Type']
 		old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
 		old.override(v)
 		oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
 		oldtype.override(newtype)
 		res[s] = old
-		res[s]['type'] = oldtype
+		res[s]['Type'] = oldtype
+
 	return res
 
+
+def override_section(self, aSection) :
+	'''Overrides an entire setting section.'''
+
+	for k, v in self.items() :
+		if k in aSection :
+			if isinstance(v, dict) and isinstance(aSection[k], dict) :
+				v.override(aSection[k])
+			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
+				self[k] = aSection[k]
+
+
+# This will reasign the standard ConfigObj function that works much like ours
+# but not quite what we need for working with XML as one of the inputs.
+Section.override = override_section
 
 ############################### Terminal Output ###############################
 

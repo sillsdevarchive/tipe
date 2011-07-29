@@ -73,6 +73,22 @@ def xml_add_section(data, doc) :
 		xml_add_section(nd, s)
 
 
+def override_components(aConfig, fname) :
+	'''Overrides component settings that we got from the default XML system
+	settings file.'''
+	res = ConfigObj()
+	projConfig = ConfigObj(fname)
+	for s, v in projConfig.items() :
+		newtype = v['type']
+		old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
+		old.override(v)
+		oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
+		oldtype.override(newtype)
+		res[s] = old
+		res[s]['type'] = oldtype
+	return res
+
+
 ############################### Terminal Output ###############################
 
 def terminal (msg) :
@@ -108,3 +124,7 @@ def tStamp () :
 	date_time, secs = str(datetime.now()).split(".")
 
 	return date_time
+
+
+
+

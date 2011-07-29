@@ -74,8 +74,9 @@ def initUserHome (userHome) :
 def safeConfLoad (userConfigFile, baseConfig) :
 	sysUserConfig = ConfigObj(userConfigFile)
 	# Merge default settings with global settings
-	baseConfig.merge(sysUserConfig)
-	return baseConfig
+	return override_components(baseConfig, userConfigFile)
+#    baseConfig.merge(sysUserConfig)
+#    return baseConfig
 
 
 # Set the TIPE base program path

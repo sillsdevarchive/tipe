@@ -16,10 +16,11 @@
 # 20110610 - djd - Start initial draft
 # 20110704 - djd - Start refactor for multiple component types
 # 20110721 - djd - Added proper command line processing
+# 20110729 - djd - Removed TIPE system settings from project folder
 
 
 ###############################################################################
-################################## Load Modules ###############################
+################################ Initialize TIPE ##############################
 ###############################################################################
 # Firstly, import all the standard Python modules we need for this process and
 # set the base path
@@ -33,19 +34,16 @@ from configobj import ConfigObj
 def initUserHome (userHome) :
 	'''Dumb user home init function'''
 
-	# Create user folder components
+	# Create core home paths
 	tipeFile            = os.path.join(userHome, 'tipe.conf')
 	resources           = os.path.join(userHome, 'resources')
-	scripts             = os.path.join(userHome, 'resources', 'lib_scripts')
-	admin               = os.path.join(userHome, 'resources', 'lib_admin')
-	illustrations       = os.path.join(userHome, 'resources', 'lib_illustratons')
-	fonts               = os.path.join(userHome, 'resources', 'lib_fonts')
-	projs               = os.path.join(userHome, 'resources', 'lib_projTypes')
-	comps               = os.path.join(userHome, 'resources', 'lib_compTypes')
 
-	for f in [userHome, resources, scripts, admin, illustrations, fonts, projs, comps] :
-		if not os.path.isdir(f) :
-			os.mkdir(f)
+	# Create home folders
+	if not os.path.isdir(userHome) :
+		os.mkdir(userHome)
+
+	if not os.path.isdir(resources) :
+		os.mkdir(resources)
 
 	# Make the default global tipe.conf for custom environment settings
 	if not os.path.isfile(tipeFile) :
@@ -53,62 +51,84 @@ def initUserHome (userHome) :
 		tipe = ConfigObj()
 		tipe.filename = tipeFile
 		tipe['System'] = {}
+		tipe['Folders'] = {}
 		tipe['Projects'] = {}
 		tipe['System']['userName'] = 'Default User'
 		tipe['System']['initDate'] = date_time
+		# Folder list
+		folders = ['fonts', 'illustrations', 'admin', 'compTypes', 'projTypes']
+		# System folders
+		for f in folders :
+			tipe['Folders']['tipe' + f] = os.path.join(tipeHome, 'resources', 'lib_' + f)
+		# User (home) folders
+		for f in folders :
+			thisFolder = os.path.join(userHome, 'resources', 'lib_' + f)
+			tipe['Folders']['user' + f] = thisFolder
+			if not os.path.isdir(thisFolder) :
+				os.mkdir(thisFolder)
+
+		# Write out the user config file
 		tipe.write()
 
 
-# Set the base program path
-basePath = os.environ.get('TIPE_BASE')
-if not basePath :
-	basePath = os.path.join('usr', 'share', 'xetex-tipe')
-	os.environ['TIPE_BASE'] = basePath
+def safeConfLoad (userConfigFile, baseConfig) :
+	sysUserConfig = ConfigObj(userConfigFile)
+	# Merge default settings with global settings
+	baseConfig.merge(sysUserConfig)
+	return baseConfig
+
+
+# Set the TIPE base program path
+tipeHome = os.environ.get('TIPE_BASE')
+if not tipeHome :
+	tipeHome = os.path.join('usr', 'share', 'xetex-tipe')
+	os.environ['TIPE_BASE'] = tipeHome
 
 # Set the user environment path
-userPath = os.environ.get('TIPE_USER')
-if not userPath :
+userHome = os.environ.get('TIPE_USER')
+if not userHome :
 	sysHome = os.environ.get('HOME')
-	userPath = os.path.join(sysHome, '.config', 'tipe')
-	os.environ['TIPE_USER'] = basePath
-
-# Run init to be safe in case something needs updating or is missing.
-initUserHome(userPath)
+	userHome = os.path.join(sysHome, '.config', 'tipe')
+	os.environ['TIPE_USER'] = userHome
 
 # Before we get started we need to do some preliminary tests to see what the
 # environment we are starting in looks like.  That will determine where we go
 # from here.
 
 # Set our paths to application resources
-sys.path.insert(0, os.path.join(basePath, 'bin', 'python'))
-sys.path.insert(0, os.path.join(basePath, 'bin', 'python', 'lib_system'))
+sys.path.insert(0, os.path.join(tipeHome, 'bin', 'python'))
+sys.path.insert(0, os.path.join(tipeHome, 'bin', 'python', 'lib_system'))
 
 # Now that our path is good we can load the local classes
+from tools import *
 from sys_command import Command, commands
-from project import Project
 
-# Create a basic TIPE project object that will enable it to start
-aProject = make_me_a_project(os.getcwd(), userPath, basePath)
+# Load in system user information for TIPE startup
 
-# Do some cleanup like getting rid of the last sessions error log file.
-try :
-	if os.path.isfile(aProject.projErrorLogFile) :
-		os.remove(aProject.projErrorLogFile)
-except :
-	pass
+# Check to see if the file is there, then read it in and break it into
+# sections. If it fails, scream really loud!
+tipeXML = os.path.join(tipeHome, 'bin', 'tipe.xml')
+if os.path.exists(tipeXML) :
+	sysXmlConfig = xml_to_section(tipeXML)
+else :
+	raise IOError, "Can't open " + tipeXML
+
+# Now get the settings from the users global tipe.conf file
+tipeUser = os.path.join(userHome, 'tipe.conf')
+if os.path.exists(tipeUser) :
+	sysConfig = safeConfLoad(tipeUser, sysXmlConfig)
+else :
+	initUserHome(userHome)
+	sysConfig = safeConfLoad(tipeUser, sysXmlConfig)
+
+
+###############################################################################
+############################### Terminal Startup ##############################
+###############################################################################
 
 # Give a welcome message
-idCode = ''
-try :
-	if aProject.projectIDCode != '' :
-		idCode = ' (' + aProject.projectIDCode + ')'
-except :
-	pass
-
-aProject.terminal('\n\t\tWelcome to TIPE ' + aProject.systemVersion)
-aProject.terminal('\t\tCurrent User: ' + aProject.userName)
-if idCode :
-	aProject.terminal('\t\tCurrent Project: ' + aProject.projectName + idCode + '\n')
+terminal('\n\t\tWelcome to TIPE ' + sysConfig['System']['systemVersion'])
+terminal('\t\tCurrent User: ' + sysConfig['System']['userName'])
 
 # TIPE Command Line Syntax
 # The tipe program can take numerious command.  Each command has two parts, a
@@ -136,7 +156,7 @@ if len(sys.argv) > 1 :
 else :
 	# If there isn't anything then we'll just go to the projects manager
 	command = "help"
-	aProject.terminal('\nAvailable commands:')
+	terminal('\nAvailable commands:')
 
 
 
@@ -146,17 +166,11 @@ else :
 
 # Run the command and pass along the aProject object
 if command in commands :
-	commands[command].run(aProject, opts)
+	commands[command].run(opts)
 else :
-	aProject.terminal('ERROR: This command does not exist: ' + command)
+	terminal('ERROR: This command does not exist: ' + command)
 
-
-## Write out all the current settings
-aProject.writeProjConfFiles()
-
-## Trim the project log file if needed
-#aProject.trimLog(aProject.projLogLineLimit)
 
 ## Politely say good bye
-aProject.terminal('\n\t\tThank you, please come again!\n')
+terminal('\n\t\tThank you, please come again!\n')
 

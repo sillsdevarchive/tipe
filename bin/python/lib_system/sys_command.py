@@ -25,7 +25,7 @@ import os
 from optparse import OptionParser
 
 # Load the local classes
-
+from tools import *
 
 commands = {}
 
@@ -49,7 +49,7 @@ class Command (object) :
 		self.parser = OptionParser(self.__doc__)
 		self.setupOptions(self.parser)
 
-	def run(self, aProject, args) :
+	def run(self, args) :
 		(self.options, self.args) = self.parser.parse_args(args = args)
 
 	def setupOptions(self, parser) :
@@ -74,42 +74,42 @@ class About (Command) :
 
 	type = "about"
 
-	def run(self, aProject, args) :
-		super(About, self).run(aProject, args)
-		aProject.terminal(aProject._sysConfig['System']['aboutText'])
+	def run(self, args) :
+		super(About, self).run(args)
+#        terminal(aProject._sysConfig['System']['aboutText'])
 
 
-class ChangeSettings (Command) :
-	'''Change a system setting.'''
+#class ChangeSettings (Command) :
+#    '''Change a system setting.'''
 
-	type = "change"
+#    type = "change"
 
-	def run(self, aProject, args) :
-		super(ChangeSettings, self).run(aProject, args)
-		aProject.changeSystemSetting(args[0][2:], args[1])
+#    def run(self, args) :
+#        super(ChangeSettings, self).run(args)
+#        aProject.changeSystemSetting(args[0][2:], args[1])
 
-	def setupOptions(self, parser) :
-		self.parser.add_option("--userName", action="store", help="Change the system user name.")
-		self.parser.add_option("--language", action="store", help="Change the interface language.")
-		self.parser.add_option("--loglimit", action="store", help="Set the number of lines the log file is allowed to have.")
+#    def setupOptions(self, parser) :
+#        self.parser.add_option("--userName", action="store", help="Change the system user name.")
+#        self.parser.add_option("--language", action="store", help="Change the interface language.")
+#        self.parser.add_option("--loglimit", action="store", help="Set the number of lines the log file is allowed to have.")
 
 
-class Debugging (Command) :
-	'''Turn on debugging (verbose output) in the logging.'''
+#class Debugging (Command) :
+#    '''Turn on debugging (verbose output) in the logging.'''
 
-	type = "debug"
+#    type = "debug"
 
-	def run(self, aProject, args) :
-		super(Debugging, self).run(aProject, args)
-		if args[0][2:] == 'on' :
-			aProject.changeSystemSetting("debugging", "True")
+#    def run(self, args) :
+#        super(Debugging, self).run(args)
+#        if args[0][2:] == 'on' :
+#            aProject.changeSystemSetting("debugging", "True")
 
-		if args[0][2:] == 'off' :
-			aProject.changeSystemSetting("debugging", "False")
+#        if args[0][2:] == 'off' :
+#            aProject.changeSystemSetting("debugging", "False")
 
-	def setupOptions(self, parser) :
-		self.parser.add_option("--on", action="store_true", help="Turn on debugging for the log file output.")
-		self.parser.add_option("--off", action="store_false", help="Turn off debugging for the log file output.")
+#    def setupOptions(self, parser) :
+#        self.parser.add_option("--on", action="store_true", help="Turn on debugging for the log file output.")
+#        self.parser.add_option("--off", action="store_false", help="Turn off debugging for the log file output.")
 
 
 class Help (Command) :
@@ -117,17 +117,17 @@ class Help (Command) :
 
 	type = "help"
 
-	def run(self, aProject, args) :
+	def run(self, args) :
 		global commands
 		if len(args) :
 			cmd = commands[args[0]]
 			cmd.help()
 		else :
 			for c in commands.keys() :
-				aProject.terminal(c)
+				terminal(c)
 
 			if len(commands) <= 2 :
-				aProject.terminal("\nType [help command] for more general command information.")
+				terminal("\nType [help command] for more general command information.")
 
 
 class GUIManager (Command) :
@@ -135,14 +135,14 @@ class GUIManager (Command) :
 
 	type = "manager"
 
-	def run(self, aProject, args) :
-		super(GUIManager, self).run(aProject, args)
+	def run(self, args) :
+		super(GUIManager, self).run(args)
 		if args[1].lower() == 'standard' :
-			aProject.terminal("Sorry, this GUI Manager has not been implemented yet.")
+			terminal("Sorry, this GUI Manager has not been implemented yet.")
 		elif args[1].lower() == 'web' :
-			aProject.terminal("Sorry, the web client has not been implemented yet.")
+			terminal("Sorry, the web client has not been implemented yet.")
 		else :
-			aProject.terminal("Not a recognized GUI Manager.")
+			terminal("Not a recognized GUI Manager.")
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-c", "--client", action="store", type="string", help="Start up the TIPE client.")
@@ -153,8 +153,8 @@ class CreateProject (Command) :
 
 	type = "create"
 
-	def run(self, aProject, args) :
-		super(CreateProject, self).run(aProject, args)
+	def run(self, args) :
+		super(CreateProject, self).run(args)
 		c = 0; ptype = ''; pname = ''; pid = ''; pdir = ''
 		for o in args :
 			if o == '-t' or o == '--ptype' :
@@ -168,8 +168,8 @@ class CreateProject (Command) :
 
 			c+=1
 
-		if aProject.makeProject(ptype, pname, pid, pdir) :
-				aProject.terminal('Success! New project created.')
+#        if aProject.makeProject(ptype, pname, pid, pdir) :
+#                aProject.terminal('Success! New project created.')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")
@@ -190,54 +190,54 @@ class CreateProject (Command) :
 #        self.parser.add_option("-d", "--dir", type="string", action="store", help="Create project in this directory")
 
 
-class RemoveProject (Command) :
-	'''Remove an active project from the system and lock the working conf files.
-	If no project ID is given the default is the project in the cwd.  If there
-	is no project in the cwd it will fail.'''
+#class RemoveProject (Command) :
+#    '''Remove an active project from the system and lock the working conf files.
+#    If no project ID is given the default is the project in the cwd.  If there
+#    is no project in the cwd it will fail.'''
 
-	type = "remove"
+#    type = "remove"
 
-	def run(self, aProject, args) :
-		super(RemoveProject, self).run(aProject, args)
-		if len(args) :
-			pID = args[1]
-		else :
-			if aProject.projectIDCode != '' :
-				pID = aProject.projectIDCode
-			else :
-				aProject.terminal('Project ID code not given or found. Remove project failed.')
+#    def run(self, args) :
+#        super(RemoveProject, self).run(args)
+#        if len(args) :
+#            pID = args[1]
+#        else :
+#            if aProject.projectIDCode != '' :
+#                pID = aProject.projectIDCode
+#            else :
+#                aProject.terminal('Project ID code not given or found. Remove project failed.')
 
-		if aProject.removeProject(pID) :
-			aProject.terminal('Removed project: [' + pID + ']')
+#        if aProject.removeProject(pID) :
+#            aProject.terminal('Removed project: [' + pID + ']')
+#
+#    def setupOptions(self, parser) :
+#        self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
 
-	def setupOptions(self, parser) :
-		self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
 
+#class RestoreProject (Command) :
+#    '''Restores a project in the dir given. The default dir is cwd.'''
 
-class RestoreProject (Command) :
-	'''Restores a project in the dir given. The default dir is cwd.'''
+#    type = "restore"
 
-	type = "restore"
+#    def run(self, aProject, args) :
+#        super(RestoreProject, self).run(aProject, args)
+#        if len(args) :
+#            print args[1], os.path.split(os.getcwd())[1]
+#
+#            if os.path.split(os.getcwd())[1] == args[1] :
+#                pDir = os.getcwd()
+#            else :
+#                pDir = os.path.abspath(args[1])
+#        else :
+#            pDir = os.getcwd()
 
-	def run(self, aProject, args) :
-		super(RestoreProject, self).run(aProject, args)
-		if len(args) :
-			print args[1], os.path.split(os.getcwd())[1]
+#        if aProject.restoreProject(pDir) :
+#            aProject.terminal('Restored project at: ' + pDir)
+#        else :
+#            aProject.terminal('Restoring project at: ' + pDir + ' failed.')
 
-			if os.path.split(os.getcwd())[1] == args[1] :
-				pDir = os.getcwd()
-			else :
-				pDir = os.path.abspath(args[1])
-		else :
-			pDir = os.getcwd()
-
-		if aProject.restoreProject(pDir) :
-			aProject.terminal('Restored project at: ' + pDir)
-		else :
-			aProject.terminal('Restoring project at: ' + pDir + ' failed.')
-
-	def setupOptions(self, parser) :
-		self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
+#    def setupOptions(self, parser) :
+#        self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
 
 
 

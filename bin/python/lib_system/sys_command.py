@@ -31,11 +31,11 @@ commands = {}
 
 class MetaCommand(type) :
 
-	def __init__(c, namestring, t, d) :
+	def __init__(cmd, namestring, t, d) :
 		global commands
-		super(MetaCommand, c).__init__(namestring, t, d)
-		if c.type :
-			commands[c.type] = c.__call__()
+		super(MetaCommand, cmd).__init__(namestring, t, d)
+		if cmd.type :
+			commands[cmd.type] = cmd.__call__()
 
 
 class Command (object) :
@@ -48,6 +48,7 @@ class Command (object) :
 	def __init__(self) :
 		self.parser = OptionParser(self.__doc__)
 		self.setupOptions(self.parser)
+#        self.userConfig = userConfig
 
 	def run(self, args) :
 		(self.options, self.args) = self.parser.parse_args(args = args)
@@ -84,7 +85,7 @@ class ChangeSettings (Command) :
 
 	type = "change"
 
-	def run(self, userConfig, args) :
+	def run(self, args) :
 		super(ChangeSettings, self).run(args)
 #        aProject.changeSystemSetting(args[0][2:], args[1])
 		new = args[1]
@@ -99,7 +100,6 @@ class ChangeSettings (Command) :
 			terminal('New setting is the same, no need to change.')
 
 		return userConfig
-
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("--userName", action="store", help="Change the system user name.")

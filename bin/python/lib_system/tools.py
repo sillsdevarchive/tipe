@@ -96,30 +96,18 @@ def xml_add_section(data, doc) :
 		xml_add_section(nd, s)
 
 
-#def override(userConfig, fname) :
-#    '''Subprocess of override_components().  The purpose is to override default
-#    settings taken from the TIPE system (userConfig) file with those found in the
-#    project.conf file (projConfig).'''
-
-#    # Read in the project.conf file and create an object
-#    projConfig = ConfigObj(fname)
-#    res = ConfigObj(userConfig.dict())
-
-#    # Recall this function to override the default settings
-#    res.override(projConfig)
-
-#    return res
-
-
 def override_section(self, aSection) :
-	'''Overrides an entire setting section.'''
+	'''Overrides settings by using the XML defaults and then merging those with
+	items in the configobj that match.'''
 
+	# Look for the key and value in object of items created from itself
 	for k, v in self.items() :
 		if k in aSection :
 			if isinstance(v, dict) and isinstance(aSection[k], dict) :
 				v.override(aSection[k])
 			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
 				self[k] = aSection[k]
+	# Return the overridden object
 	return self
 
 

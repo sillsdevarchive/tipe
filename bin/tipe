@@ -132,8 +132,13 @@ userConfig = ConfigObj(sysXmlConfig.dict()).override(tipeConfig)
 if tipeProjs :
 	userConfig['Projects'] = tipeProjs
 
+# FIXME: How do we pass a config object to a command module?
+# With a valid project config in place we can initiate our system commands
+#Command(userConfig)
+
 # Load in project settings if they exist in the cwd
 projConfig = ConfigObj()
+
 ###############################################################################
 ############################### Terminal Startup ##############################
 ###############################################################################
@@ -178,7 +183,7 @@ else :
 
 # Run the command and pass along the aProject object
 if command in commands :
-	commands[command].run(userConfig, opts)
+	commands[command].run(opts)
 else :
 	terminal('ERROR: This command does not exist: ' + command)
 

@@ -33,6 +33,29 @@ from configobj import ConfigObj, Section
 
 ############################## Settings Functions #############################
 
+def writeConfFiles (userConfig, projConfig, userHome, projHome) :
+	'''Write out, if necessary, any conf files.  This will depend on if there
+	has been any activity to necessitate this action.'''
+
+	userConfigFile = os.path.join(userHome, userConfig['Files']['userConfFile']['name'])
+	projConfigFile = os.path.join(projHome, userConfig['Files']['projConfFile']['name'])
+	date_time = tStamp()
+	if userConfig['System']['writeOutUserConfFile'] :
+		userConfig['System']['lastEditDate'] = date_time
+		userConfig['System']['writeOutUserConfFile'] = ''
+		userConfig.filename = userConfigFile
+		userConfig.write()
+
+	# Don't try to write to the projConfFile if it is not there or the write
+	# flag has not been set.'
+	if os.path.isfile(projConfigFile) :
+		if userConfig['ProjectInfo']['writeOutProjConfFile'] :
+			projConfig['ProjectInfo']['lastEditDate'] = date_time
+			projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
+			projConfig.filename = projConfigFile
+			projConfig.write()
+
+
 def xml_to_section(fname) :
 	'''Read in our default settings from the XML system settings file'''
 
@@ -73,37 +96,19 @@ def xml_add_section(data, doc) :
 		xml_add_section(nd, s)
 
 
-def override(sysConfig, fname) :
-	'''Subprocess of override_components().  The purpose is to override default
-	settings taken from the TIPE system (sysConfig) file with those found in the
-	project.conf file (projConfig).'''
+#def override(userConfig, fname) :
+#    '''Subprocess of override_components().  The purpose is to override default
+#    settings taken from the TIPE system (userConfig) file with those found in the
+#    project.conf file (projConfig).'''
 
-	# Read in the project.conf file and create an object
-	projConfig = ConfigObj(fname)
-	res = ConfigObj(sysConfig.dict())
+#    # Read in the project.conf file and create an object
+#    projConfig = ConfigObj(fname)
+#    res = ConfigObj(userConfig.dict())
 
-	# Recall this function to override the default settings
-	res.override(projConfig)
+#    # Recall this function to override the default settings
+#    res.override(projConfig)
 
-	return res
-
-
-def override_components(aConfig, fname) :
-	'''Overrides component settings that we got from the default XML system
-	settings file.'''
-
-	res = ConfigObj()
-	projConfig = ConfigObj(fname)
-	for s, v in projConfig.items() :
-		newtype = v['Type']
-		old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
-		old.override(v)
-		oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
-		oldtype.override(newtype)
-		res[s] = old
-		res[s]['Type'] = oldtype
-
-	return res
+#    return res
 
 
 def override_section(self, aSection) :
@@ -115,6 +120,7 @@ def override_section(self, aSection) :
 				v.override(aSection[k])
 			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
 				self[k] = aSection[k]
+	return self
 
 
 # This will reasign the standard ConfigObj function that works much like ours

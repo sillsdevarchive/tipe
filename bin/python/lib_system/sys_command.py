@@ -79,19 +79,32 @@ class About (Command) :
 #        terminal(aProject._sysConfig['System']['aboutText'])
 
 
-#class ChangeSettings (Command) :
-#    '''Change a system setting.'''
+class ChangeSettings (Command) :
+	'''Change a system setting.'''
 
-#    type = "change"
+	type = "change"
 
-#    def run(self, args) :
-#        super(ChangeSettings, self).run(args)
+	def run(self, userConfig, args) :
+		super(ChangeSettings, self).run(args)
 #        aProject.changeSystemSetting(args[0][2:], args[1])
+		new = args[1]
+#        old = userConfig[args[0][2:]][argv[1]]
+		old = userConfig['System'][args[0][2:]]
 
-#    def setupOptions(self, parser) :
-#        self.parser.add_option("--userName", action="store", help="Change the system user name.")
-#        self.parser.add_option("--language", action="store", help="Change the interface language.")
-#        self.parser.add_option("--loglimit", action="store", help="Set the number of lines the log file is allowed to have.")
+		if new != old :
+			userConfig['System'][args[0][2:]] = new
+			terminal('Changed ' + args[0][2:] + ' from [' + old + '] to ' + new)
+			userConfig['System']['writeOutUserConfFile'] = 'True'
+		else :
+			terminal('New setting is the same, no need to change.')
+
+		return userConfig
+
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("--userName", action="store", help="Change the system user name.")
+		self.parser.add_option("--language", action="store", help="Change the interface language.")
+		self.parser.add_option("--loglimit", action="store", help="Set the number of lines the log file is allowed to have.")
 
 
 #class Debugging (Command) :

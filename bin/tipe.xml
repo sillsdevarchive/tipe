@@ -88,15 +88,8 @@ Todo:
             <value>make --makefile=</value>
         </setting>
         <setting>
-            <name>TIPE Settings Last Edit Date</name>
-            <key>tipeEditDate</key>
-            <description>Time stamp of when the TIPE settings were last edited.</description>
-            <type>string</type>
-            <value></value>
-        </setting>
-        <setting>
             <name>User Settings Last Edit Date</name>
-            <key>userEditDate</key>
+            <key>lastEditDate</key>
             <description>Time stamp of when the user settings were last edited.</description>
             <type>string</type>
             <value></value>
@@ -122,47 +115,47 @@ Todo:
             <type>string</type>
             <value></value>
         </setting>
+        <setting>
+            <name>Write User Configuration File</name>
+            <key>writeOutUserConfFile</key>
+            <description>When changes are made to the user configuration file this is set to true to tigger a writeout operation when the application closes.</description>
+            <type>boolean</type>
+            <value></value>
+        </setting>
     </section>
     <section>
         <name>Files</name>
         <sectionID>Files</sectionID>
         <description>This section contains the names of all the default TIPE system files.</description>
         <section>
-            <name>System Configuration File</name>
-            <sectionID>tipeProjConfFile</sectionID>
-            <description>The system configuration file stored in the project.</description>
+            <name>TIPE User Configuration Settings</name>
+            <sectionID>userConfFile</sectionID>
+            <description>The name of the TIPE user settings file. This is created when type is run for the first time and contains global override settings for default system settings.</description>
             <setting>
                 <name>Name</name>
                 <key>name</key>
                 <description>The name of this file.</description>
                 <type>string</type>
-                <value>.tipe.conf</value>
+                <value>tipe.conf</value>
             </setting>
             <setting>
                 <name>Location</name>
                 <key>location</key>
                 <description>The location of the folder.</description>
                 <type>string</type>
-                <value></value>
+                <value>[userHome]</value>
             </setting>
             <setting>
                 <name>Version Control</name>
                 <key>versionControl</key>
                 <description>Is this file under version control?</description>
                 <type>boolean</type>
-                <value>True</value>
-            </setting>
-            <setting>
-                <name>Dependent Files</name>
-                <key>dependents</key>
-                <description>The file(s) this file is dependent on.</description>
-                <type>list</type>
-                <value></value>
+                <value>False</value>
             </setting>
         </section>
         <section>
             <name>Project Configuration File</name>
-            <sectionID>projectConfFile</sectionID>
+            <sectionID>projConfFile</sectionID>
             <description>The project configuration settings file stored in the project.</description>
             <setting>
                 <name>Name</name>
@@ -191,32 +184,6 @@ Todo:
                 <description>The file(s) this file is dependent on.</description>
                 <type>list</type>
                 <value></value>
-            </setting>
-        </section>
-        <section>
-            <name>TIPE User Configuration Settings</name>
-            <sectionID>tipeUserConfFile</sectionID>
-            <description>The name of the TIPE user settings file. This is created when type is run for the first time and contains global override settings for default system settings.</description>
-            <setting>
-                <name>Name</name>
-                <key>name</key>
-                <description>The name of this file.</description>
-                <type>string</type>
-                <value>tipe.conf</value>
-            </setting>
-            <setting>
-                <name>Location</name>
-                <key>location</key>
-                <description>The location of the folder.</description>
-                <type>string</type>
-                <value>[userHome]</value>
-            </setting>
-            <setting>
-                <name>Version Control</name>
-                <key>versionControl</key>
-                <description>Is this file under version control?</description>
-                <type>boolean</type>
-                <value>False</value>
             </setting>
         </section>
     </section>

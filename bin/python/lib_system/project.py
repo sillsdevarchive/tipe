@@ -206,20 +206,20 @@ class Project (object) :
 #            self.reportFolder               = os.path.join(self.home, self._sysConfig['System']['FolderNames']['reportFolder'])
 
 
-	def writeConfFiles(self) :
-		if self._sysConfig['System']['isProject'] :
-			date_time, secs = str(datetime.now()).split(".")
-			self._sysConfig['System']['projEditDate'] = date_time   # bad for VCS
-			# Write out component config file now only if the save flag has been
-			# set.  Set the flag back to False before we write.
-			if self._sysConfig['System']['writeOutCompConf'] == True :
-				self._sysConfig['System']['writeOutCompConf'] = False
-				self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
-				self._compConf.write()
-			self._sysConfig.filename = self._sysConfig['System']['FileNames']['projConfFile']
-			self._sysConfig.write()
-
-
+#    def writeConfFiles(self) :
+#        if self._sysConfig['System']['isProject'] :
+#            date_time, secs = str(datetime.now()).split(".")
+#            self._sysConfig['System']['projEditDate'] = date_time   # bad for VCS
+#            # Write out component config file now only if the save flag has been
+#            # set.  Set the flag back to False before we write.
+#            if self._sysConfig['System']['writeOutCompConf'] == True :
+#                self._sysConfig['System']['writeOutCompConf'] = False
+#                self._compConf.filename = self._sysConfig['System']['FileNames']['compConfFile']
+#                self._compConf.write()
+#            self._sysConfig.filename = self._sysConfig['System']['FileNames']['projConfFile']
+#            self._sysConfig.write()
+#
+#
 	def initLogging (self, dir) :
 		'''Initialize the log file system.'''
 

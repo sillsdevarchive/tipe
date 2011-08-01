@@ -47,7 +47,7 @@ def initUserHome (userHome) :
 
 	# Make the default global tipe.conf for custom environment settings
 	if not os.path.isfile(tipeFile) :
-		date_time, secs = str(datetime.now()).split(".")
+		date_time = tStamp()
 		tipe = ConfigObj()
 		tipe.filename = tipeFile
 		tipe['System'] = {}
@@ -55,6 +55,7 @@ def initUserHome (userHome) :
 		tipe['Projects'] = {}
 		tipe['System']['userName'] = 'Default User'
 		tipe['System']['initDate'] = date_time
+		tipe['System']['writeOutUserConfFile'] = 'True'
 		# Folder list
 		folders = ['fonts', 'illustrations', 'admin', 'compTypes', 'projTypes']
 		# System folders
@@ -70,15 +71,6 @@ def initUserHome (userHome) :
 		# Write out the user config file
 		tipe.write()
 
-
-def safeConfLoad (userConfigFile, baseConfig) :
-	sysUserConfig = ConfigObj(userConfigFile)
-	# Merge default settings with global settings
-	return override_components(baseConfig, userConfigFile)
-#    baseConfig.merge(sysUserConfig)
-#    return baseConfig
-
-
 # Set the TIPE base program path
 tipeHome = os.environ.get('TIPE_BASE')
 if not tipeHome :
@@ -91,6 +83,9 @@ if not userHome :
 	sysHome = os.environ.get('HOME')
 	userHome = os.path.join(sysHome, '.config', 'tipe')
 	os.environ['TIPE_USER'] = userHome
+
+# Set the (potential) project home
+projHome = os.getcwd()
 
 # Before we get started we need to do some preliminary tests to see what the
 # environment we are starting in looks like.  That will determine where we go
@@ -118,17 +113,34 @@ else :
 tipeUser = os.path.join(userHome, 'tipe.conf')
 if not os.path.exists(tipeUser) :
 	initUserHome(userHome)
-#    sysConfig = safeConfLoad(tipeUser, sysXmlConfig)
 
-sysConfig = override_components(sysXmlConfig, tipeUser)
+# Load the conf file into an object
+tipeConfig = ConfigObj(tipeUser)
 
+# Look for any projects that might be registered and record them
+try :
+	tipeProjs = tipeConfig['Projects']
+except :
+	tipeProjs = None
+
+# Create a new conf object based on all the XML default settings
+# Then override them with any exsiting user settings.
+userConfig = ConfigObj(sysXmlConfig.dict()).override(tipeConfig)
+
+# Put back any project information that we might have lost from
+# the XML/conf file merging.
+if tipeProjs :
+	userConfig['Projects'] = tipeProjs
+
+# Load in project settings if they exist in the cwd
+projConfig = ConfigObj()
 ###############################################################################
 ############################### Terminal Startup ##############################
 ###############################################################################
 
 # Give a welcome message
-terminal('\n\t\tWelcome to TIPE ' + sysConfig['System']['systemVersion'])
-terminal('\t\tCurrent User: ' + sysConfig['System']['userName'])
+terminal('\n\t\tWelcome to TIPE ' + userConfig['System']['systemVersion'])
+terminal('\t\tCurrent User: ' + userConfig['System']['userName'])
 
 # TIPE Command Line Syntax
 # The tipe program can take numerious command.  Each command has two parts, a
@@ -166,10 +178,12 @@ else :
 
 # Run the command and pass along the aProject object
 if command in commands :
-	commands[command].run(opts)
+	commands[command].run(userConfig, opts)
 else :
 	terminal('ERROR: This command does not exist: ' + command)
 
+# Now write out the config files if needed
+writeConfFiles(userConfig, projConfig, userHome, projHome)
 
 ## Politely say good bye
 terminal('\n\t\tThank you, please come again!\n')

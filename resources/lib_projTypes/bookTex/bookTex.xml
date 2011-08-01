@@ -67,9 +67,16 @@ Todo:
         </setting>
         <setting>
             <name>Project Settings Last Edit Date</name>
-            <key>projectEditDate</key>
+            <key>lastEditDate</key>
             <description>Time stamp of when the project settings were last edited.</description>
             <type>string</type>
+            <value></value>
+        </setting>
+        <setting>
+            <name>Write Out Project Configuration File</name>
+            <key>writeOutProjConfFile</key>
+            <description>When changes are made to the project configuration file this is set to true to tigger a writeout operation when the application closes.</description>
+            <type>boolean</type>
             <value></value>
         </setting>
         <setting>

@@ -124,9 +124,9 @@ try :
 except :
 	tipeProjs = None
 
+# FIXME: this is broken, it returns None
 # Create a new conf object based on all the XML default settings
 # Then override them with any exsiting user settings.
-print sysXmlConfig.dict()
 userConfig = ConfigObj(sysXmlConfig.dict()).override(tipeConfig)
 
 # Put back any project information that we might have lost from

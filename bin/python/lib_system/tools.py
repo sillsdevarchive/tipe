@@ -95,10 +95,13 @@ def xml_add_section(data, doc) :
 		data[s.find('sectionID').text] = nd
 		xml_add_section(nd, s)
 
-
+# FIXME: This seems to be broken, why?
 def override_section(self, aSection) :
 	'''Overrides settings by using the XML defaults and then merging those with
 	items in the configobj that match.'''
+
+
+	print aSection, 'xxxxxxxx'
 
 	# Look for the key and value in object of items created from itself
 	for k, v in self.items() :

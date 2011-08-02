@@ -98,6 +98,7 @@ sys.path.insert(0, os.path.join(tipeHome, 'bin', 'python', 'lib_system'))
 # Now that our path is good we can load the local classes
 from tools import *
 from sys_command import Command, commands
+from project import Project
 
 # Load in system user information for TIPE startup
 
@@ -125,6 +126,7 @@ except :
 
 # Create a new conf object based on all the XML default settings
 # Then override them with any exsiting user settings.
+print sysXmlConfig.dict()
 userConfig = ConfigObj(sysXmlConfig.dict()).override(tipeConfig)
 
 # Put back any project information that we might have lost from
@@ -132,12 +134,25 @@ userConfig = ConfigObj(sysXmlConfig.dict()).override(tipeConfig)
 if tipeProjs :
 	userConfig['Projects'] = tipeProjs
 
-# FIXME: How do we pass a config object to a command module?
-# With a valid project config in place we can initiate our system commands
-#Command(userConfig)
-
 # Load in project settings if they exist in the cwd
-projConfig = ConfigObj()
+projConfFile = os.path.join(userHome, '.project.conf')
+if os.path.isfile(projConfFile) :
+	# Find out what kind of project this is
+	oldProjConfig = ConfigObj(projConfFile)
+	projType = oldProjConfig['ProjectInfo']['projectType']
+	# Load in the project type XML default settings
+	projXMLFile = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
+	if os.path.exists(projXMLFile) :
+		projXmlConfig = xml_to_section(projXMLFile)
+	else :
+		raise IOError, "Can't open " + projXMLFile
+	# Create a new conf object based on all the XML default settings
+	# Then override them with any exsiting project settings.
+	projConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
+	aProject = Project(projConfig, userConfig, os.getcwd(), userPath, basePath)
+else :
+	aProject = None
+
 
 ###############################################################################
 ############################### Terminal Startup ##############################
@@ -147,6 +162,7 @@ projConfig = ConfigObj()
 terminal('\n\t\tWelcome to TIPE ' + userConfig['System']['systemVersion'])
 terminal('\t\tCurrent User: ' + userConfig['System']['userName'])
 
+# FIXME: The following needs review and revision
 # TIPE Command Line Syntax
 # The tipe program can take numerious command.  Each command has two parts, a
 # command name, and a set of 0 or more options.  A command option starts with
@@ -176,19 +192,21 @@ else :
 	terminal('\nAvailable commands:')
 
 
-
 ###############################################################################
 ##################### Prepare and Process TIPE Commands #######################
 ###############################################################################
 
 # Run the command and pass along the aProject object
 if command in commands :
-	commands[command].run(opts)
+	if len(opts) != 0 :
+		commands[command].run(opts, aProject, userConfig)
+	else :
+		commands[command].run(opts)
 else :
 	terminal('ERROR: This command does not exist: ' + command)
 
 # Now write out the config files if needed
-writeConfFiles(userConfig, projConfig, userHome, projHome)
+writeConfFiles(userConfig, aProject, userHome, projHome)
 
 ## Politely say good bye
 terminal('\n\t\tThank you, please come again!\n')

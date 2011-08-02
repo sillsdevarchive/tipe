@@ -48,9 +48,11 @@ class Command (object) :
 	def __init__(self) :
 		self.parser = OptionParser(self.__doc__)
 		self.setupOptions(self.parser)
-#        self.userConfig = userConfig
 
-	def run(self, args) :
+	def run(self, args, aProject, userConfig) :
+		if not aProject :
+			pass
+			# die with error
 		(self.options, self.args) = self.parser.parse_args(args = args)
 
 	def setupOptions(self, parser) :
@@ -67,9 +69,6 @@ class Command (object) :
 # them to appear when listed.
 
 
-# FIXME: To enable more flexibility, we need to move the command parameters out
-# to the XML files.  How do we do that?
-
 class About (Command) :
 	'''Display the system's About text'''
 
@@ -85,8 +84,9 @@ class ChangeSettings (Command) :
 
 	type = "change"
 
-	def run(self, args) :
-		super(ChangeSettings, self).run(args)
+	def run(self, args, aProject, userConfig) :
+		(self.options, self.args) = self.parser.parse_args(args = args)
+#        super(ChangeSettings, self).run(args)
 #        aProject.changeSystemSetting(args[0][2:], args[1])
 		new = args[1]
 #        old = userConfig[args[0][2:]][argv[1]]
@@ -166,23 +166,11 @@ class CreateProject (Command) :
 
 	type = "create"
 
-	def run(self, args) :
-		super(CreateProject, self).run(args)
-		c = 0; ptype = ''; pname = ''; pid = ''; pdir = ''
-		for o in args :
-			if o == '-t' or o == '--ptype' :
-				ptype = args[c+1]
-			elif o == '-n' or o == '--pname' :
-				pname = args[c+1]
-			elif o == '-i' or o == '--pid' :
-				pid = args[c+1]
-			elif o == '-d' or o == '--pdir' :
-				pdir = args[c+1]
-
-			c+=1
-
-#        if aProject.makeProject(ptype, pname, pid, pdir) :
-#                aProject.terminal('Success! New project created.')
+	def run(self, args, aProject, userConfig) :
+		super(CreateProject, self).run(args, aProject, userConfig)
+		aProject = aProject.makeProject(self.option.ptype, self.options.pname, self.options.pid, self.options.pdir)
+		if aProject :
+			terminal('Success! New project created.')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")

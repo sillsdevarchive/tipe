@@ -178,7 +178,7 @@ def safeStart (projHome, userHome, tipeHome) :
 
 class Project (object) :
 
-	def __init__(self, projHome, userHome, tipeHome) :
+	def __init__(self, projConfig, userConfig, projHome, userHome, tipeHome) :
 
 		self.projHome                       = projHome
 		self.userHome                       = userHome
@@ -220,14 +220,14 @@ class Project (object) :
 #            self._sysConfig.write()
 #
 #
-	def initLogging (self, dir) :
-		'''Initialize the log file system.'''
+#    def initLogging (self, dir) :
+#        '''Initialize the log file system.'''
 
-		self.report = Report(
-			logFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['logFile']) if self._sysConfig else None,
-			errFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile']) if self._sysConfig else None,
-			debug           = self._sysConfig and self._sysConfig['System']['debugging'],
-			isProject       = self._sysConfig and self._sysConfig['System']['isProject'])
+#        self.report = Report(
+#            logFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['logFile']) if self._sysConfig else None,
+#            errFile         = os.path.join(dir, self._sysConfig['System']['FileNames']['errorLogFile']) if self._sysConfig else None,
+#            debug           = self._sysConfig and self._sysConfig['System']['debugging'],
+#            isProject       = self._sysConfig and self._sysConfig['System']['isProject'])
 
 
 	def checkProject (self, home) :

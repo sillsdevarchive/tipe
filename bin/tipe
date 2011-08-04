@@ -25,9 +25,50 @@
 # Firstly, import all the standard Python modules we need for this process and
 # set the base path
 
-import sys, os, codecs, shutil, operator
+import os, sys
+
+# Set the TIPE base program path
+tipeHome = os.environ.get('TIPE_BASE')
+if not tipeHome :
+	tipeHome = os.path.join('usr', 'share', 'xetex-tipe')
+	os.environ['TIPE_BASE'] = tipeHome
+
+# Set the user environment path
+userHome = os.environ.get('TIPE_USER')
+if not userHome :
+	sysHome = os.environ.get('HOME')
+	userHome = os.path.join(sysHome, '.config', 'tipe')
+	os.environ['TIPE_USER'] = userHome
+
+# Set the (potential) project home
+projHome = os.getcwd()
+
+# Set our paths to application resources
+sys.path.insert(0, os.path.join(tipeHome, 'bin', 'python'))
+sys.path.insert(0, os.path.join(tipeHome, 'bin', 'python', 'lib_system'))
+
+# Load standard Python modules
+import codecs, shutil, operator
 from datetime import *
 from configobj import ConfigObj
+
+# Load the local classes
+from tools import *
+from sys_command import Command, commands
+from project import Project
+
+# Catch any incoming commands here
+command = ""
+opts = []
+
+if len(sys.argv) > 1 :
+	command = sys.argv[1]
+	opts = sys.argv[2:]
+else :
+	# If there isn't anything then we'll just go to the projects manager
+	command = "help"
+	terminal('\nAvailable commands:')
+
 
 # Basic startup functions
 
@@ -71,35 +112,6 @@ def initUserHome (userHome) :
 		# Write out the user config file
 		tipe.write()
 
-# Set the TIPE base program path
-tipeHome = os.environ.get('TIPE_BASE')
-if not tipeHome :
-	tipeHome = os.path.join('usr', 'share', 'xetex-tipe')
-	os.environ['TIPE_BASE'] = tipeHome
-
-# Set the user environment path
-userHome = os.environ.get('TIPE_USER')
-if not userHome :
-	sysHome = os.environ.get('HOME')
-	userHome = os.path.join(sysHome, '.config', 'tipe')
-	os.environ['TIPE_USER'] = userHome
-
-# Set the (potential) project home
-projHome = os.getcwd()
-
-# Before we get started we need to do some preliminary tests to see what the
-# environment we are starting in looks like.  That will determine where we go
-# from here.
-
-# Set our paths to application resources
-sys.path.insert(0, os.path.join(tipeHome, 'bin', 'python'))
-sys.path.insert(0, os.path.join(tipeHome, 'bin', 'python', 'lib_system'))
-
-# Now that our path is good we can load the local classes
-from tools import *
-from sys_command import Command, commands
-from project import Project
-
 # Load in system user information for TIPE startup
 
 # Check to see if the file is there, then read it in and break it into
@@ -124,7 +136,6 @@ try :
 except :
 	tipeProjs = None
 
-# FIXME: this is broken, it returns None
 # Create a new conf object based on all the XML default settings
 # Then override them with any exsiting user settings.
 userConfig = ConfigObj(sysXmlConfig.dict()).override(tipeConfig)
@@ -135,7 +146,11 @@ if tipeProjs :
 	userConfig['Projects'] = tipeProjs
 
 # Load in project settings if they exist in the cwd
-projConfFile = os.path.join(userHome, '.project.conf')
+
+print command, opts
+
+# FIXME: add an if for the create command to overcome the logic bug below
+projConfFile = os.path.join(projHome, '.project.conf')
 if os.path.isfile(projConfFile) :
 	# Find out what kind of project this is
 	oldProjConfig = ConfigObj(projConfFile)
@@ -151,7 +166,8 @@ if os.path.isfile(projConfFile) :
 	projConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
 	aProject = Project(projConfig, userConfig, os.getcwd(), userPath, basePath)
 else :
-	aProject = None
+	projConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
+	aProject = Project(projConfig, userConfig, os.getcwd(), userPath, basePath)
 
 
 ###############################################################################
@@ -161,35 +177,6 @@ else :
 # Give a welcome message
 terminal('\n\t\tWelcome to TIPE ' + userConfig['System']['systemVersion'])
 terminal('\t\tCurrent User: ' + userConfig['System']['userName'])
-
-# FIXME: The following needs review and revision
-# TIPE Command Line Syntax
-# The tipe program can take numerious command.  Each command has two parts, a
-# command name, and a set of 0 or more options.  A command option starts with
-# "-" and is followed by a parameter.  If a wrong parameter is entered that will
-# be caught by the command when it tries to run.
-# They are:
-#   tipe [command] [-optA param] [-optB param]
-#
-# Whereas:
-# tipe          = the script name, which is always "tipe"
-# [command]     = tipe command (none = manager)
-# [-optA param] = A specified option and parameter
-#
-# If no command is given, then a list of commands will be given.  If the user
-# wants specific help on a command they would type:
-#   tipe command -help
-
-command = ""
-opts = []
-
-if len(sys.argv) > 1 :
-	command = sys.argv[1]
-	opts = sys.argv[2:]
-else :
-	# If there isn't anything then we'll just go to the projects manager
-	command = "help"
-	terminal('\nAvailable commands:')
 
 
 ###############################################################################

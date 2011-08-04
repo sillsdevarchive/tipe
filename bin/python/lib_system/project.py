@@ -38,80 +38,80 @@ from xml.etree import ElementTree
 # These root level functions work at a fundamental level of the system
 
 
-def xml_to_section(fname) :
-	'''Read in our default settings from the XML system settings file'''
+#def xml_to_section(fname) :
+#    '''Read in our default settings from the XML system settings file'''
 
-	doc = ElementTree.parse(fname)
-	data = {}
-	xml_add_section(data, doc)
-	return ConfigObj(data)
-
-
-def xml_add_section(data, doc) :
-	'''Subprocess of xml_to_section().  Adds sections in the XML to conf
-	object.'''
-
-	sets = doc.findall('setting')
-	for s in sets :
-		val = s.find('default').text
-		if s.find('type').text == 'list' :
-			if val :
-				data[s.attrib['id']] = [val.split(',')]
-			else :
-				data[s.attrib['id']] = []
-		else :
-			data[s.attrib['id']] = val
-	sects = doc.findall('section')
-	for s in sects :
-		nd = {}
-		data[s.attrib['id']] = nd
-		xml_add_section(nd, s)
+#    doc = ElementTree.parse(fname)
+#    data = {}
+#    xml_add_section(data, doc)
+#    return ConfigObj(data)
 
 
-def override(sysConfig, fname) :
-	'''Subprocess of override_components().  The purpose is to override default
-	settings taken from the TIPE system (sysConfig) file with those found in the
-	project.conf file (projConfig).'''
+#def xml_add_section(data, doc) :
+#    '''Subprocess of xml_to_section().  Adds sections in the XML to conf
+#    object.'''
 
-	# Read in the project.conf file and create an object
-	projConfig = ConfigObj(fname)
-	res = ConfigObj(sysConfig.dict())
-
-	# Recall this function to override the default settings
-	res.override(projConfig)
-	return res
-
-
-def override_components(aConfig, fname) :
-	'''Overrides component settings that we got from the default XML system
-	settings file.'''
-	res = ConfigObj()
-	projConfig = ConfigObj(fname)
-	for s, v in projConfig.items() :
-		newtype = v['Type']
-		old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
-		old.override(v)
-		oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
-		oldtype.override(newtype)
-		res[s] = old
-		res[s]['Type'] = oldtype
-	return res
+#    sets = doc.findall('setting')
+#    for s in sets :
+#        val = s.find('default').text
+#        if s.find('type').text == 'list' :
+#            if val :
+#                data[s.attrib['id']] = [val.split(',')]
+#            else :
+#                data[s.attrib['id']] = []
+#        else :
+#            data[s.attrib['id']] = val
+#    sects = doc.findall('section')
+#    for s in sects :
+#        nd = {}
+#        data[s.attrib['id']] = nd
+#        xml_add_section(nd, s)
 
 
-def override_section(self, aSection) :
-	'''Overrides an entire setting section.'''
+#def override(sysConfig, fname) :
+#    '''Subprocess of override_components().  The purpose is to override default
+#    settings taken from the TIPE system (sysConfig) file with those found in the
+#    project.conf file (projConfig).'''
 
-	for k, v in self.items() :
-		if k in aSection :
-			if isinstance(v, dict) and isinstance(aSection[k], dict) :
-				v.override(aSection[k])
-			elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
-				self[k] = aSection[k]
+#    # Read in the project.conf file and create an object
+#    projConfig = ConfigObj(fname)
+#    res = ConfigObj(sysConfig.dict())
+
+#    # Recall this function to override the default settings
+#    res.override(projConfig)
+#    return res
+#
+
+#def override_components(aConfig, fname) :
+#    '''Overrides component settings that we got from the default XML system
+#    settings file.'''
+#    res = ConfigObj()
+#    projConfig = ConfigObj(fname)
+#    for s, v in projConfig.items() :
+#        newtype = v['Type']
+#        old = Section(projConfig, 1, projConfig, indict = aConfig['Defaults'].dict())
+#        old.override(v)
+#        oldtype = Section(v, 2, projConfig, indict = aConfig[v['compType']].dict())
+#        oldtype.override(newtype)
+#        res[s] = old
+#        res[s]['Type'] = oldtype
+#    return res
 
 
-# This will reasign the standard ConfigObj function that works much like ours
-# but not quite what we need for working with XML as one of the inputs.
-Section.override = override_section
+#def override_section(self, aSection) :
+#    '''Overrides an entire setting section.'''
+
+#    for k, v in self.items() :
+#        if k in aSection :
+#            if isinstance(v, dict) and isinstance(aSection[k], dict) :
+#                v.override(aSection[k])
+#            elif not isinstance(v, dict) and not isinstance(aSection[k], dict) :
+#                self[k] = aSection[k]
+
+
+## This will reasign the standard ConfigObj function that works much like ours
+## but not quite what we need for working with XML as one of the inputs.
+#Section.override = override_section
 
 
 
@@ -128,11 +128,6 @@ def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 		res = xml_to_section(f)
 	else :
 		raise IOError, "Can't open " + f
-
-# FIXME: We need to store a couple default system settings and override a couple
-# of the projectConf settings. userName would be one of them. The same user would
-# be using the system regardless as long as it is on this machine.
-
 
 	# If this is a live project it should have been passed a valid project.conf
 	# object.  Otherwise, the default settings from the XML will be good enough

@@ -49,6 +49,7 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 	# Don't try to write to the projConfFile if it is not there or the write
 	# flag has not been set.'
 	if os.path.isfile(projConfigFile) :
+		print dir(projConfig)
 		if userConfig['ProjectInfo']['writeOutProjConfFile'] :
 			projConfig['ProjectInfo']['lastEditDate'] = date_time
 			projConfig['ProjectInfo']['writeOutProjConfFile'] = ''

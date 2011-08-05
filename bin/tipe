@@ -146,28 +146,50 @@ if tipeProjs :
 	userConfig['Projects'] = tipeProjs
 
 # Load in project settings if they exist in the cwd
-
-print command, opts
-
-# FIXME: add an if for the create command to overcome the logic bug below
 projConfFile = os.path.join(projHome, '.project.conf')
-if os.path.isfile(projConfFile) :
-	# Find out what kind of project this is
-	oldProjConfig = ConfigObj(projConfFile)
-	projType = oldProjConfig['ProjectInfo']['projectType']
-	# Load in the project type XML default settings
-	projXMLFile = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
-	if os.path.exists(projXMLFile) :
-		projXmlConfig = xml_to_section(projXMLFile)
-	else :
-		raise IOError, "Can't open " + projXMLFile
-	# Create a new conf object based on all the XML default settings
-	# Then override them with any exsiting project settings.
-	projConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
-	aProject = Project(projConfig, userConfig, os.getcwd(), userPath, basePath)
+projType = None
+if command == 'create' and os.path.isfile(projConfFile) :
+	terminal('Error: Project exsists. Cannot create a new project in this location.')
 else :
-	projConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
-	aProject = Project(projConfig, userConfig, os.getcwd(), userPath, basePath)
+	# Now create a fresh projConfig object
+	if os.path.isfile(projConfFile) :
+		# Find out what kind of project this is
+		oldProjConfig = ConfigObj(projConfFile)
+		projType = oldProjConfig['ProjectInfo']['projectType']
+		# Load in the project type XML default settings
+		projXMLFile = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
+		if os.path.exists(projXMLFile) :
+			projXmlConfig = xml_to_section(projXMLFile)
+		else :
+			raise IOError, "Can't open " + projXMLFile
+
+		# Create a new conf object based on all the XML default settings
+		# Then override them with any exsiting project settings.
+		projConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
+		aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+	else :
+		if command == 'create' :
+			c = 0
+			for o in opts :
+				if o == '-t' :
+					projType = opts[c+1]
+
+				c +=1
+
+			if not projType :
+				terminal('TIPE failed to load. No project type in create command.')
+				sys.exit(1)
+			else :
+				# Load in the project type XML default settings
+				projXMLFile = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
+				if os.path.exists(projXMLFile) :
+					projXmlConfig = xml_to_section(projXMLFile)
+				else :
+					raise IOError, "Can't open " + projXMLFile
+
+				# Create a new conf object based on all the XML default settings
+				projConfig = ConfigObj(projXmlConfig.dict())
+				aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
 
 
 ###############################################################################
@@ -193,7 +215,7 @@ else :
 	terminal('ERROR: This command does not exist: ' + command)
 
 # Now write out the config files if needed
-writeConfFiles(userConfig, aProject, userHome, projHome)
+writeConfFiles(userConfig, projConfig, userHome, projHome)
 
 ## Politely say good bye
 terminal('\n\t\tThank you, please come again!\n')

@@ -180,7 +180,10 @@ class Project (object) :
 		self.tipeHome                       = tipeHome
 
 		# Load project config files
-		self._sysConfig                     = safeStart(projHome, userHome, tipeHome)
+		self._projConfig                    = projConfig
+		self._sysConfig                     = userConfig
+#        self._sysConfig                     = safeStart(projHome, userHome, tipeHome)
+
 #        self._sysConfig                     = safeConfig(dir, "project.xml", tipedir, 'projConfFile')[0]
 #        self._compConf, self._compMaster    = safeConfig(dir, "components.xml", tipedir, 'compConfFile', projconf = self._sysConfig)
 #        self._components                    = {}

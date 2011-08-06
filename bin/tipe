@@ -67,10 +67,11 @@ if len(sys.argv) > 1 :
 else :
 	# If there isn't anything then we'll just go to the projects manager
 	command = "help"
-	terminal('\nAvailable commands:')
 
 
-# Basic startup functions
+###############################################################################
+########################### Basic Startup Functions ###########################
+###############################################################################
 
 def initUserHome (userHome) :
 	'''Dumb user home init function'''
@@ -112,7 +113,10 @@ def initUserHome (userHome) :
 		# Write out the user config file
 		tipe.write()
 
-# Load in system user information for TIPE startup
+
+###############################################################################
+######################## Load User and Project Info ###########################
+###############################################################################
 
 # Check to see if the file is there, then read it in and break it into
 # sections. If it fails, scream really loud!
@@ -148,48 +152,43 @@ if tipeProjs :
 # Load in project settings if they exist in the cwd
 projConfFile = os.path.join(projHome, '.project.conf')
 projType = None
+
+# Check for existing project in the case of a create command
 if command == 'create' and os.path.isfile(projConfFile) :
 	terminal('Error: Project exsists. Cannot create a new project in this location.')
+	sys.exit(1)
+
+# Now create a fresh projConfig object
+if os.path.isfile(projConfFile) :
+	# Create a fresh merged version of the projConfig
+	projConfig = mergeProjConfig(ConfigObj(projConfFile), projHome, userHome, tipeHome)
+	# Fold in the projConfig into the aProject object
+	aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+	if not isRecordedProject(aProject.userConfFile, aProject.projectIDCode) :
+		recordProject (aProject.userConfFile, aProject.projHome, aProject.projectName,
+			aProject.projectType, aProject.projectIDCode, aProject.projectCreateDate)
+
 else :
-	# Now create a fresh projConfig object
-	if os.path.isfile(projConfFile) :
-		# Find out what kind of project this is
-		oldProjConfig = ConfigObj(projConfFile)
-		projType = oldProjConfig['ProjectInfo']['projectType']
+	if command == 'create' :
+		c = 0
+		for o in opts :
+			if o == '-t' :
+				projType = opts[c+1]
+
+			c +=1
+
+		if not projType :
+			terminal('TIPE failed to load. No project type in create command.')
+			sys.exit(1)
+
 		# Load in the project type XML default settings
-		projXMLFile = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
-		if os.path.exists(projXMLFile) :
-			projXmlConfig = xml_to_section(projXMLFile)
-		else :
-			raise IOError, "Can't open " + projXMLFile
-
-		# Create a new conf object based on all the XML default settings
-		# Then override them with any exsiting project settings.
-		projConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
+		projConfig = getDefaultProjSettings (projHome, userHome, tipeHome, projType)
 		aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+
 	else :
-		if command == 'create' :
-			c = 0
-			for o in opts :
-				if o == '-t' :
-					projType = opts[c+1]
-
-				c +=1
-
-			if not projType :
-				terminal('TIPE failed to load. No project type in create command.')
-				sys.exit(1)
-			else :
-				# Load in the project type XML default settings
-				projXMLFile = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
-				if os.path.exists(projXMLFile) :
-					projXmlConfig = xml_to_section(projXMLFile)
-				else :
-					raise IOError, "Can't open " + projXMLFile
-
-				# Create a new conf object based on all the XML default settings
-				projConfig = ConfigObj(projXmlConfig.dict())
-				aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+		# If there is no project and no desire to make one, we still need a
+		# dummy projConfig object so we'll just make one up.
+		projConfig = ConfigObj()
 
 
 ###############################################################################
@@ -208,11 +207,17 @@ terminal('\t\tCurrent User: ' + userConfig['System']['userName'])
 # Run the command and pass along the aProject object
 if command in commands :
 	if len(opts) != 0 :
+		print aProject
 		commands[command].run(opts, aProject, userConfig)
 	else :
 		commands[command].run(opts)
 else :
 	terminal('ERROR: This command does not exist: ' + command)
+
+
+###############################################################################
+########################### Closeout TIPE Session #############################
+###############################################################################
 
 # Now write out the config files if needed
 writeConfFiles(userConfig, projConfig, userHome, projHome)

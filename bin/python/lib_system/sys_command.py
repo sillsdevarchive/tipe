@@ -168,7 +168,7 @@ class CreateProject (Command) :
 
 	def run(self, args, aProject, userConfig) :
 		super(CreateProject, self).run(args, aProject, userConfig)
-		aProject = aProject.makeProject(self.option.ptype, self.options.pname, self.options.pid, self.options.pdir)
+		aProject = aProject.makeProject(self.options.ptype, self.options.pname, self.options.pid, self.options.pdir)
 		if aProject :
 			terminal('Success! New project created.')
 
@@ -179,40 +179,28 @@ class CreateProject (Command) :
 		self.parser.add_option("-d", "--pdir", action="store", help="Create project in this directory, default is current directory.")
 
 
-# This is an example command class
-#class Setup (Command) :
-#    '''Setup creates a new object'''
-#    type = "setup"
-#    def run(self, aProject, args) :
-#        super(Setup, self).run(aProject, args)
-#        # do something here, options are in self.options
-#
-#    def setupOptions(self, parser) :
-#        self.parser.add_option("-d", "--dir", type="string", action="store", help="Create project in this directory")
+class RemoveProject (Command) :
+	'''Remove an active project from the system and lock the working conf files.
+	If no project ID is given the default is the project in the cwd.  If there
+	is no project in the cwd it will fail.'''
 
+	type = "remove"
 
-#class RemoveProject (Command) :
-#    '''Remove an active project from the system and lock the working conf files.
-#    If no project ID is given the default is the project in the cwd.  If there
-#    is no project in the cwd it will fail.'''
+	def run(self, args, aProject, userConfig) :
+		super(RemoveProject, self).run(args, aProject, userConfig)
+		if len(args) :
+			pID = args[1]
+		else :
+			if aProject.projectIDCode != '' :
+				pID = aProject.projectIDCode
+			else :
+				aProject.terminal('Project ID code not given or found. Remove project failed.')
 
-#    type = "remove"
+		if aProject.removeProject(pID) :
+			aProject.terminal('Removed project: [' + pID + ']')
 
-#    def run(self, args) :
-#        super(RemoveProject, self).run(args)
-#        if len(args) :
-#            pID = args[1]
-#        else :
-#            if aProject.projectIDCode != '' :
-#                pID = aProject.projectIDCode
-#            else :
-#                aProject.terminal('Project ID code not given or found. Remove project failed.')
-
-#        if aProject.removeProject(pID) :
-#            aProject.terminal('Removed project: [' + pID + ']')
-#
-#    def setupOptions(self, parser) :
-#        self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
+	def setupOptions(self, parser) :
+		self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
 
 
 #class RestoreProject (Command) :
@@ -239,6 +227,18 @@ class CreateProject (Command) :
 
 #    def setupOptions(self, parser) :
 #        self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
+
+
+# This is an example command class
+#class Setup (Command) :
+#    '''Setup creates a new object'''
+#    type = "setup"
+#    def run(self, aProject, args) :
+#        super(Setup, self).run(aProject, args)
+#        # do something here, options are in self.options
+#
+#    def setupOptions(self, parser) :
+#        self.parser.add_option("-d", "--dir", type="string", action="store", help="Create project in this directory")
 
 
 

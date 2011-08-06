@@ -60,14 +60,14 @@ Todo:
         </setting>
         <setting>
             <name>Project Creation Date</name>
-            <key>projCreateDate</key>
+            <key>projectCreateDate</key>
             <description>The date this project was created.</description>
             <type>string</type>
             <value></value>
         </setting>
         <setting>
             <name>Project Settings Last Edit Date</name>
-            <key>lastEditDate</key>
+            <key>projectLastEditDate</key>
             <description>Time stamp of when the project settings were last edited.</description>
             <type>string</type>
             <value></value>

@@ -27,7 +27,7 @@ import codecs, os, sys, fileinput
 
 # Load the local classes
 #from tools import *
-from tools import terminal
+from tools import *
 
 #from component import Component
 #from book import Book
@@ -181,15 +181,10 @@ class Project (object) :
 		# Finally write out the project config file
 		writeConfFiles(self._sysConfig, self._projConfig, self.userHome, pdir)
 
-# FIXME: removeProject is not working, why am I loosing my tools?
-
 
 	def removeProject (self, pid) :
 		'''Remove the project from the TIPE system.  This will not remove the
 		project data but will 'disable' the project.'''
-
-#        print dir(self)
-#        sys.exit(1)
 
 		# 1) Check the user's conf file to see if the project actually exists
 		if not isRecordedProject(self.userConfFile, pid) :
@@ -200,15 +195,15 @@ class Project (object) :
 			cf = ConfigObj(self.userConfFile)
 			projPath = cf['Projects'][pid]['projectPath']
 			projConfFile = os.path.join(projPath, '.project.conf')
-#            if os.path.isfile(projConfFile) :
-#                os.rename(projConfFile, projConfFile + self.lockExt)
+			if os.path.isfile(projConfFile) :
+				os.rename(projConfFile, projConfFile + self.lockExt)
 
 			# 3) Remove references from user tipe.conf
 			del cf['Projects'][pid]
 			cf.write()
 
 			# 4) Report the process is done
-			self.terminal('Project [' + pid + '] removed from system configuration.')
+			terminal('Project [' + pid + '] removed from system configuration.')
 			return
 
 
@@ -287,7 +282,7 @@ class Project (object) :
 	def trimLog(self, logLineLimit) : self.trimLog(logLineLimit)
 	def mergeProjConfig(self, projConfig, projHome, userHome, tipeHome) : self.mergeProjConfig(projConfig, projHome, userHome, tipeHome)
 	def writeConfFiles(self, sysConfig, newProjConfig, userHome, projHome) : self.writeConfFiles(sysConfig, newProjConfig, userHome, projHome)
-
+	def isRecordedProject(self, userConfFile, pid) : self.isRecordedProject(userConfFile, pid)
 
 ###############################################################################
 ################################# Logging routines ############################

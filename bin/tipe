@@ -207,7 +207,6 @@ terminal('\t\tCurrent User: ' + userConfig['System']['userName'])
 # Run the command and pass along the aProject object
 if command in commands :
 	if len(opts) != 0 :
-		print aProject
 		commands[command].run(opts, aProject, userConfig)
 	else :
 		commands[command].run(opts)

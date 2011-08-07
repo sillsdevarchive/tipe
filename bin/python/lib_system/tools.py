@@ -216,11 +216,12 @@ def recordProject (tipeUserConfFile, projHome, pname, ptype, pid, date) :
 		return False
 
 
-def isRecordedProject (tipeUserConfFile, pid) :
+def isRecordedProject (userConfFile, pid) :
 	'''Check to see if this project is recorded in the user's config'''
 
-	if os.path.isfile(tipeUserConfFile) :
-		cf = ConfigObj(tipeUserConfFile)
+	if os.path.isfile(userConfFile) :
+		cf = ConfigObj(userConfFile)
+		print cf
 		try :
 			isConfPID = cf['Projects'][pid]
 			return True

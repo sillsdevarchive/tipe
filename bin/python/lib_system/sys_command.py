@@ -112,8 +112,8 @@ class Debugging (Command) :
 
 	type = "debug"
 
-	def run(self, args) :
-		super(Debugging, self).run(args)
+	def run(self, args, aProject, userConfig) :
+		super(Debugging, self).run(args, aProject, userConfig)
 		if args[0][2:] == 'on' :
 			aProject.changeSystemSetting("debugging", "True")
 
@@ -194,25 +194,24 @@ class RemoveProject (Command) :
 			if aProject.projectIDCode != '' :
 				pID = aProject.projectIDCode
 			else :
-				aProject.terminal('Project ID code not given or found. Remove project failed.')
+				terminal('Project ID code not given or found. Remove project failed.')
 
 		if aProject.removeProject(pID) :
-			aProject.terminal('Removed project: [' + pID + ']')
+			terminal('Removed project: [' + pID + ']')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
 
 
-#class RestoreProject (Command) :
-#    '''Restores a project in the dir given. The default dir is cwd.'''
+class RestoreProject (Command) :
+	'''Restores a project in the dir given. The default dir is cwd.'''
 
-#    type = "restore"
+	type = 'restore'
 
-#    def run(self, aProject, args) :
-#        super(RestoreProject, self).run(aProject, args)
+	def run(self, args, aProject, userConfig) :
+		super(RestoreProject, self).run(args, aProject, userConfig)
+
 #        if len(args) :
-#            print args[1], os.path.split(os.getcwd())[1]
-#
 #            if os.path.split(os.getcwd())[1] == args[1] :
 #                pDir = os.getcwd()
 #            else :
@@ -220,13 +219,13 @@ class RemoveProject (Command) :
 #        else :
 #            pDir = os.getcwd()
 
-#        if aProject.restoreProject(pDir) :
-#            aProject.terminal('Restored project at: ' + pDir)
-#        else :
-#            aProject.terminal('Restoring project at: ' + pDir + ' failed.')
+		if aProject.restoreProject(args[1]) :
+			terminal('Restored project at: ' + args[1])
+		else :
+			terminal('Restoring project at: ' + args[1] + ' failed.')
 
-#    def setupOptions(self, parser) :
-#        self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
+	def setupOptions(self, parser) :
+		self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
 
 
 # This is an example command class

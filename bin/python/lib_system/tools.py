@@ -113,9 +113,9 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 
 	userConfigFile = os.path.join(userHome, userConfig['Files']['userConfFile']['name'])
 	projConfigFile = os.path.join(projHome, userConfig['Files']['projConfFile']['name'])
-	date_time = tStamp()
+	stamp = tStamp()
 	if userConfig['System']['writeOutUserConfFile'] :
-		userConfig['System']['lastEditDate'] = date_time
+		userConfig['System']['lastEditDate'] = stamp
 		userConfig['System']['writeOutUserConfFile'] = ''
 		userConfig.filename = userConfigFile
 		userConfig.write()
@@ -123,8 +123,9 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 	# Don't try to write to the projConfFile if it is not there or the write
 	# flag has not been set.'
 	if os.path.isfile(projConfigFile) :
+		print projConfig
 		if projConfig['ProjectInfo']['writeOutProjConfFile'] :
-			projConfig['ProjectInfo']['lastEditDate'] = date_time
+			projConfig['ProjectInfo']['lastEditDate'] = stamp
 			projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
 			projConfig.filename = projConfigFile
 			projConfig.write()
@@ -189,6 +190,18 @@ def override_section(self, aSection) :
 Section.override = override_section
 
 
+def reportSysConfUpdate (aProject) :
+	'''Mark the project/system config object as changed so the next time a write
+	command is called on it it will write out the changes.  This normally
+	happens at the end of a process.'''
+
+	ts = tStamp()
+	aProject._sysConfig['System']['tipeEditDate'] = ts
+	aProject._sysConfig['System']['writeOutUserConfFile'] = True
+	aProject.tipeEditDate = ts
+
+
+
 def recordProject (tipeUserConfFile, projHome, pname, ptype, pid, date) :
 	'''Add information about this project to the user's tipe.conf located in
 	the home config folder.'''
@@ -222,7 +235,7 @@ def isRecordedProject (userConfFile, pid) :
 
 	if os.path.isfile(userConfFile) :
 		cf = ConfigObj(userConfFile)
-		print cf
+
 		try :
 			isConfPID = cf['Projects'][pid]
 			return True

@@ -94,9 +94,12 @@ class Project (object) :
 				  'projectIDCode',          'projectComponentTypes') :
 			setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
 
-		self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['projLogFile']['name'])
-		self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['projErrorLogFile']['name'])
-		self.orgProjectEditDate = self.projectLastEditDate
+		# In case we are in a situation where we had to make an aProject object
+		# with an empty projConfig we will test before doing this.
+		if len(self._projConfig) > 0 :
+			self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['projLogFile']['name'])
+			self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['projErrorLogFile']['name'])
+			self.orgProjectEditDate = self.projectLastEditDate
 
 
 	def initProject (self, home) :
@@ -126,7 +129,7 @@ class Project (object) :
 			if not os.path.isdir(thisFolder) :
 				os.mkdir(thisFolder)
 				if self.debugging == 'True' :
-					self.terminal('Created folder: ' + folderName)
+					terminal('Created folder: ' + folderName)
 
 		# Create some necessary files
 		fls = self._projConfig['Files'].__iter__()
@@ -187,34 +190,53 @@ class Project (object) :
 		project data but will 'disable' the project.'''
 
 		# 1) Check the user's conf file to see if the project actually exists
-		if not isRecordedProject(self.userConfFile, pid) :
+		if not self._sysConfig['Projects'][pid] :
 			terminal('Project ID [' + pid + '] not found in system configuration.')
 			return
 		else :
 			# 2) If the project does exist in the user config, disable the project
-			cf = ConfigObj(self.userConfFile)
-			projPath = cf['Projects'][pid]['projectPath']
+			projPath = self._sysConfig['Projects'][pid]['projectPath']
 			projConfFile = os.path.join(projPath, '.project.conf')
 			if os.path.isfile(projConfFile) :
 				os.rename(projConfFile, projConfFile + self.lockExt)
 
 			# 3) Remove references from user tipe.conf
-			del cf['Projects'][pid]
-			cf.write()
+			del self._sysConfig['Projects'][pid]
+			reportSysConfUpdate(self)
 
 			# 4) Report the process is done
 			terminal('Project [' + pid + '] removed from system configuration.')
 			return
 
-
-	def restoreProject (self, pDir) :
+#########################################################################################
+	def restoreProject (self, pdir) :
 		'''Restore a project in the current folder'''
 
-		projConfFile = os.path.join(pDir, '.project.conf')
+		projConfFile = os.path.join(pdir, '.project.conf')
 		if os.path.isfile(projConfFile + self.lockExt) :
 			os.rename(projConfFile + self.lockExt, projConfFile)
+			self._projConfig = mergeProjConfig(ConfigObj(projConfFile), pdir, self.userHome, self.tipeHome)
+			self = Project(self._projConfig, self._sysConfig, pdir, self.userHome, self.tipeHome)
+			pname =
+			ptype =
+			pid =
+			date =
+			recordProject(self.userConfFile, pdir, pname, ptype, pid, date)
 			return True
 
+#########################################################################################
+	def changeSystemSetting (self, key, value) :
+		'''Change global default setting (key, value) in the System section of
+		the TIPE user settings file.  This will write out changes
+		immediately.'''
+
+		if not self._sysConfig['System'][key] == value :
+			self._sysConfig['System'][key] = value
+			reportSysConfUpdate(self)
+			terminal('Changed ' + key + ' to: ' + value)
+			setattr(self, key, self._sysConfig['System'][key] if self._sysConfig else None)
+		else :
+			terminal(key + ' already set to ' + value)
 
 
 #    def addNewComponent(self, idCode, compType) :
@@ -277,12 +299,12 @@ class Project (object) :
 	# These are Report mod functions that are exposed to the project class via
 	# the tools class
 #    def terminal(self, msg) : self.terminal(msg)
-	def terminalCentered(self, msg) : self.terminalCentered(msg)
+#    def terminalCentered(self, msg) : self.terminalCentered(msg)
 	def writeToLog(self, code, msg, mod) : self.writeToLog(code, msg, mod)
 	def trimLog(self, logLineLimit) : self.trimLog(logLineLimit)
-	def mergeProjConfig(self, projConfig, projHome, userHome, tipeHome) : self.mergeProjConfig(projConfig, projHome, userHome, tipeHome)
-	def writeConfFiles(self, sysConfig, newProjConfig, userHome, projHome) : self.writeConfFiles(sysConfig, newProjConfig, userHome, projHome)
-	def isRecordedProject(self, userConfFile, pid) : self.isRecordedProject(userConfFile, pid)
+#    def mergeProjConfig(self, projConfig, projHome, userHome, tipeHome) : self.mergeProjConfig(projConfig, projHome, userHome, tipeHome)
+#    def writeConfFiles(self, sysConfig, newProjConfig, userHome, projHome) : self.writeConfFiles(sysConfig, newProjConfig, userHome, projHome)
+#    def isRecordedProject(self, userConfFile, pid) : self.isRecordedProject(userConfFile, pid)
 
 ###############################################################################
 ################################# Logging routines ############################

@@ -186,13 +186,11 @@ else :
 		projConfig = getDefaultProjSettings (projHome, userHome, tipeHome, projType)
 		aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
 
-# FIXME: But what do we do if we are in a folder with a locked project? Need to
-# add that condition
-
 	else :
 		# If there is no project and no desire to make one, we still need a
 		# dummy projConfig object so we'll just make one up.
 		projConfig = ConfigObj()
+		aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
 
 
 ###############################################################################
@@ -200,8 +198,8 @@ else :
 ###############################################################################
 
 # Give a welcome message
-terminal('\n\t\tWelcome to TIPE ' + userConfig['System']['systemVersion'])
-terminal('\t\tCurrent User: ' + userConfig['System']['userName'])
+terminal('\n\t\tWelcome to TIPE ' + aProject._sysConfig['System']['systemVersion'])
+terminal('\t\tCurrent User: ' + aProject._sysConfig['System']['userName'])
 
 
 ###############################################################################
@@ -210,7 +208,7 @@ terminal('\t\tCurrent User: ' + userConfig['System']['userName'])
 
 # Run the command and pass along the aProject object
 if command in commands :
-	if len(opts) != 0 :
+	if len(opts) > 0 :
 		commands[command].run(opts, aProject, userConfig)
 	else :
 		commands[command].run(opts)
@@ -223,7 +221,7 @@ else :
 ###############################################################################
 
 # Now write out the config files if needed
-writeConfFiles(userConfig, projConfig, userHome, projHome)
+writeConfFiles(aProject._sysConfig, aProject._projConfig, userHome, projHome)
 
 ## Politely say good bye
 terminal('\n\t\tThank you, please come again!\n')

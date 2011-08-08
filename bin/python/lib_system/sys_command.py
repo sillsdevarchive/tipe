@@ -107,22 +107,22 @@ class ChangeSettings (Command) :
 		self.parser.add_option("--loglimit", action="store", help="Set the number of lines the log file is allowed to have.")
 
 
-#class Debugging (Command) :
-#    '''Turn on debugging (verbose output) in the logging.'''
+class Debugging (Command) :
+	'''Turn on debugging (verbose output) in the logging.'''
 
-#    type = "debug"
+	type = "debug"
 
-#    def run(self, args) :
-#        super(Debugging, self).run(args)
-#        if args[0][2:] == 'on' :
-#            aProject.changeSystemSetting("debugging", "True")
+	def run(self, args) :
+		super(Debugging, self).run(args)
+		if args[0][2:] == 'on' :
+			aProject.changeSystemSetting("debugging", "True")
 
-#        if args[0][2:] == 'off' :
-#            aProject.changeSystemSetting("debugging", "False")
+		if args[0][2:] == 'off' :
+			aProject.changeSystemSetting("debugging", "False")
 
-#    def setupOptions(self, parser) :
-#        self.parser.add_option("--on", action="store_true", help="Turn on debugging for the log file output.")
-#        self.parser.add_option("--off", action="store_false", help="Turn off debugging for the log file output.")
+	def setupOptions(self, parser) :
+		self.parser.add_option("--on", action="store_true", help="Turn on debugging for the log file output.")
+		self.parser.add_option("--off", action="store_false", help="Turn off debugging for the log file output.")
 
 
 class Help (Command) :

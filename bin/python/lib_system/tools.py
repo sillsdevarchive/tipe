@@ -122,11 +122,12 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 
 	# Don't try to write to the projConfFile if it is not there or the write
 	# flag has not been set.'
-	if projConfig['ProjectInfo']['writeOutProjConfFile'] :
-		projConfig['ProjectInfo']['lastEditDate'] = date_time
-		projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
-		projConfig.filename = projConfigFile
-		projConfig.write()
+	if os.path.isfile(projConfigFile) :
+		if projConfig['ProjectInfo']['writeOutProjConfFile'] :
+			projConfig['ProjectInfo']['lastEditDate'] = date_time
+			projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
+			projConfig.filename = projConfigFile
+			projConfig.write()
 
 
 def xml_to_section(fname) :

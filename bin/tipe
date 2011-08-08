@@ -169,6 +169,7 @@ if os.path.isfile(projConfFile) :
 			aProject.projectType, aProject.projectIDCode, aProject.projectCreateDate)
 
 else :
+	# We only need a default project config object if we are creating a new one.
 	if command == 'create' :
 		c = 0
 		for o in opts :
@@ -184,6 +185,9 @@ else :
 		# Load in the project type XML default settings
 		projConfig = getDefaultProjSettings (projHome, userHome, tipeHome, projType)
 		aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+
+# FIXME: But what do we do if we are in a folder with a locked project? Need to
+# add that condition
 
 	else :
 		# If there is no project and no desire to make one, we still need a

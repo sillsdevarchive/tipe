@@ -76,7 +76,7 @@ class About (Command) :
 
 	def run(self, args) :
 		super(About, self).run(args)
-#        terminal(aProject._sysConfig['System']['aboutText'])
+#        terminal(aProject._userConfig['System']['aboutText'])
 
 
 class ChangeSettings (Command) :
@@ -86,10 +86,7 @@ class ChangeSettings (Command) :
 
 	def run(self, args, aProject, userConfig) :
 		(self.options, self.args) = self.parser.parse_args(args = args)
-#        super(ChangeSettings, self).run(args)
-#        aProject.changeSystemSetting(args[0][2:], args[1])
 		new = args[1]
-#        old = userConfig[args[0][2:]][argv[1]]
 		old = userConfig['System'][args[0][2:]]
 
 		if new != old :
@@ -211,18 +208,18 @@ class RestoreProject (Command) :
 	def run(self, args, aProject, userConfig) :
 		super(RestoreProject, self).run(args, aProject, userConfig)
 
-#        if len(args) :
-#            if os.path.split(os.getcwd())[1] == args[1] :
-#                pDir = os.getcwd()
-#            else :
-#                pDir = os.path.abspath(args[1])
-#        else :
-#            pDir = os.getcwd()
+		if len(args) == 1 :
+			pdir = os.getcwd()
+		elif len(args) == 2 :
+			if args[1] == '.' :
+				pdir = os.getcwd()
+			else :
+				pdir = os.path.abspath(args[1])
 
-		if aProject.restoreProject(args[1]) :
-			terminal('Restored project at: ' + args[1])
+		if aProject.restoreProject(pdir) :
+			terminal('Restored project at: ' + pdir)
 		else :
-			terminal('Restoring project at: ' + args[1] + ' failed.')
+			terminal('Restoring project at: ' + pdir + ' failed.')
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")

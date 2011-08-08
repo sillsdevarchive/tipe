@@ -57,7 +57,7 @@ class Project (object) :
 
 		# Load project config files
 		self._projConfig        = projConfig
-		self._sysConfig         = userConfig
+		self._userConfig         = userConfig
 
 		# Set all the initial paths and locations
 		# System level paths
@@ -78,13 +78,13 @@ class Project (object) :
 		self.userProjTypes      = os.path.join(userHome, 'resources', 'lib_projTypes')
 
 		# Set all the system settings
-		if self._sysConfig :
-			self.projConfFile    = os.path.join(self.projHome, self._sysConfig['Files']['projConfFile']['name'])
-			self.userConfFile   = os.path.join(self.userHome, self._sysConfig['Files']['userConfFile']['name'])
+		if self._userConfig :
+			self.projConfFile    = os.path.join(self.projHome, self._userConfig['Files']['projConfFile']['name'])
+			self.userConfFile   = os.path.join(self.userHome, self._userConfig['Files']['userConfFile']['name'])
 			for k in ('systemVersion',      'userName',
 					  'debugging',          'lastEditDate',
 					  'projLogLineLimit',   'lockExt') :
-				setattr(self, k, self._sysConfig['System'][k] if self._sysConfig else None)
+				setattr(self, k, self._userConfig['System'][k] if self._userConfig else None)
 
 			self.orgLastEditDate    = self.lastEditDate
 
@@ -102,7 +102,7 @@ class Project (object) :
 			self.orgProjectEditDate = self.projectLastEditDate
 
 
-	def initProject (self, home) :
+	def initProject (self, pdir) :
 		'''Initialize a new project by creating all necessary global items like
 		folders, etc.'''
 
@@ -122,9 +122,9 @@ class Project (object) :
 					pass
 
 			if parentFolder :
-				thisFolder = os.path.join(home, parentFolder, folderName)
+				thisFolder = os.path.join(pdir, parentFolder, folderName)
 			else :
-				thisFolder = os.path.join(home, folderName)
+				thisFolder = os.path.join(pdir, folderName)
 
 			if not os.path.isdir(thisFolder) :
 				os.mkdir(thisFolder)
@@ -140,9 +140,9 @@ class Project (object) :
 				if key == 'name' :
 					fileName = value
 					if fs == 'projLogFile' :
-						self.projLogFile = os.path.join(home, value)
+						self.projLogFile = os.path.join(pdir, value)
 					elif fs == 'projErrorLogFile' :
-						self.projErrorLogFile = os.path.join(home, value)
+						self.projErrorLogFile = os.path.join(pdir, value)
 				elif key == 'location' :
 					if value :
 						parentFolder = value
@@ -150,14 +150,15 @@ class Project (object) :
 					pass
 
 			if parentFolder :
-				thisFile = os.path.join(home, parentFolder, fileName)
+				thisFile = os.path.join(pdir, parentFolder, fileName)
 			else :
-				thisFile = os.path.join(home, fileName)
+				thisFile = os.path.join(pdir, fileName)
 
 		# Create a new version of the project config file
-		newProjConfig = getDefaultProjSettings(home, self.userHome, self.tipeHome, self._projConfig['ProjectInfo']['projectType'])
+		newProjConfig = getDefaultProjSettings(pdir, self.userHome, self.tipeHome, self._projConfig['ProjectInfo']['projectType'])
 		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
-		self._projConfig = newProjConfig
+		self._projConfig = mergeProjConfig(newProjConfig, pdir, self.userHome, self.tipeHome)
+		self = Project(self._projConfig, self._userConfig, pdir, self.userHome, self.tipeHome)
 
 
 	def makeProject (self, ptype, pname, pid, pdir='') :
@@ -168,10 +169,30 @@ class Project (object) :
 		# component is processed.
 		if not pdir :
 			pdir = os.getcwd()
+		elif pdir == '.' :
+			pdir = os.getcwd()
+		else :
+			pdir = os.path.abspath(pdir)
+
+		# Do some further testing to be sure we are not starting a project
+		# inside another project.
+		(head, tail) = os.path.split(pdir)
+		if os.path.isfile(os.path.join(head, '.project.conf')) :
+			terminal('Hault! A project is already defined in the parent folder')
+			return
+
+		# Test if this project already exists in the user's config file.
+		if isRecordedProject(self.userConfFile, pid) :
+			terminal('Hault! ID [' + pid + '] already defined for another project')
+			return
+
+		# If we made it this far lets see if the pdir is there
+		if not os.path.isdir(pdir) :
+			os.mkdir(pdir)
 
 		date = tStamp()
-		self._sysConfig['System']['isProject'] = True
-		self._sysConfig['System']['projCreateDate'] = date
+		self._userConfig['System']['isProject'] = True
+		self._userConfig['System']['projCreateDate'] = date
 		self.initProject(pdir)
 
 		recordProject(self.userConfFile, pdir, pname, ptype, pid, date)
@@ -180,9 +201,10 @@ class Project (object) :
 		self._projConfig['ProjectInfo']['projectLastEditDate']    = ''
 		self._projConfig['ProjectInfo']['projectCreateDate']      = date
 		self._projConfig['ProjectInfo']['projectIDCode']          = pid
+		terminal('Created [' + pid + '] project at: ' + pdir)
 
 		# Finally write out the project config file
-		writeConfFiles(self._sysConfig, self._projConfig, self.userHome, pdir)
+		writeConfFiles(self._userConfig, self._projConfig, self.userHome, pdir)
 
 
 	def removeProject (self, pid) :
@@ -190,25 +212,25 @@ class Project (object) :
 		project data but will 'disable' the project.'''
 
 		# 1) Check the user's conf file to see if the project actually exists
-		if not self._sysConfig['Projects'][pid] :
+		if not self._userConfig['Projects'][pid] :
 			terminal('Project ID [' + pid + '] not found in system configuration.')
 			return
 		else :
 			# 2) If the project does exist in the user config, disable the project
-			projPath = self._sysConfig['Projects'][pid]['projectPath']
+			projPath = self._userConfig['Projects'][pid]['projectPath']
 			projConfFile = os.path.join(projPath, '.project.conf')
 			if os.path.isfile(projConfFile) :
 				os.rename(projConfFile, projConfFile + self.lockExt)
 
 			# 3) Remove references from user tipe.conf
-			del self._sysConfig['Projects'][pid]
+			del self._userConfig['Projects'][pid]
 			reportSysConfUpdate(self)
 
 			# 4) Report the process is done
 			terminal('Project [' + pid + '] removed from system configuration.')
 			return
 
-#########################################################################################
+
 	def restoreProject (self, pdir) :
 		'''Restore a project in the current folder'''
 
@@ -216,25 +238,25 @@ class Project (object) :
 		if os.path.isfile(projConfFile + self.lockExt) :
 			os.rename(projConfFile + self.lockExt, projConfFile)
 			self._projConfig = mergeProjConfig(ConfigObj(projConfFile), pdir, self.userHome, self.tipeHome)
-			self = Project(self._projConfig, self._sysConfig, pdir, self.userHome, self.tipeHome)
-			pname =
-			ptype =
-			pid =
-			date =
+			self = Project(self._projConfig, self._userConfig, pdir, self.userHome, self.tipeHome)
+			pname = self._projConfig['ProjectInfo']['projectName']
+			ptype = self._projConfig['ProjectInfo']['projectType']
+			pid = self._projConfig['ProjectInfo']['projectIDCode']
+			date = self._projConfig['ProjectInfo']['projectCreateDate']
 			recordProject(self.userConfFile, pdir, pname, ptype, pid, date)
 			return True
 
-#########################################################################################
+
 	def changeSystemSetting (self, key, value) :
 		'''Change global default setting (key, value) in the System section of
 		the TIPE user settings file.  This will write out changes
 		immediately.'''
 
-		if not self._sysConfig['System'][key] == value :
-			self._sysConfig['System'][key] = value
+		if not self._userConfig['System'][key] == value :
+			self._userConfig['System'][key] = value
 			reportSysConfUpdate(self)
 			terminal('Changed ' + key + ' to: ' + value)
-			setattr(self, key, self._sysConfig['System'][key] if self._sysConfig else None)
+			setattr(self, key, self._userConfig['System'][key] if self._userConfig else None)
 		else :
 			terminal(key + ' already set to ' + value)
 
@@ -257,7 +279,7 @@ class Project (object) :
 #            aComp.initComponentFiles(self)
 #
 #            # Set the flag for writing out the components config file
-#            self._sysConfig['System']['writeOutCompConf'] = True
+#            self._userConfig['System']['writeOutCompConf'] = True
 #            return True
 
 #        else :
@@ -280,7 +302,7 @@ class Project (object) :
 #            del(self._compConf[idCode])
 #            self._book.removeFromBinding(idCode)
 #            # Set the flag for writing out the components config file
-#            self._sysConfig['System']['writeOutCompConf'] = True
+#            self._userConfig['System']['writeOutCompConf'] = True
 #            return True
 #        else :
 #            return False
@@ -303,7 +325,7 @@ class Project (object) :
 	def writeToLog(self, code, msg, mod) : self.writeToLog(code, msg, mod)
 	def trimLog(self, logLineLimit) : self.trimLog(logLineLimit)
 #    def mergeProjConfig(self, projConfig, projHome, userHome, tipeHome) : self.mergeProjConfig(projConfig, projHome, userHome, tipeHome)
-#    def writeConfFiles(self, sysConfig, newProjConfig, userHome, projHome) : self.writeConfFiles(sysConfig, newProjConfig, userHome, projHome)
+#    def writeConfFiles(self, userConfig, newProjConfig, userHome, projHome) : self.writeConfFiles(userConfig, newProjConfig, userHome, projHome)
 #    def isRecordedProject(self, userConfFile, pid) : self.isRecordedProject(userConfFile, pid)
 
 ###############################################################################

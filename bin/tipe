@@ -198,8 +198,10 @@ else :
 ###############################################################################
 
 # Give a welcome message
-terminal('\n\t\tWelcome to TIPE ' + aProject._sysConfig['System']['systemVersion'])
-terminal('\t\tCurrent User: ' + aProject._sysConfig['System']['userName'])
+terminal('\n\t\tWelcome to TIPE ' + aProject._userConfig['System']['systemVersion'])
+terminal('\t\tCurrent User: ' + aProject._userConfig['System']['userName'])
+if os.path.isfile(aProject.projConfFile) :
+	terminal('\t\tCurrent Project: ' + aProject._projConfig['ProjectInfo']['projectName'] + ' (' + aProject._projConfig['ProjectInfo']['projectIDCode'] + ')')
 
 
 ###############################################################################
@@ -221,7 +223,7 @@ else :
 ###############################################################################
 
 # Now write out the config files if needed
-writeConfFiles(aProject._sysConfig, aProject._projConfig, userHome, projHome)
+writeConfFiles(aProject._userConfig, aProject._projConfig, userHome, projHome)
 
 ## Politely say good bye
 terminal('\n\t\tThank you, please come again!\n')

@@ -71,42 +71,6 @@ def getDefaultProjSettings (projHome, userHome, tipeHome, projType) :
 	return res
 
 
-#def safeConfig(dir, fname, tipedir, setting, projconf = None) :
-#    '''This is the main function for reading in the XML data and overriding
-#    default settings with the current project settings.  This works with both
-#    the project.conf file and the components.conf files.'''
-
-#    # Check to see if the file is there, then read it in and break it into
-#    # sections. If it fails, scream really loud!
-#    f = os.path.join(tipedir, fname)
-#    if os.path.exists(f) :
-#        res = xml_to_section(f)
-#    else :
-#        raise IOError, "Can't open " + f
-
-#    # If this is a live project it should have been passed a valid project.conf
-#    # object.  Otherwise, the default settings from the XML will be good enough
-#    # to get going.
-#    if not projconf : projconf = res
-#    f = projconf['System']['FileNames'][setting]
-
-#    # If dealing with a components we'll use the same process but just create an
-#    # empty object if no components have been defined for the project or a
-#    # project doesn't exist.
-#    if fname == 'components.xml' :
-#        if os.path.exists(f) :
-#            conf = override_components(res, f)
-#        else :
-#            conf = ConfigObj()
-#    else :
-#        if os.path.exists(f) :
-#            conf = override(res, f)
-#        else :
-#            conf = res
-
-#    return (conf, res)
-
-
 def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 	'''Write out, if necessary, any conf files.  This will depend on if there
 	has been any activity to necessitate this action.'''
@@ -122,13 +86,11 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 
 	# Don't try to write to the projConfFile if it is not there or the write
 	# flag has not been set.'
-	if os.path.isfile(projConfigFile) :
-		print projConfig
-		if projConfig['ProjectInfo']['writeOutProjConfFile'] :
-			projConfig['ProjectInfo']['lastEditDate'] = stamp
-			projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
-			projConfig.filename = projConfigFile
-			projConfig.write()
+	if projConfig['ProjectInfo']['writeOutProjConfFile'] :
+		projConfig['ProjectInfo']['lastEditDate'] = stamp
+		projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
+		projConfig.filename = projConfigFile
+		projConfig.write()
 
 
 def xml_to_section(fname) :
@@ -196,8 +158,8 @@ def reportSysConfUpdate (aProject) :
 	happens at the end of a process.'''
 
 	ts = tStamp()
-	aProject._sysConfig['System']['tipeEditDate'] = ts
-	aProject._sysConfig['System']['writeOutUserConfFile'] = True
+	aProject._userConfig['System']['tipeEditDate'] = ts
+	aProject._userConfig['System']['writeOutUserConfFile'] = True
 	aProject.tipeEditDate = ts
 
 
@@ -241,6 +203,45 @@ def isRecordedProject (userConfFile, pid) :
 			return True
 		except :
 			return False
+
+
+
+#def safeConfig(dir, fname, tipedir, setting, projconf = None) :
+#    '''This is the main function for reading in the XML data and overriding
+#    default settings with the current project settings.  This works with both
+#    the project.conf file and the components.conf files.'''
+
+#    # Check to see if the file is there, then read it in and break it into
+#    # sections. If it fails, scream really loud!
+#    f = os.path.join(tipedir, fname)
+#    if os.path.exists(f) :
+#        res = xml_to_section(f)
+#    else :
+#        raise IOError, "Can't open " + f
+
+#    # If this is a live project it should have been passed a valid project.conf
+#    # object.  Otherwise, the default settings from the XML will be good enough
+#    # to get going.
+#    if not projconf : projconf = res
+#    f = projconf['System']['FileNames'][setting]
+
+#    # If dealing with a components we'll use the same process but just create an
+#    # empty object if no components have been defined for the project or a
+#    # project doesn't exist.
+#    if fname == 'components.xml' :
+#        if os.path.exists(f) :
+#            conf = override_components(res, f)
+#        else :
+#            conf = ConfigObj()
+#    else :
+#        if os.path.exists(f) :
+#            conf = override(res, f)
+#        else :
+#            conf = res
+
+#    return (conf, res)
+
+
 
 
 ############################### Terminal Output ###############################

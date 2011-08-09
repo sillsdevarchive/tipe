@@ -154,9 +154,9 @@ projConfFile = os.path.join(projHome, '.project.conf')
 projType = None
 
 # Check for existing project in the case of a create command
-if command == 'create' and os.path.isfile(projConfFile) :
-	terminal('Error: Project exsists. Cannot create a new project in this location.')
-	sys.exit(1)
+#if command == 'create' and os.path.isfile(projConfFile) :
+#    terminal('Error: Project exsists. Cannot create a new project in this location.')
+#    sys.exit(1)
 
 # Now create a fresh projConfig object
 if os.path.isfile(projConfFile) :
@@ -197,6 +197,13 @@ else :
 ############################### Terminal Startup ##############################
 ###############################################################################
 
+# Do some cleanup like getting rid of the last sessions error log file.
+try :
+	if os.path.isfile(aProject.projErrorLogFile) :
+		os.remove(aProject.projErrorLogFile)
+except :
+	pass
+
 # Give a welcome message
 terminal('\n\t\tWelcome to TIPE ' + aProject._userConfig['System']['systemVersion'])
 terminal('\t\tCurrent User: ' + aProject._userConfig['System']['userName'])
@@ -210,10 +217,13 @@ if os.path.isfile(aProject.projConfFile) :
 
 # Run the command and pass along the aProject object
 if command in commands :
-	if len(opts) > 0 :
+	# To process there should be one or more options
+	if len(opts) > 1 :
 		commands[command].run(opts, aProject, userConfig)
 	else :
-		commands[command].run(opts)
+		# If we seem to be short on options then we will just display the help
+		# for this command
+		commands['help'].run([command])
 else :
 	terminal('ERROR: This command does not exist: ' + command)
 

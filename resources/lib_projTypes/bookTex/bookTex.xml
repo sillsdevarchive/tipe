@@ -243,7 +243,7 @@ Todo:
                 <key>location</key>
                 <description>The location of the folder.</description>
                 <type>string</type>
-                <value></value>
+                <value>Process</value>
             </setting>
             <setting>
                 <name>Version Control</name>
@@ -331,14 +331,14 @@ Todo:
 
         <section>
             <name>Lccode TeX File</name>
-            <sectionID>lccodeTex</sectionID>
-            <description>The lccode is a file used to declair non-word-forming characters.</description>
+            <sectionID>lccodeTxt</sectionID>
+            <description>The lccode is a text file used to declair non-word-forming characters to TeX.</description>
             <setting>
                 <name>Name</name>
                 <key>name</key>
                 <description>The name of this file.</description>
                 <type>string</type>
-                <value>lccode.tex</value>
+                <value>lccode.txt</value>
             </setting>
             <setting>
                 <name>Location</name>
@@ -407,6 +407,25 @@ Todo:
             </setting>
         </section>
         <section>
+            <name>Project Hyphenation Folder</name>
+            <sectionID>HyphenationFolder</sectionID>
+            <description>The project hyphenation folder.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The folder where all hyphenation information is kept.</description>
+                <type>string</type>
+                <value>Hyphenation</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value></value>
+            </setting>
+        </section>
+        <section>
             <name>Project Wiki Folder</name>
             <sectionID>WikiFolder</sectionID>
             <description>The project wiki notes folder.</description>
@@ -442,6 +461,25 @@ Todo:
                 <description>The location of the folder.</description>
                 <type>string</type>
                 <value></value>
+            </setting>
+        </section>
+        <section>
+            <name>Project TeX Macro Folder</name>
+            <sectionID>MacroFolder</sectionID>
+            <description>The project TeX macro folder.</description>
+            <setting>
+                <name>Name</name>
+                <key>name</key>
+                <description>The folder where all the TeX macros for this project are kept.</description>
+                <type>string</type>
+                <value>Macros</value>
+            </setting>
+            <setting>
+                <name>Location</name>
+                <key>location</key>
+                <description>The location of the folder.</description>
+                <type>string</type>
+                <value>Process</value>
             </setting>
         </section>
     </section>

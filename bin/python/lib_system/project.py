@@ -20,13 +20,11 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os, sys, fileinput
-#from datetime import *
+import codecs, os, sys, fileinput, shutil
 #from configobj import ConfigObj, Section
 
 
 # Load the local classes
-#from tools import *
 from tools import *
 
 #from component import Component
@@ -116,7 +114,7 @@ class Project (object) :
 				if key == 'name' :
 					folderName = value
 				elif key == 'location' :
-					if value :
+					if value != 'None' :
 						parentFolder = value
 				else :
 					pass
@@ -126,7 +124,16 @@ class Project (object) :
 			else :
 				thisFolder = os.path.join(pdir, folderName)
 
+			# Create a source folder name in case there is one
+			sourceFolder = os.path.join(self.tipeHome, 'resources', 'lib_projTypes', self._projConfig['ProjectInfo']['projectType'], 'lib_folders', folderName)
+
 			if not os.path.isdir(thisFolder) :
+				if os.path.isdir(sourceFolder) :
+
+
+# Pick up here
+
+
 				os.mkdir(thisFolder)
 				if self.debugging == 'True' :
 					terminal('Created folder: ' + folderName)
@@ -154,6 +161,15 @@ class Project (object) :
 			else :
 				thisFile = os.path.join(pdir, fileName)
 
+			# Create source file name
+			sourceFile = os.path.join(self.tipeHome, 'resources', 'lib_projTypes', self._projConfig['ProjectInfo']['projectType'], 'lib_files', fileName)
+			# Make the file if it is not already there
+			if not os.path.isfile(thisFile) :
+				if os.path.isfile(sourceFile) :
+					shutil.copy(sourceFile, thisFile)
+				else :
+					open(thisFile, 'w').close()
+
 		# Create a new version of the project config file
 		newProjConfig = getDefaultProjSettings(pdir, self.userHome, self.tipeHome, self._projConfig['ProjectInfo']['projectType'])
 		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
@@ -177,8 +193,13 @@ class Project (object) :
 		# Do some further testing to be sure we are not starting a project
 		# inside another project.
 		(head, tail) = os.path.split(pdir)
-		if os.path.isfile(os.path.join(head, '.project.conf')) :
-			terminal('Hault! A project is already defined in the parent folder')
+		live = os.path.isfile(os.path.join(head, '.project.conf'))
+		dead = os.path.isfile(os.path.join(head, '.project.conf' + self.lockExt))
+		if live :
+			terminal('Hault! Live project already defined in parent folder')
+			return
+		elif dead :
+			terminal('Hault! Locked project already defined in parent folder')
 			return
 
 		# Test if this project already exists in the user's config file.
@@ -205,6 +226,7 @@ class Project (object) :
 
 		# Finally write out the project config file
 		writeConfFiles(self._userConfig, self._projConfig, self.userHome, pdir)
+		self.writeToLog('LOG', 'Created [' + pid + '] project at: ' + date, 'project.makeProject()')
 
 
 	def removeProject (self, pid) :
@@ -212,22 +234,24 @@ class Project (object) :
 		project data but will 'disable' the project.'''
 
 		# 1) Check the user's conf file to see if the project actually exists
-		if not self._userConfig['Projects'][pid] :
+		try :
+			if self._userConfig['Projects'][pid] :
+				# 2) If the project does exist in the user config, disable the project
+				projPath = self._userConfig['Projects'][pid]['projectPath']
+				projConfFile = os.path.join(projPath, '.project.conf')
+				if os.path.isfile(projConfFile) :
+					os.rename(projConfFile, projConfFile + self.lockExt)
+
+				# 3) Remove references from user tipe.conf
+				del self._userConfig['Projects'][pid]
+				reportSysConfUpdate(self)
+
+				# 4) Report the process is done
+				terminal('Project [' + pid + '] removed from system configuration.')
+				return
+
+		except :
 			terminal('Project ID [' + pid + '] not found in system configuration.')
-			return
-		else :
-			# 2) If the project does exist in the user config, disable the project
-			projPath = self._userConfig['Projects'][pid]['projectPath']
-			projConfFile = os.path.join(projPath, '.project.conf')
-			if os.path.isfile(projConfFile) :
-				os.rename(projConfFile, projConfFile + self.lockExt)
-
-			# 3) Remove references from user tipe.conf
-			del self._userConfig['Projects'][pid]
-			reportSysConfUpdate(self)
-
-			# 4) Report the process is done
-			terminal('Project [' + pid + '] removed from system configuration.')
 			return
 
 
@@ -358,14 +382,14 @@ class Project (object) :
 
 		# Write out everything but LOG messages to the terminal
 		if code != 'LOG' :
-			self.terminal(code + ' - ' + msg)
+			terminal(code + ' - ' + msg)
 
 		# Test to see if this is a live project by seeing if the project type is
 		# set.  If it is, we can write out log files.  Otherwise, why bother?
-		if self.thisProjectType :
+		if self.projectType :
 
 			# When are we doing this?
-			ts = self.tStamp()
+			ts = tStamp()
 
 			# Build the event line
 			if code == 'ERR' :
@@ -391,7 +415,7 @@ class Project (object) :
 					self.writeToErrorLog(eventLine)
 
 			except :
-				self.terminal(msg)
+				terminal(msg)
 
 		return
 
@@ -414,7 +438,7 @@ class Project (object) :
 			writeObject.write(eventLine + '\n')
 			writeObject.close()
 		except :
-			self.terminal('eventLine')
+			terminal('eventLine')
 
 		return
 

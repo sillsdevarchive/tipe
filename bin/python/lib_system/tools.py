@@ -78,19 +78,27 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 	userConfigFile = os.path.join(userHome, userConfig['Files']['userConfFile']['name'])
 	projConfigFile = os.path.join(projHome, userConfig['Files']['projConfFile']['name'])
 	stamp = tStamp()
+
+	# There should always be a userConfig so if the write flag is set we will
+	# write
 	if userConfig['System']['writeOutUserConfFile'] :
 		userConfig['System']['lastEditDate'] = stamp
 		userConfig['System']['writeOutUserConfFile'] = ''
 		userConfig.filename = userConfigFile
 		userConfig.write()
 
-	# Don't try to write to the projConfFile if it is not there or the write
-	# flag has not been set.'
-	if projConfig['ProjectInfo']['writeOutProjConfFile'] :
-		projConfig['ProjectInfo']['lastEditDate'] = stamp
-		projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
-		projConfig.filename = projConfigFile
-		projConfig.write()
+	# There may not always be a valid (populated) projConfig so we need to try
+	# to find the write flag first to see if we are going to write to it.
+	try :
+		if projConfig['ProjectInfo']['writeOutProjConfFile'] :
+			projConfig['ProjectInfo']['lastEditDate'] = stamp
+			projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
+			projConfig.filename = projConfigFile
+			projConfig.write()
+
+	except :
+		# FIXME: Should I be doing something else here?
+		pass
 
 
 def xml_to_section(fname) :

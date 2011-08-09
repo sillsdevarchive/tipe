@@ -64,9 +64,9 @@ opts = []
 if len(sys.argv) > 1 :
 	command = sys.argv[1]
 	opts = sys.argv[2:]
-else :
-	# If there isn't anything then we'll just go to the projects manager
-	command = "help"
+#else :
+#    # If there isn't anything then we'll just go to the projects manager
+#    command = "help"
 
 
 ###############################################################################
@@ -153,11 +153,6 @@ if tipeProjs :
 projConfFile = os.path.join(projHome, '.project.conf')
 projType = None
 
-# Check for existing project in the case of a create command
-#if command == 'create' and os.path.isfile(projConfFile) :
-#    terminal('Error: Project exsists. Cannot create a new project in this location.')
-#    sys.exit(1)
-
 # Now create a fresh projConfig object
 if os.path.isfile(projConfFile) :
 	# Create a fresh merged version of the projConfig
@@ -216,16 +211,23 @@ if os.path.isfile(aProject.projConfFile) :
 ###############################################################################
 
 # Run the command and pass along the aProject object
-if command in commands :
-	# To process there should be one or more options
-	if len(opts) > 1 :
-		commands[command].run(opts, aProject, userConfig)
+if command :
+	if command in commands :
+		# To process there should be one or more options
+		if len(opts) > 1 :
+			commands[command].run(opts, aProject, userConfig)
+		else :
+			# If we seem to be short on options then we will just display the help
+			# for this command
+				terminal('\nHelp for the \"' + command + '\" command:\n')
+				commands['help'].run([command])
+
 	else :
-		# If we seem to be short on options then we will just display the help
-		# for this command
-		commands['help'].run([command])
+		terminal('\nERROR: This command does not exist: ' + command)
+
 else :
-	terminal('ERROR: This command does not exist: ' + command)
+	terminal('\nAvailable commands:')
+	commands['help'].run(opts)
 
 
 ###############################################################################

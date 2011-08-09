@@ -20,7 +20,7 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os, sys, fileinput, shutil
+import codecs, os, sys, fileinput, shutil, imp
 #from configobj import ConfigObj, Section
 
 
@@ -100,6 +100,17 @@ class Project (object) :
 			self.orgProjectEditDate = self.projectLastEditDate
 
 
+		# Load project type commands
+		try :
+			print "Loading: " + os.path.join(self.thisTipeProjTypeLib, self.projectType)
+			imp.load_source(self.projectType, os.path.join(self.thisTipeProjTypeLib, self.projectType))
+			__import__(self.projectType)
+		except Exception, e:
+			print sys.path
+			print e
+			terminal('Failed to load ' + self.projectType + ' project commands')
+
+
 	def initProject (self, pdir) :
 		'''Initialize a new project by creating all necessary global items like
 		folders, etc.'''
@@ -129,14 +140,11 @@ class Project (object) :
 
 			if not os.path.isdir(thisFolder) :
 				if os.path.isdir(sourceFolder) :
-
-
-# Pick up here
-
-
-				os.mkdir(thisFolder)
-				if self.debugging == 'True' :
-					terminal('Created folder: ' + folderName)
+					shutil.copytree(sourceFolder, thisFolder)
+				else :
+					os.mkdir(thisFolder)
+					if self.debugging == 'True' :
+						terminal('Created folder: ' + folderName)
 
 		# Create some necessary files
 		fls = self._projConfig['Files'].__iter__()
@@ -169,12 +177,23 @@ class Project (object) :
 					shutil.copy(sourceFile, thisFile)
 				else :
 					open(thisFile, 'w').close()
+					if self.debugging == 'True' :
+						terminal('Created file: ' + thisFile)
+
 
 		# Create a new version of the project config file
 		newProjConfig = getDefaultProjSettings(pdir, self.userHome, self.tipeHome, self._projConfig['ProjectInfo']['projectType'])
 		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
 		self._projConfig = mergeProjConfig(newProjConfig, pdir, self.userHome, self.tipeHome)
 		self = Project(self._projConfig, self._userConfig, pdir, self.userHome, self.tipeHome)
+
+
+	def initComponentType (self, ctype) :
+		'''Initialize a component type in this project.  This will copy all the
+		necessary files and folders into the project to support the processing
+		of this component type.'''
+
+		pass
 
 
 	def makeProject (self, ptype, pname, pid, pdir='') :
@@ -269,6 +288,15 @@ class Project (object) :
 			date = self._projConfig['ProjectInfo']['projectCreateDate']
 			recordProject(self.userConfFile, pdir, pname, ptype, pid, date)
 			return True
+
+
+	def addComponentType (self, ctype) :
+		'''Add a component type to the current project.  Before doing so, it
+		must varify that the requested component type is valid to add to this
+		type of project.'''
+
+		self.initComponentType(ctype)
+		pass
 
 
 	def changeSystemSetting (self, key, value) :

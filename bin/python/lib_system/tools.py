@@ -172,13 +172,13 @@ def reportSysConfUpdate (aProject) :
 
 
 
-def recordProject (tipeUserConfFile, projHome, pname, ptype, pid, date) :
+def recordProject (userConfFile, projHome, pname, ptype, pid, date) :
 	'''Add information about this project to the user's tipe.conf located in
 	the home config folder.'''
 
 	mod = 'project.recordProject()'
-	if os.path.isfile(tipeUserConfFile) :
-		cf = ConfigObj(tipeUserConfFile)
+	if os.path.isfile(userConfFile) :
+		cf = ConfigObj(userConfFile)
 
 		# FIXME: Before we create a project entry we want to be sure that
 		# the projects section already exsists.  There might be a better way
@@ -211,7 +211,6 @@ def isRecordedProject (userConfFile, pid) :
 			return True
 		except :
 			return False
-
 
 
 #def safeConfig(dir, fname, tipedir, setting, projconf = None) :

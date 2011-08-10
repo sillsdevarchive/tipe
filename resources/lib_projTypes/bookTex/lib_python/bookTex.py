@@ -12,7 +12,6 @@
 # History:
 # 20110728 - djd - Initial draft
 
-print "bookTex.py loading"
 
 ###############################################################################
 ################################# Project Class ###############################
@@ -54,8 +53,8 @@ class bookTex (Project) :
 ###############################################################################
 
 
-	def changeProjectSetting (self, aProject) :
-		'''This will do something.'''
+	def addComponentType (self, ctype) :
+		'''Add a component type to a project.'''
 
 		print "It is working!"
 

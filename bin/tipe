@@ -164,28 +164,10 @@ if os.path.isfile(projConfFile) :
 			aProject.projectType, aProject.projectIDCode, aProject.projectCreateDate)
 
 else :
-	# We only need a default project config object if we are creating a new one.
-	if command == 'create' :
-		c = 0
-		for o in opts :
-			if o == '-t' :
-				projType = opts[c+1]
-
-			c +=1
-
-		if not projType :
-			terminal('TIPE failed to load. No project type in create command.')
-			sys.exit(1)
-
-		# Load in the project type XML default settings
-		projConfig = getDefaultProjSettings (projHome, userHome, tipeHome, projType)
-		aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
-
-	else :
-		# If there is no project and no desire to make one, we still need a
-		# dummy projConfig object so we'll just make one up.
-		projConfig = ConfigObj()
-		aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+	# If there is no project, we still need a
+	# dummy projConfig object so we'll just make one up.
+	projConfig = ConfigObj()
+	aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
 
 
 ###############################################################################

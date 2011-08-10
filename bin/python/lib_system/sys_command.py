@@ -161,12 +161,11 @@ class GUIManager (Command) :
 class CreateProject (Command) :
 	'''Create a new project based on a predefined project type.'''
 
-	type = "create"
+	type = "project_create"
 
 	def run(self, args, aProject, userConfig) :
 		super(CreateProject, self).run(args, aProject, userConfig)
-		aProject = aProject.makeProject(self.options.ptype, self.options.pname, self.options.pid, self.options.pdir)
-		if aProject :
+		if aProject.makeProject(self.options.ptype, self.options.pname, self.options.pid, self.options.pdir) :
 			terminal('Success! New project created.')
 
 	def setupOptions(self, parser) :
@@ -181,7 +180,7 @@ class RemoveProject (Command) :
 	If no project ID is given the default is the project in the cwd.  If there
 	is no project in the cwd it will fail.'''
 
-	type = "remove"
+	type = "project_remove"
 
 	def run(self, args, aProject, userConfig) :
 		super(RemoveProject, self).run(args, aProject, userConfig)
@@ -203,7 +202,7 @@ class RemoveProject (Command) :
 class RestoreProject (Command) :
 	'''Restores a project in the dir given. The default dir is cwd.'''
 
-	type = 'restore'
+	type = 'project_restore'
 
 	def run(self, args, aProject, userConfig) :
 		super(RestoreProject, self).run(args, aProject, userConfig)

@@ -85,12 +85,23 @@ class Project (object) :
 				setattr(self, k, self._userConfig['System'][k] if self._userConfig else None)
 
 			self.orgLastEditDate    = self.lastEditDate
+		self.loadConfig()
 
+	def loadConfig(self) :
 		# Load project settings
 		for k in ('projectType',            'projectName',
 				  'projectLastEditDate',    'projectCreateDate',
-				  'projectIDCode',          'projectComponentTypes') :
-			setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
+				  'projectIDCode',          'projectComponentTypes',
+				  'componentTypeList',      'writeOutProjConfFile') :
+
+			setattr(self, k, self._projConfig['ProjectInfo'][k] if 'ProjectInfo' in self._projConfig else None)
+
+#            if self._projConfig :
+#                print k, type(k)
+#                setattr(self, k, self._projConfig['ProjectInfo'][k])
+
+
+#            setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
 
 		# In case we are in a situation where we had to make an aProject object
 		# with an empty projConfig we will test before doing this.
@@ -182,11 +193,6 @@ class Project (object) :
 						terminal('Created file: ' + thisFile)
 
 
-		# Create a new version of the project config file
-		newProjConfig = getDefaultProjSettings(pdir, self.userHome, self.tipeHome, self._projConfig['ProjectInfo']['projectType'])
-		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
-		self._projConfig = mergeProjConfig(newProjConfig, pdir, self.userHome, self.tipeHome)
-		self = Project(self._projConfig, self._userConfig, pdir, self.userHome, self.tipeHome)
 
 
 	def initComponentType (self, ctype) :
@@ -216,16 +222,22 @@ class Project (object) :
 		live = os.path.isfile(os.path.join(head, '.project.conf'))
 		dead = os.path.isfile(os.path.join(head, '.project.conf' + self.lockExt))
 		if live :
-			terminal('Hault! Live project already defined in parent folder')
-			return
+			terminal('Halt! Live project already defined in parent folder')
+			return False
 		elif dead :
-			terminal('Hault! Locked project already defined in parent folder')
-			return
+			terminal('Halt! Locked project already defined in parent folder')
+			return False
 
 		# Test if this project already exists in the user's config file.
 		if isRecordedProject(self.userConfFile, pid) :
-			terminal('Hault! ID [' + pid + '] already defined for another project')
-			return
+			terminal('Halt! ID [' + pid + '] already defined for another project')
+			return False
+
+		# Create a new version of the project config file
+		newProjConfig = getDefaultProjSettings(pdir, self.userHome, self.tipeHome, ptype)
+		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
+		self._projConfig = newProjConfig
+		self.loadConfig()
 
 		# If we made it this far lets see if the pdir is there
 		if not os.path.isdir(pdir) :
@@ -247,7 +259,7 @@ class Project (object) :
 		# Finally write out the project config file
 		writeConfFiles(self._userConfig, self._projConfig, self.userHome, pdir)
 		self.writeToLog('LOG', 'Created [' + pid + '] project at: ' + date, 'project.makeProject()')
-
+		return True
 
 	def removeProject (self, pid) :
 		'''Remove the project from the TIPE system.  This will not remove the

@@ -31,6 +31,27 @@ from sys_command import Command
 # Insert the commands you want visable to the system here in the order you want
 # them to appear when listed.
 
+class AddCompType (Command) :
+	'''Add a component type to a project.'''
+
+	type = "add_component"
+
+	def run(self, args, aProject, userConfig) :
+		super(AddCompType, self).run(args, aProject, userConfig)
+		if len(args) :
+			ct = args[1]
+			print aProject.componentTypeList, ct in aProject.componentTypeList
+			if ct in aProject.componentTypeList :
+				if aProject.addComponentType(ct) :
+					aProject.writeToLog('LOG', 'Added [' + ct + '] component type to project.', 'bookTex_command.AddCompType')
+				else :
+					aProject.writeToLog('ERR', 'Failed to add component type [' + ct + '] to project.', 'bookTex_command.AddCompType')
+			else :
+				aProject.writeToLog('ERR', 'Invalid component type: [' + ct + ']', 'bookTex_command.AddCompType')
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("-t", "--type", type="string", action="store", help="The type of component to be added to the project.")
+
 
 class ChangeProjSettings (Command) :
 	'''Change a system setting.'''

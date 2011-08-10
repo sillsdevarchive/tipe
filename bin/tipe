@@ -165,12 +165,17 @@ if os.path.isfile(projConfFile) :
 		projectType         = projConfig['ProjectInfo']['projectType']
 		tipeCompTypes       = os.path.join(tipeHome, 'resources', 'lib_compTypes')
 		tipeProjTypes       = os.path.join(tipeHome, 'resources', 'lib_projTypes')
-		try :
-			thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
-			sys.path.insert(0, thisTypeLib)
-			print 'xxxxxxx',  __import__(projectType), 'zzzzzzzzzzzzzzzz'
-		except Exception, e:
-			terminal('ERROR: Failed to load ' + projectType + ' project commands')
+
+		thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
+		sys.path.insert(0, thisTypeLib)
+		__import__(projectType, BookTex(), locals(), [], -1)
+
+#        try :
+#            thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
+#            sys.path.insert(0, thisTypeLib)
+#            __import__(projectType)
+#        except Exception, e:
+#            terminal('ERROR: Failed to load ' + projectType + ' project type module')
 	else :
 		terminal('ERROR: Failed to load: ' + projConfFile)
 
@@ -187,6 +192,7 @@ if os.path.isfile(projConfFile) :
 
 	# Fold in the projConfig into the aProject object
 	aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+	print dir(aProject)
 	if not isRecordedProject(aProject.userConfFile, aProject.projectIDCode) :
 		recordProject (aProject.userConfFile, aProject.projHome, aProject.projectName,
 			aProject.projectType, aProject.projectIDCode, aProject.projectCreateDate)

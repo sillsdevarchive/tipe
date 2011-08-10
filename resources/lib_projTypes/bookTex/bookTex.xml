@@ -84,7 +84,7 @@ Todo:
             <key>componentTypeList</key>
             <description>A list of component types that are acceptable to use with this project type.</description>
             <type>list</type>
-            <value>usfmTex, vMapper</value>
+            <value>usfmTex,vMapper</value>
         </setting>
         <setting>
             <name>Project Component Types</name>

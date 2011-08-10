@@ -126,7 +126,7 @@ def xml_add_section(data, doc) :
 		# Need to treat lists special but type is not required
 		if s.find('type').text == 'list' :
 			if val :
-				data[s.find('key').text] = [val.split(',')]
+				data[s.find('key').text] = val.split(',')
 			else :
 				data[s.find('key').text] = []
 		else :

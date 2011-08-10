@@ -100,7 +100,6 @@ class Project (object) :
 #                print k, type(k)
 #                setattr(self, k, self._projConfig['ProjectInfo'][k])
 
-
 #            setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
 
 		# In case we are in a situation where we had to make an aProject object
@@ -111,16 +110,17 @@ class Project (object) :
 			self.orgProjectEditDate = self.projectLastEditDate
 
 
-		# If a project type has been set, load (import) the main project type
-		# module which links to its commands.
-		if self.projectType :
-			try :
-				thisTypeLib = os.path.join(self.tipeProjTypes, self.projectType, 'lib_python')
-				sys.path.insert(0, thisTypeLib)
-				__import__(self.projectType)
-			except Exception, e:
-				self.writeToLog('ERR', 'Failed to load ' + self.projectType + ' project commands', 'project.__init__()')
+#        # If a project type has been set, load (import) the main project type
+#        # module which links to its commands.
+#        if self.projectType :
+#            try :
+#                thisTypeLib = os.path.join(self.tipeProjTypes, self.projectType, 'lib_python')
+#                sys.path.insert(0, thisTypeLib)
+#                __import__(self.projectType)
+#            except Exception, e:
+#                self.writeToLog('ERR', 'Failed to load ' + self.projectType + ' project commands', 'project.__init__()')
 
+#    def CreateTypedProject(self) :
 
 
 	def initProject (self, pdir) :
@@ -191,16 +191,6 @@ class Project (object) :
 					open(thisFile, 'w').close()
 					if self.debugging == 'True' :
 						terminal('Created file: ' + thisFile)
-
-
-
-
-	def initComponentType (self, ctype) :
-		'''Initialize a component type in this project.  This will copy all the
-		necessary files and folders into the project to support the processing
-		of this component type.'''
-
-		pass
 
 
 	def makeProject (self, ptype, pname, pid, pdir='') :
@@ -301,15 +291,6 @@ class Project (object) :
 			date = self._projConfig['ProjectInfo']['projectCreateDate']
 			recordProject(self.userConfFile, pdir, pname, ptype, pid, date)
 			return True
-
-
-	def addComponentType (self, ctype) :
-		'''Add a component type to the current project.  Before doing so, it
-		must varify that the requested component type is valid to add to this
-		type of project.'''
-
-		self.initComponentType(ctype)
-		pass
 
 
 	def changeSystemSetting (self, key, value) :

@@ -19,15 +19,19 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import codecs, os, sys, fileinput
-from datetime import *
-from configobj import ConfigObj, Section
+import os, sys
+#from datetime import *
+#from configobj import ConfigObj, Section
 
 # Load the local classes
-from project import Project
 from bookTex_command import Command
-from book import Book
-from xml.etree import ElementTree
+
+#from project import Project
+
+#from book import Book
+#from xml.etree import ElementTree
+
+print dir(Project)
 
 ###############################################################################
 ############################ Define Global Functions ##########################
@@ -46,7 +50,9 @@ class bookTex (Project) :
 
 		# Set all the initial paths and locations
 
-		self.aProject = aProject
+		#self.aProject = aProject
+
+		pass
 
 ###############################################################################
 ############################# Begin Main Functions ############################
@@ -54,8 +60,23 @@ class bookTex (Project) :
 
 
 	def addComponentType (self, ctype) :
-		'''Add a component type to a project.'''
+		'''Add a component type to the current project.  Before doing so, it
+		must varify that the requested component type is valid to add to this
+		type of project.'''
 
-		print "It is working!"
+
+		print "Adding compnent type", ctype
+
+		self.initComponentType(ctype)
+
+		return True
+
+
+	def initComponentType (self, ctype) :
+		'''Initialize a component type in this project.  This will copy all the
+		necessary files and folders into the project to support the processing
+		of this component type.'''
+
+		print "init compnent type", ctype
 
 

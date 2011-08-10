@@ -157,6 +157,34 @@ projType = None
 if os.path.isfile(projConfFile) :
 	# Create a fresh merged version of the projConfig
 	projConfig = mergeProjConfig(ConfigObj(projConfFile), projHome, userHome, tipeHome)
+
+	# If we successfuly created a projConfig, the we will load in the type info.
+	# For a project conf file to be written out it must be a valid project type
+	# so this next part should not fail.
+	if projConfig :
+		projectType         = projConfig['ProjectInfo']['projectType']
+		tipeCompTypes       = os.path.join(tipeHome, 'resources', 'lib_compTypes')
+		tipeProjTypes       = os.path.join(tipeHome, 'resources', 'lib_projTypes')
+		try :
+			thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
+			sys.path.insert(0, thisTypeLib)
+			print 'xxxxxxx',  __import__(projectType), 'zzzzzzzzzzzzzzzz'
+		except Exception, e:
+			terminal('ERROR: Failed to load ' + projectType + ' project commands')
+	else :
+		terminal('ERROR: Failed to load: ' + projConfFile)
+
+	# A valid project can exist but it may or may not have any components
+	# attached to it yet.  If there are, this next bit will load any necessary
+	# component commands and information.
+	# FIXME: More needs to be done here.
+	cts = projConfig['ProjectInfo']['projectComponentTypes']
+	if len(cts) != 0 :
+		for c in cts :
+			print c
+	else :
+		terminal('WARNING: No components found in this project!')
+
 	# Fold in the projConfig into the aProject object
 	aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
 	if not isRecordedProject(aProject.userConfFile, aProject.projectIDCode) :

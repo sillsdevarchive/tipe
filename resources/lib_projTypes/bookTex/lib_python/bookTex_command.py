@@ -40,9 +40,8 @@ class AddCompType (Command) :
 		super(AddCompType, self).run(args, aProject, userConfig)
 		if len(args) :
 			ct = args[1]
-			print aProject.componentTypeList, ct in aProject.componentTypeList
 			if ct in aProject.componentTypeList :
-				if aProject.addComponentType(ct) :
+				if bookTex.addComponentType(ct) :
 					aProject.writeToLog('LOG', 'Added [' + ct + '] component type to project.', 'bookTex_command.AddCompType')
 				else :
 					aProject.writeToLog('ERR', 'Failed to add component type [' + ct + '] to project.', 'bookTex_command.AddCompType')

@@ -12,6 +12,7 @@
 # History:
 # 20110728 - djd - Initial draft
 
+print "bookTex.py loading"
 
 ###############################################################################
 ################################# Project Class ###############################
@@ -22,7 +23,6 @@
 import codecs, os, sys, fileinput
 from datetime import *
 from configobj import ConfigObj, Section
-
 
 # Load the local classes
 from project import Project
@@ -35,7 +35,6 @@ from xml.etree import ElementTree
 ###############################################################################
 
 # These root level functions work at a fundamental level of the system
-
 
 
 ###############################################################################
@@ -55,7 +54,7 @@ class bookTex (Project) :
 ###############################################################################
 
 
-	def changeProjectSetting (self, self.aProject) :
+	def changeProjectSetting (self, aProject) :
 		'''This will do something.'''
 
 		print "It is working!"

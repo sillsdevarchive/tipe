@@ -100,15 +100,16 @@ class Project (object) :
 			self.orgProjectEditDate = self.projectLastEditDate
 
 
-		# Load project type commands
-		try :
-			print "Loading: " + os.path.join(self.thisTipeProjTypeLib, self.projectType)
-			imp.load_source(self.projectType, os.path.join(self.thisTipeProjTypeLib, self.projectType))
-			__import__(self.projectType)
-		except Exception, e:
-			print sys.path
-			print e
-			terminal('Failed to load ' + self.projectType + ' project commands')
+		# If a project type has been set, load (import) the main project type
+		# module which links to its commands.
+		if self.projectType :
+			try :
+				thisTypeLib = os.path.join(self.tipeProjTypes, self.projectType, 'lib_python')
+				sys.path.insert(0, thisTypeLib)
+				__import__(self.projectType)
+			except Exception, e:
+				self.writeToLog('ERR', 'Failed to load ' + self.projectType + ' project commands', 'project.__init__()')
+
 
 
 	def initProject (self, pdir) :
@@ -412,9 +413,9 @@ class Project (object) :
 		if code != 'LOG' :
 			terminal(code + ' - ' + msg)
 
-		# Test to see if this is a live project by seeing if the project type is
-		# set.  If it is, we can write out log files.  Otherwise, why bother?
-		if self.projectType :
+		# Test to see if this is a live project by seeing if the project conf is
+		# there.  If it is, we can write out log files.  Otherwise, why bother?
+		if os.path.isfile(self.projConfFile) :
 
 			# When are we doing this?
 			ts = tStamp()

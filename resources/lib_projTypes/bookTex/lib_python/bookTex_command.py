@@ -34,7 +34,7 @@ from sys_command import Command
 class AddCompType (Command) :
 	'''Add a component type to a project.'''
 
-	type = "add_component"
+	type = "component_add_type"
 
 	def run(self, args, aProject, userConfig) :
 		super(AddCompType, self).run(args, aProject, userConfig)
@@ -55,7 +55,7 @@ class AddCompType (Command) :
 class ChangeProjSettings (Command) :
 	'''Change a system setting.'''
 
-	type = "project_change"
+	type = "project_settings_change"
 
 	def run(self, aProject, args) :
 		super(ChangeProjSettings, self).run(aProject, args)

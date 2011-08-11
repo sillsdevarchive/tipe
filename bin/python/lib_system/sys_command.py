@@ -72,7 +72,7 @@ class Command (object) :
 class About (Command) :
 	'''Display the system's About text'''
 
-	type = "about"
+	type = "system_about"
 
 	def run(self, args) :
 		super(About, self).run(args)
@@ -82,7 +82,7 @@ class About (Command) :
 class ChangeSettings (Command) :
 	'''Change a system setting.'''
 
-	type = "change"
+	type = "system_settings_change"
 
 	def run(self, args, aProject, userConfig) :
 		(self.options, self.args) = self.parser.parse_args(args = args)
@@ -107,7 +107,7 @@ class ChangeSettings (Command) :
 class Debugging (Command) :
 	'''Turn on debugging (verbose output) in the logging.'''
 
-	type = "debug"
+	type = "system_debug"
 
 	def run(self, args, aProject, userConfig) :
 		super(Debugging, self).run(args, aProject, userConfig)
@@ -125,9 +125,9 @@ class Debugging (Command) :
 class Help (Command) :
 	'''Provide user with information on a specific command.'''
 
-	type = "help"
+	type = "system_help"
 
-	def run(self, args) :
+	def run(self, args, aProject, userConfig) :
 		global commands
 		if len(args) :
 			cmd = commands[args[0]]

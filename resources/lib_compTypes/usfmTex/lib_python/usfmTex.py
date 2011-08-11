@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf_8 -*-
-# version: 20110728
+# version: 20110811
 # By Dennis Drescher (dennis_drescher at sil.org)
 
 ###############################################################################
@@ -10,7 +10,7 @@
 # This class will handle project infrastructure tasks.
 
 # History:
-# 20110728 - djd - Initial draft
+# 20110811 - djd - Initial draft
 
 
 ###############################################################################
@@ -20,11 +20,9 @@
 # this process
 
 import os, sys
-#from datetime import *
-#from configobj import ConfigObj, Section
 
 # Load the local classes
-from bookTex_command import Command
+from usfmTex_command import Command
 from project import Project
 
 
@@ -39,13 +37,13 @@ from project import Project
 ################################## Begin Class ################################
 ###############################################################################
 
-class BookTex (Project) :
+class UsfmTex (Project) :
 
 	def __init__(self, projConfig, userConfig, projHome, userHome, tipeHome) :
 		'''Initialize this class.'''
 
 		# Make it available to the Project Class with this
-		super(BookTex, self).__init__(projConfig, userConfig, projHome, userHome, tipeHome)
+		super(UsfmTex, self).__init__(projConfig, userConfig, projHome, userHome, tipeHome)
 
 		# Set class vars
 		self._projConfig = projConfig
@@ -62,42 +60,22 @@ class BookTex (Project) :
 ###############################################################################
 
 
-	def addComponentType (self, ctype) :
-		'''Add a component type to the current project.  Before doing so, it
-		must varify that the requested component type is valid to add to this
-		type of project.'''
+	def addComponent (self, comp) :
+		'''Add a component to the current project.'''
 
 
-		print "Adding component type", ctype
+		print "Adding component type", comp
 
-		self.initComponentType(ctype)
+		self.initComponent(comp)
 
 		return True
 
 
-	def initComponentType (self, ctype) :
-		'''Initialize a component type in this project.  This will copy all the
-		necessary files and folders into the project to support the processing
-		of this component type.'''
+	def initComponent (self, comp) :
+		'''Initialize a component in this project.  This will put all the files
+		in place for this type of component so it can be rendered.'''
 
-		print "init component type", ctype
-
-
-	def loadComponents (self) :
-		'''Load all the components for a project.'''
-
-		# Start by loading all the component types for this project.
-		self.loadComponentTypes()
-
-		# Load Components
-		print 'Loading project components. (Not working!)'
-
-		return True
+		print "initializing this component:", comp
 
 
-	def loadComponentTypes (self) :
-		'''Load the component type classes for this project.'''
 
-		print 'Loading project component types. (Not working!)'
-
-		return True

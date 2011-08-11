@@ -289,69 +289,12 @@ class Project (object) :
 			terminal(key + ' already set to ' + value)
 
 
-#    def addNewComponent(self, idCode, compType) :
-#        '''Add a new component id to the binding order and create a new component config section for it'''
-
-#        # We don't want to do this is the component already exists
-#        if not idCode in self._compConf :
-#            self._compConf[idCode] = Section(self._compConf, 1, self._compConf, indict = self._compMaster['Defaults'].dict())
-#            for k, v in self._compConf[idCode].items() :
-#                self._compConf[idCode][k] = v.replace('[compID]', idCode)
-#            self._compConf[idCode]['Type'] = Section(self._compConf[idCode], 2, self._compConf, indict = self._compMaster[compType].dict())
-#            self._book.addToBinding(idCode)
-#
-#            # Make the Component object and add to book and us
-#            aComp = self.addComponent(idCode)
-
-#            # Init the comp files if necessary
-#            aComp.initComponentFiles(self)
-#
-#            # Set the flag for writing out the components config file
-#            self._userConfig['System']['writeOutCompConf'] = True
-#            return True
-
-#        else :
-#            return False
-
-#    def addComponent(self, name) :
-#        '''Create a component object for an existing component id and add it to
-#        everything that needs to know about it.'''
-
-#        aComp = Component(name, self, self._compConf[name])
-#        self._components[aComp.name] = aComp
-#        return self._book.addComponent(aComp)
-
-
-#    def removeComponent (self, idCode) :
-#        '''Remove a component from the project.'''
-#
-#        # We want to do this only if the component already exists
-#        if idCode in self._compConf :
-#            del(self._compConf[idCode])
-#            self._book.removeFromBinding(idCode)
-#            # Set the flag for writing out the components config file
-#            self._userConfig['System']['writeOutCompConf'] = True
-#            return True
-#        else :
-#            return False
-
-
-#    def getDoc (self, name) :
-#        '''Create a document object.'''
-##        # FIXME: I think this needs more work and thought.
-#        if name == "Book" :
-#            return self._book
-#        try :
-#            return self._components[name]
-#        except KeyError :
-#            return None
-
 	# These are Report mod functions that are exposed to the project class via
 	# the tools class
 #    def terminal(self, msg) : self.terminal(msg)
 #    def terminalCentered(self, msg) : self.terminalCentered(msg)
-	def writeToLog(self, code, msg, mod) : self.writeToLog(code, msg, mod)
-	def trimLog(self, logLineLimit) : self.trimLog(logLineLimit)
+#    def writeToLog(self, code, msg, mod) : self.writeToLog(code, msg, mod)
+#    def trimLog(self, logLineLimit) : self.trimLog(logLineLimit)
 #    def mergeProjConfig(self, projConfig, projHome, userHome, tipeHome) : self.mergeProjConfig(projConfig, projHome, userHome, tipeHome)
 #    def writeConfFiles(self, userConfig, newProjConfig, userHome, projHome) : self.writeConfFiles(userConfig, newProjConfig, userHome, projHome)
 #    def isRecordedProject(self, userConfFile, pid) : self.isRecordedProject(userConfFile, pid)

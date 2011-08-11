@@ -151,7 +151,7 @@ if command :
 
 else :
 	terminal('\nAvailable commands:')
-	commands['help'].run(opts)
+	commands['system_help'].run(opts, aProject, uConf.userConfig)
 
 
 ###############################################################################

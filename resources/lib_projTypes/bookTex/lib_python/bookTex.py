@@ -67,6 +67,14 @@ class BookTex (Project) :
 		must varify that the requested component type is valid to add to this
 		type of project.'''
 
+		compTypeList = []
+		compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
+		if not ctype in compTypeList :
+			compTypeList.append(ctype)
+			self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
+			self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+		else :
+			self.writeToLog('MSG', 'Component type: [' + ctype + '] already exsits.', 'bookTex.addComponentType()')
 
 		print "Adding component type", ctype
 

@@ -65,20 +65,13 @@ opts = []
 if len(sys.argv) > 1 :
 	command = sys.argv[1]
 	opts = sys.argv[2:]
-#else :
-#    # If there isn't anything then we'll just go to the projects manager
-#    command = "help"
-
-
-###############################################################################
-########################### Basic Startup Functions ###########################
-###############################################################################
 
 
 ###############################################################################
 ######################## Load User and Project Info ###########################
 ###############################################################################
 
+# Get all our user config info and methods
 uConf = UserConfig(userHome, tipeHome)
 
 # Load in project settings if they exist in the cwd
@@ -96,7 +89,7 @@ if os.path.isfile(projConfFile) :
 	if projConfig :
 		projectType         = projConfig['ProjectInfo']['projectType']
 		tipeProjTypes       = os.path.join(tipeHome, 'resources', 'lib_projTypes')
-
+# FIXME: Need to override sys path with user path if the type exists there
 		# Dynamically load the right project type modules
 		thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
 		sys.path.insert(0, thisTypeLib)
@@ -108,7 +101,9 @@ if os.path.isfile(projConfFile) :
 
 	# Fold in the projConfig into the aProject object
 	aProject = getattr(projModule, projectType[0].upper() + projectType[1:], Project)(projConfig, uConf.userConfig, projHome, userHome, tipeHome)
-	uConf.recordProject(projConfig, projHome)
+	recordProject(uConf.userConfFile, projConfig, projHome)
+	# Now, finally, pick up all the component information and methods
+	aProject.loadComponents()
 
 else :
 	# If there is no project, we still need a
@@ -116,7 +111,7 @@ else :
 	projConfig = ConfigObj()
 	aProject = Project(projConfig, uConf.userConfig, projHome, userHome, tipeHome)
 
-	aProject.loadComponents()
+
 ###############################################################################
 ############################### Terminal Startup ##############################
 ###############################################################################

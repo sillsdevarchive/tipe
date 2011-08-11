@@ -34,6 +34,50 @@ from configobj import ConfigObj, Section
 ############################## Settings Functions #############################
 
 
+def isRecordedProject (userConfigFile, pid) :
+	'''Check to see if this project is recorded in the user's config'''
+
+	if os.path.isfile(userConfigFile) :
+		cf = ConfigObj(userConfigFile)
+		try :
+			return pid in cf['Projects']
+		except :
+			pass
+
+
+def recordProject (userConfigFile, projConfig, projHome) :
+	'''Add information about this project to the user's tipe.conf located in
+	the home config folder.'''
+
+	pid     = projConfig['ProjectInfo']['projectIDCode']
+	pname   = projConfig['ProjectInfo']['projectName']
+	ptype   = projConfig['ProjectInfo']['projectType']
+	date    = projConfig['ProjectInfo']['projectCreateDate']
+	if not isRecordedProject(userConfigFile, pid) :
+
+		if os.path.isfile(userConfigFile) :
+			cf = ConfigObj(userConfigFile)
+
+			# FIXME: Before we create a project entry we want to be sure that
+			# the projects section already exsists.  There might be a better way
+			# of doing this.
+			try :
+				cf['Projects'][pid] = {}
+			except :
+				cf['Projects'] = {}
+				cf['Projects'][pid] = {}
+
+			# Now add the project data
+			cf['Projects'][pid]['projectName']          = pname
+			cf['Projects'][pid]['projectType']          = ptype
+			cf['Projects'][pid]['projectPath']          = projHome
+			cf['Projects'][pid]['projectCreateDate']    = date
+			cf.write()
+			return True
+		else :
+			return False
+
+
 def mergeProjConfig (projConfig, projHome, userHome, tipeHome) :
 	'''Retrun a merge project config file from a valid project config file'''
 

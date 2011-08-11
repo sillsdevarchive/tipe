@@ -33,48 +33,9 @@ class UserConfig (object) :
 
 		self.userHome       = userHome
 		self.tipeHome       = tipeHome
-		self.userConfigFile = os.path.join(userHome, 'tipe.conf')
+		self.userConfFile   = os.path.join(userHome, 'tipe.conf')
 		self.userResources  = os.path.join(userHome, 'resources')
 		self.createUserConfig()
-
-
-	def recordProject (self, projConfig, projHome) :
-		'''Add information about this project to the user's tipe.conf located in
-		the home config folder.'''
-
-		pid     = projConfig['ProjectInfo']['projectIDCode']
-		pname   = projConfig['ProjectInfo']['projectName']
-		ptype   = projConfig['ProjectInfo']['projectType']
-		date    = projConfig['ProjectInfo']['projectCreateDate']
-		if not self.isRecordedProject(pid) :
-
-			if os.path.isfile(self.userConfigFile) :
-				cf = ConfigObj(self.userConfigFile)
-
-				# FIXME: Before we create a project entry we want to be sure that
-				# the projects section already exsists.  There might be a better way
-				# of doing this.
-				try :
-					cf['Projects'][pid] = {}
-				except :
-					cf['Projects'] = {}
-					cf['Projects'][pid] = {}
-
-				# Now add the project data
-				cf['Projects'][pid]['projectName']          = pname
-				cf['Projects'][pid]['projectType']          = ptype
-				cf['Projects'][pid]['projectPath']          = projHome
-				cf['Projects'][pid]['projectCreateDate']    = date
-				cf.write()
-				return True
-			else :
-				return False
-
-
-	def isRecordedProject (self, pid) :
-		'''Check to see if this project is recorded in the user's config'''
-
-		return pid in self.userConfig['Projects']
 
 
 	def createUserConfig (self) :
@@ -91,11 +52,11 @@ class UserConfig (object) :
 			raise IOError, "Can't open " + tipeXML
 
 		# Now get the settings from the users tipe.conf file
-		if not os.path.exists(self.userConfigFile) :
+		if not os.path.exists(self.userConfFile) :
 			self.initUserHome()
 
 		# Load the conf file into an object
-		tipeConfig = ConfigObj(self.userConfigFile)
+		tipeConfig = ConfigObj(self.userConfFile)
 
 		# Look for any projects that might be registered and copy the data out
 		try :
@@ -126,13 +87,12 @@ class UserConfig (object) :
 			os.mkdir(self.userResources)
 
 		# Make the default global tipe.conf for custom environment settings
-		if not os.path.isfile(self.userConfigFile) :
+		if not os.path.isfile(self.userConfFile) :
 			date_time = tStamp()
 			tipe = ConfigObj()
-			tipe.filename = self.userConfigFile
+			tipe.filename = self.userConfFile
 			tipe['System'] = {}
 			tipe['Folders'] = {}
-			tipe['Projects'] = {}
 			tipe['System']['userName'] = 'Default User'
 			tipe['System']['initDate'] = date_time
 			tipe['System']['writeOutUserConfFile'] = 'True'

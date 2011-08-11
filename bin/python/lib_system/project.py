@@ -182,6 +182,7 @@ class Project (object) :
 		# component is processed.
 		if not pdir :
 			pdir = os.getcwd()
+
 		elif pdir == '.' :
 			pdir = os.getcwd()
 		else :
@@ -219,12 +220,12 @@ class Project (object) :
 		self._userConfig['System']['projCreateDate'] = date
 		self.initProject(pdir)
 
-		recordProject(self.userConfFile, pdir, pname, ptype, pid, date)
 		self._projConfig['ProjectInfo']['projectType']            = ptype
 		self._projConfig['ProjectInfo']['projectName']            = pname
 		self._projConfig['ProjectInfo']['projectLastEditDate']    = ''
 		self._projConfig['ProjectInfo']['projectCreateDate']      = date
 		self._projConfig['ProjectInfo']['projectIDCode']          = pid
+		recordProject(self.userConfFile, self._projConfig, self.projHome)
 		terminal('Created [' + pid + '] project at: ' + pdir)
 
 		# Finally write out the project config file

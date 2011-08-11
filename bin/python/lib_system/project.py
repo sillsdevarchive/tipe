@@ -96,31 +96,12 @@ class Project (object) :
 
 			setattr(self, k, self._projConfig['ProjectInfo'][k] if 'ProjectInfo' in self._projConfig else None)
 
-#            if self._projConfig :
-#                print k, type(k)
-#                setattr(self, k, self._projConfig['ProjectInfo'][k])
-
-#            setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
-
 		# In case we are in a situation where we had to make an aProject object
 		# with an empty projConfig we will test before doing this.
 		if len(self._projConfig) > 0 :
 			self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['projLogFile']['name'])
 			self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['projErrorLogFile']['name'])
 			self.orgProjectEditDate = self.projectLastEditDate
-
-
-#        # If a project type has been set, load (import) the main project type
-#        # module which links to its commands.
-#        if self.projectType :
-#            try :
-#                thisTypeLib = os.path.join(self.tipeProjTypes, self.projectType, 'lib_python')
-#                sys.path.insert(0, thisTypeLib)
-#                __import__(self.projectType)
-#            except Exception, e:
-#                self.writeToLog('ERR', 'Failed to load ' + self.projectType + ' project commands', 'project.__init__()')
-
-#    def CreateTypedProject(self) :
 
 
 	def initProject (self, pdir) :

@@ -163,38 +163,21 @@ if os.path.isfile(projConfFile) :
 	# so this next part should not fail.
 	if projConfig :
 		projectType         = projConfig['ProjectInfo']['projectType']
-		tipeCompTypes       = os.path.join(tipeHome, 'resources', 'lib_compTypes')
 		tipeProjTypes       = os.path.join(tipeHome, 'resources', 'lib_projTypes')
 
+		# Dynamically load the right project type modules
 		thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
 		sys.path.insert(0, thisTypeLib)
-		__import__(projectType, BookTex(), locals(), [], -1)
+		projModule = __import__(projectType)
 
-#        try :
-#            thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
-#            sys.path.insert(0, thisTypeLib)
-#            __import__(projectType)
-#        except Exception, e:
-#            terminal('ERROR: Failed to load ' + projectType + ' project type module')
 	else :
 		terminal('ERROR: Failed to load: ' + projConfFile)
-
-	# A valid project can exist but it may or may not have any components
-	# attached to it yet.  If there are, this next bit will load any necessary
-	# component commands and information.
-	# FIXME: More needs to be done here.
-	cts = projConfig['ProjectInfo']['projectComponentTypes']
-	if len(cts) != 0 :
-		for c in cts :
-			print c
-	else :
-		terminal('WARNING: No components found in this project!')
+		# die here
 
 	# Fold in the projConfig into the aProject object
-	aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
-	print dir(aProject)
-	if not isRecordedProject(aProject.userConfFile, aProject.projectIDCode) :
-		recordProject (aProject.userConfFile, aProject.projHome, aProject.projectName,
+	aProject = getattr(projModule, projectType[0].upper() + projectType[1:], Project)(projConfig, userConfig, projHome, userHome, tipeHome)
+	if not isRecordedProject(tipeUser, aProject.projectIDCode) :
+		recordProject (tipeUser, aProject.projHome, aProject.projectName,
 			aProject.projectType, aProject.projectIDCode, aProject.projectCreateDate)
 
 else :

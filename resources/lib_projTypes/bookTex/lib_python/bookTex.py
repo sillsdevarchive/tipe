@@ -24,16 +24,9 @@ import os, sys
 #from configobj import ConfigObj, Section
 
 # Load the local classes
-print "starting to load"
 from bookTex_command import Command
-
 from project import Project
-#from project import bookTex
 
-#from book import Book
-#from xml.etree import ElementTree
-
-#print dir(Project)
 
 ###############################################################################
 ############################ Define Global Functions ##########################
@@ -48,11 +41,10 @@ from project import Project
 
 class BookTex (Project) :
 
-	def __init__(self, aProject) :
-
+	def __init__(self, projConfig, userConfig, projHome, userHome, tipeHome) :
+		super(BookTex, self).__init__(projConfig, userConfig, projHome, userHome, tipeHome)
 		# Set all the initial paths and locations
 
-		self.aProject = aProject
 
 
 
@@ -61,13 +53,13 @@ class BookTex (Project) :
 ###############################################################################
 
 
-	def addComponentTypexxxxxxxxx (self, ctype) :
+	def addComponentType (self, ctype) :
 		'''Add a component type to the current project.  Before doing so, it
 		must varify that the requested component type is valid to add to this
 		type of project.'''
 
 
-		print "Adding compnent type", ctype
+		print "Adding component type", ctype
 
 		self.initComponentType(ctype)
 
@@ -79,6 +71,6 @@ class BookTex (Project) :
 		necessary files and folders into the project to support the processing
 		of this component type.'''
 
-		print "init compnent type", ctype
+		print "init component type", ctype
 
 

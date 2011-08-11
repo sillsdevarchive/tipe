@@ -52,6 +52,8 @@ class UsfmTex (Project) :
 		self.userHome = userHome
 		self.tipeHome = tipeHome
 
+		print dir(Project)
+
 
 
 
@@ -76,6 +78,5 @@ class UsfmTex (Project) :
 		in place for this type of component so it can be rendered.'''
 
 		print "initializing this component:", comp
-
 
 

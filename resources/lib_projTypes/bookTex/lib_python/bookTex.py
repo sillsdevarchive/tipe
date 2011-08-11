@@ -91,21 +91,21 @@ class BookTex (Project) :
 		print "init component type", ctype
 
 
-	def loadComponents (self) :
-		'''Load all the components for a project.'''
-
-		# Start by loading all the component types for this project.
-		self.loadComponentTypes()
-
-		# Load Components
-		print 'Loading project components. (Not working!)'
-
-		return True
-
-
-	def loadComponentTypes (self) :
-		'''Load the component type classes for this project.'''
-
-		print 'Loading project component types. (Not working!)'
-
-		return True
+#    def loadComponents (self) :
+#        '''Load all the components for a project.'''
+#
+#        # Start by loading all the component types for this project.
+#        self.loadComponentTypes()
+#
+#        # Load Components
+#        print 'Loading project components. (Not working!)'
+#
+#        return True
+#
+#
+#    def loadComponentTypes (self) :
+#        '''Load the component type classes for this project.'''
+#
+#        print 'Loading project component types. (Not working!)'
+#
+#        return True

@@ -103,7 +103,7 @@ if os.path.isfile(projConfFile) :
 	aProject = getattr(projModule, projectType[0].upper() + projectType[1:], Project)(projConfig, uConf.userConfig, projHome, userHome, tipeHome)
 	recordProject(uConf.userConfFile, projConfig, projHome)
 	# Now, finally, pick up all the component information and methods
-	aProject.loadComponents()
+#    aProject.loadComponents()
 
 else :
 	# If there is no project, we still need a

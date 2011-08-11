@@ -55,7 +55,7 @@ class Project (object) :
 
 		# Load project config files
 		self._projConfig        = projConfig
-		self._userConfig         = userConfig
+		self._userConfig        = userConfig
 
 		# Set all the initial paths and locations
 		# System level paths
@@ -77,7 +77,7 @@ class Project (object) :
 
 		# Set all the system settings
 		if self._userConfig :
-			self.projConfFile    = os.path.join(self.projHome, self._userConfig['Files']['projConfFile']['name'])
+			self.projConfFile   = os.path.join(self.projHome, self._userConfig['Files']['projConfFile']['name'])
 			self.userConfFile   = os.path.join(self.userHome, self._userConfig['Files']['userConfFile']['name'])
 			for k in ('systemVersion',      'userName',
 					  'debugging',          'lastEditDate',
@@ -85,7 +85,21 @@ class Project (object) :
 				setattr(self, k, self._userConfig['System'][k] if self._userConfig else None)
 
 			self.orgLastEditDate    = self.lastEditDate
+
 		self.loadConfig()
+		self.loadComponents()
+
+
+	def loadComponents (self) :
+		'''Load all the component modules and information.'''
+
+		if len(self.projectComponentTypes) > 0 :
+			for compType in self.projectComponentTypes :
+				thisCompLib = os.path.join(self.tipeCompTypes, compType, 'lib_python')
+				sys.path.insert(0, thisCompLib)
+				compModule = __import__(compType)
+#                getattr(compModule, compType[0].upper() + compType[1:], Project)(self._projConfig, self._userConfig, self.projHome, self.userHome, self.tipeHome)
+
 
 	def loadConfig(self) :
 		# Load project settings

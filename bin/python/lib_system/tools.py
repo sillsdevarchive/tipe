@@ -171,48 +171,6 @@ def reportSysConfUpdate (aProject) :
 	aProject.tipeEditDate = ts
 
 
-
-def recordProject (userConfFile, projHome, pname, ptype, pid, date) :
-	'''Add information about this project to the user's tipe.conf located in
-	the home config folder.'''
-
-	mod = 'project.recordProject()'
-	if os.path.isfile(userConfFile) :
-		cf = ConfigObj(userConfFile)
-
-		# FIXME: Before we create a project entry we want to be sure that
-		# the projects section already exsists.  There might be a better way
-		# of doing this.
-		try :
-			cf['Projects'][pid] = {}
-		except :
-			cf['Projects'] = {}
-			cf['Projects'][pid] = {}
-
-		# Now add the project data
-		cf['Projects'][pid]['projectName'] = pname
-		cf['Projects'][pid]['projectType'] = ptype
-		cf['Projects'][pid]['projectPath'] = projHome
-		cf['Projects'][pid]['createDate'] = date
-		cf.write()
-		return True
-	else :
-		return False
-
-
-def isRecordedProject (userConfFile, pid) :
-	'''Check to see if this project is recorded in the user's config'''
-
-	if os.path.isfile(userConfFile) :
-		cf = ConfigObj(userConfFile)
-
-		try :
-			isConfPID = cf['Projects'][pid]
-			return True
-		except :
-			return False
-
-
 #def safeConfig(dir, fname, tipedir, setting, projconf = None) :
 #    '''This is the main function for reading in the XML data and overriding
 #    default settings with the current project settings.  This works with both

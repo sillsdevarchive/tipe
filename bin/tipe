@@ -54,6 +54,7 @@ from configobj import ConfigObj
 
 # Load the local classes
 from tools import *
+from user_config import UserConfig
 from sys_command import Command, commands
 from project import Project
 
@@ -73,81 +74,12 @@ if len(sys.argv) > 1 :
 ########################### Basic Startup Functions ###########################
 ###############################################################################
 
-def initUserHome (userHome) :
-	'''Dumb user home init function'''
-
-	# Create core home paths
-	tipeFile            = os.path.join(userHome, 'tipe.conf')
-	resources           = os.path.join(userHome, 'resources')
-
-	# Create home folders
-	if not os.path.isdir(userHome) :
-		os.mkdir(userHome)
-
-	if not os.path.isdir(resources) :
-		os.mkdir(resources)
-
-	# Make the default global tipe.conf for custom environment settings
-	if not os.path.isfile(tipeFile) :
-		date_time = tStamp()
-		tipe = ConfigObj()
-		tipe.filename = tipeFile
-		tipe['System'] = {}
-		tipe['Folders'] = {}
-		tipe['Projects'] = {}
-		tipe['System']['userName'] = 'Default User'
-		tipe['System']['initDate'] = date_time
-		tipe['System']['writeOutUserConfFile'] = 'True'
-		# Folder list
-		folders = ['fonts', 'illustrations', 'admin', 'compTypes', 'projTypes']
-		# System folders
-		for f in folders :
-			tipe['Folders']['tipe' + f] = os.path.join(tipeHome, 'resources', 'lib_' + f)
-		# User (home) folders
-		for f in folders :
-			thisFolder = os.path.join(userHome, 'resources', 'lib_' + f)
-			tipe['Folders']['user' + f] = thisFolder
-			if not os.path.isdir(thisFolder) :
-				os.mkdir(thisFolder)
-
-		# Write out the user config file
-		tipe.write()
-
 
 ###############################################################################
 ######################## Load User and Project Info ###########################
 ###############################################################################
 
-# Check to see if the file is there, then read it in and break it into
-# sections. If it fails, scream really loud!
-tipeXML = os.path.join(tipeHome, 'bin', 'tipe.xml')
-if os.path.exists(tipeXML) :
-	sysXmlConfig = xml_to_section(tipeXML)
-else :
-	raise IOError, "Can't open " + tipeXML
-
-# Now get the settings from the users global tipe.conf file
-tipeUser = os.path.join(userHome, 'tipe.conf')
-if not os.path.exists(tipeUser) :
-	initUserHome(userHome)
-
-# Load the conf file into an object
-tipeConfig = ConfigObj(tipeUser)
-
-# Look for any projects that might be registered and record them
-try :
-	tipeProjs = tipeConfig['Projects']
-except :
-	tipeProjs = None
-
-# Create a new conf object based on all the XML default settings
-# Then override them with any exsiting user settings.
-userConfig = ConfigObj(sysXmlConfig.dict()).override(tipeConfig)
-
-# Put back any project information that we might have lost from
-# the XML/conf file merging.
-if tipeProjs :
-	userConfig['Projects'] = tipeProjs
+uConf = UserConfig(userHome, tipeHome)
 
 # Load in project settings if they exist in the cwd
 projConfFile = os.path.join(projHome, '.project.conf')
@@ -175,18 +107,16 @@ if os.path.isfile(projConfFile) :
 		# die here
 
 	# Fold in the projConfig into the aProject object
-	aProject = getattr(projModule, projectType[0].upper() + projectType[1:], Project)(projConfig, userConfig, projHome, userHome, tipeHome)
-	if not isRecordedProject(tipeUser, aProject.projectIDCode) :
-		recordProject (tipeUser, aProject.projHome, aProject.projectName,
-			aProject.projectType, aProject.projectIDCode, aProject.projectCreateDate)
+	aProject = getattr(projModule, projectType[0].upper() + projectType[1:], Project)(projConfig, uConf.userConfig, projHome, userHome, tipeHome)
+	uConf.recordProject(projConfig, projHome)
 
 else :
 	# If there is no project, we still need a
 	# dummy projConfig object so we'll just make one up.
 	projConfig = ConfigObj()
-	aProject = Project(projConfig, userConfig, projHome, userHome, tipeHome)
+	aProject = Project(projConfig, uConf.userConfig, projHome, userHome, tipeHome)
 
-
+	aProject.loadComponents()
 ###############################################################################
 ############################### Terminal Startup ##############################
 ###############################################################################
@@ -214,7 +144,7 @@ if command :
 	if command in commands :
 		# To process there should be one or more options
 		if len(opts) >= 1 :
-			commands[command].run(opts, aProject, userConfig)
+			commands[command].run(opts, aProject, uConf.userConfig)
 		else :
 			# If we seem to be short on options then we will just display the help
 			# for this command

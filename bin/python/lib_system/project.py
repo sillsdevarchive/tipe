@@ -26,10 +26,7 @@ import codecs, os, sys, fileinput, shutil, imp
 
 # Load the local classes
 from tools import *
-
-#from component import Component
-#from book import Book
-#from xml.etree import ElementTree
+from component import Component
 
 
 ###############################################################################
@@ -86,19 +83,117 @@ class Project (object) :
 
 			self.orgLastEditDate    = self.lastEditDate
 
-		self.loadConfig()
-		self.loadComponents()
+		# If there is no project yet we want to just skip this next part
+		try :
+			self.loadConfig()
+			self.loadComponents()
+		except :
+			pass
+
+
+	def addNewComponents (self, comps) :
+		'''Add components from a list (one or more) to the current project by
+		adding them to the component binding list.  This will append the
+		compnents code to the end of the list and multiple instances of a
+		component can exist in the list.  Other functions will be used to
+		maintain the content and order of the list.'''
+
+		OldOrder = []
+		newOrder = []
+		oldOrder = self._projConfig['ProjectInfo']['projectComponentBindingOrder']
+		for comp in oldOrder :
+			newOrder.append(comp)
+
+		for comp in comps :
+			newOrder.append(comp)
+
+		self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = newOrder
+		self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+		self.writeToLog('MSG', 'Components added: ' + str(comps), 'bookTex.addNewComponents()')
+
+
+	def removeComponents (self, comps) :
+		'''remove components from a list (one or more) to the current project by
+		removing them from the component binding list.'''
+
+		orderList = []
+		itemList = []
+		orderList = self._projConfig['ProjectInfo']['projectComponentBindingOrder']
+		for comp in comps :
+			if comp in orderList :
+				orderList.remove(comp)
+				itemList.append(comp)
+
+			else :
+				self.writeToLog('MSG', 'Components [' + comp + '] not found in binding order list', 'bookTex.removeComponents()')
+
+		self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = orderList
+		self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+		self.writeToLog('MSG', 'Components removed: ' + str(itemList), 'bookTex.removeComponents()')
+
+
+	def addNewComponentType (self, ctype) :
+		'''Add a component type to the current project.  Before doing so, it
+		must varify that the requested component type is valid to add to this
+		type of project.  The component type is only added to the
+		projectComponentTypes list in the project conf file.  The next time TIPE
+		is run the component type will be initialized.'''
+
+		compTypeList = []
+		compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
+
+		if ctype in self.validCompTypes :
+			if not ctype in compTypeList :
+				compTypeList.append(ctype)
+				self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
+				self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+				self.writeToLog('MSG', 'Component type: [' + ctype + '] added to the project.', 'bookTex.addNewComponentType()')
+			else :
+				self.writeToLog('WRN', 'Component type: [' + ctype + '] already exsits.', 'bookTex.addNewComponentType()')
+
+		else :
+			self.writeToLog('ERR', 'Invalid component type: [' + ctype + ']', 'bookTex_command.AddCompType')
+
+
+	def removeComponentType (self, ctype) :
+		'''Remove a component type to the current project.  Before doing so, it
+		must varify that the requested component type is valid.'''
+
+		compTypeList = []
+		compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
+
+		if ctype in self.validCompTypes :
+			if ctype in compTypeList :
+				compTypeList.remove(ctype)
+				self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
+				self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+				# FIXME: More should be done at this point to remove files, etc of the comp type.
+				self.writeToLog('MSG', 'Component type: [' + ctype + '] removed from project.', 'bookTex.removeComponentType()')
+			else :
+				self.writeToLog('WRN', 'Component type: [' + ctype + '] does not exsits.', 'bookTex.removeComponentType()')
+
+		else :
+			self.writeToLog('ERR', 'Invalid component type: [' + ctype + ']', 'bookTex_command.RemoveCompType')
 
 
 	def loadComponents (self) :
-		'''Load all the component modules and information.'''
+		'''Load all the component modules and information.  Then intializes that
+		component type.'''
 
-		if len(self.projectComponentTypes) > 0 :
-			for compType in self.projectComponentTypes :
+		self.componentClasses = {}
+		if len(self.validCompTypes) > 0 :
+			for compType in self.validCompTypes :
 				thisCompLib = os.path.join(self.tipeCompTypes, compType, 'lib_python')
 				sys.path.insert(0, thisCompLib)
-				compModule = __import__(compType)
-#                getattr(compModule, compType[0].upper() + compType[1:], Project)(self._projConfig, self._userConfig, self.projHome, self.userHome, self.tipeHome)
+				try :
+					compModule = __import__(compType)
+					compClass = getattr(compModule, compType[0].upper() + compType[1:], Component)
+				except :
+					compClass = Component
+					terminal('Error: Component module not found for: ' + compType)
+
+				self.componentClasses[compType] = compClass
+				compClass.initType(self)
 
 
 	def loadConfig(self) :
@@ -106,7 +201,7 @@ class Project (object) :
 		for k in ('projectType',            'projectName',
 				  'projectLastEditDate',    'projectCreateDate',
 				  'projectIDCode',          'projectComponentTypes',
-				  'componentTypeList',      'writeOutProjConfFile') :
+				  'validCompTypes',         'writeOutProjConfFile') :
 
 			setattr(self, k, self._projConfig['ProjectInfo'][k] if 'ProjectInfo' in self._projConfig else None)
 
@@ -303,24 +398,14 @@ class Project (object) :
 			terminal(key + ' already set to ' + value)
 
 
-	# These are Report mod functions that are exposed to the project class via
-	# the tools class
-#    def terminal(self, msg) : self.terminal(msg)
-#    def terminalCentered(self, msg) : self.terminalCentered(msg)
-#    def writeToLog(self, code, msg, mod) : self.writeToLog(code, msg, mod)
-#    def trimLog(self, logLineLimit) : self.trimLog(logLineLimit)
-#    def mergeProjConfig(self, projConfig, projHome, userHome, tipeHome) : self.mergeProjConfig(projConfig, projHome, userHome, tipeHome)
-#    def writeConfFiles(self, userConfig, newProjConfig, userHome, projHome) : self.writeConfFiles(userConfig, newProjConfig, userHome, projHome)
-#    def isRecordedProject(self, userConfFile, pid) : self.isRecordedProject(userConfFile, pid)
-
 ###############################################################################
 ################################# Logging routines ############################
 ###############################################################################
 
-# These have to do with keeping a running log file.  Everything done is recorded
-# in the log file and that file is trimmed to a length that is specified in the
-# system settings.  Everything is channeled to the log file but depending on
-# what has happened, they are classed in three levels:
+# These have to do with keeping a running project log file.  Everything done is
+# recorded in the log file and that file is trimmed to a length that is
+# specified in the system settings.  Everything is channeled to the log file but
+# depending on what has happened, they are classed in three levels:
 #   1) Common event going to log and terminal
 #   2) Warning event going to log and terminal if debugging is turned on
 #   3) Error event going to the log and terminal
@@ -343,7 +428,7 @@ class Project (object) :
 
 		# Write out everything but LOG messages to the terminal
 		if code != 'LOG' :
-			terminal(code + ' - ' + msg)
+			terminal('\n' + code + ' - ' + msg)
 
 		# Test to see if this is a live project by seeing if the project conf is
 		# there.  If it is, we can write out log files.  Otherwise, why bother?
@@ -399,7 +484,7 @@ class Project (object) :
 			writeObject.write(eventLine + '\n')
 			writeObject.close()
 		except :
-			terminal('eventLine')
+			terminal(eventLine)
 
 		return
 

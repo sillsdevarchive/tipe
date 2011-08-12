@@ -23,7 +23,7 @@ import os, sys
 
 # Load the local classes
 from usfmTex_command import Command
-from project import Project
+from component import Component
 
 
 ###############################################################################
@@ -37,22 +37,20 @@ from project import Project
 ################################## Begin Class ################################
 ###############################################################################
 
-class UsfmTex (Project) :
+class UsfmTex (Component) :
 
-	def __init__(self, projConfig, userConfig, projHome, userHome, tipeHome) :
+	def __init__(self, aProject) :
 		'''Initialize this class.'''
 
 		# Make it available to the Project Class with this
-		super(UsfmTex, self).__init__(projConfig, userConfig, projHome, userHome, tipeHome)
+		super(UsfmTex, self).__init__(aProject._projConfig, aProject._userConfig, aProject.projHome, aProject.userHome, aProject.tipeHome)
 
 		# Set class vars
-		self._projConfig = projConfig
-		self._userConfig = userConfig
-		self.projHome = projHome
-		self.userHome = userHome
-		self.tipeHome = tipeHome
-
-		print dir(Project)
+		self._projConfig = aProject._projConfig
+		self._userConfig = aProject._userConfig
+		self.projHome = aProject.projHome
+		self.userHome = aProject.userHome
+		self.tipeHome = aProject.tipeHome
 
 
 
@@ -61,22 +59,12 @@ class UsfmTex (Project) :
 ############################# Begin Main Functions ############################
 ###############################################################################
 
-
-	def addComponent (self, comp) :
-		'''Add a component to the current project.'''
-
-
-		print "Adding component type", comp
-
-		self.initComponent(comp)
-
-		return True
-
-
-	def initComponent (self, comp) :
+	@classmethod
+	def initType (cls, aProject) :
 		'''Initialize a component in this project.  This will put all the files
 		in place for this type of component so it can be rendered.'''
 
-		print "initializing this component:", comp
+
+		print "initializing this component:", cls
 
 

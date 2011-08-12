@@ -135,7 +135,7 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 	# to find the write flag first to see if we are going to write to it.
 	try :
 		if projConfig['ProjectInfo']['writeOutProjConfFile'] :
-			projConfig['ProjectInfo']['lastEditDate'] = stamp
+			projConfig['ProjectInfo']['projectLastEditDate'] = stamp
 			projConfig['ProjectInfo']['writeOutProjConfFile'] = ''
 			projConfig.filename = projConfigFile
 			projConfig.write()

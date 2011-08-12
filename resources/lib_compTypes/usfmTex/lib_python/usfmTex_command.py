@@ -31,20 +31,48 @@ from sys_command import Command
 # Insert the commands you want visable to the system here in the order you want
 # them to appear when listed.
 
-class AddComp (Command) :
-	'''Add a component type to a project.'''
+class AddComps (Command) :
+	'''Add specific components (one or more) to a project.  The component type
+	modules should already exist for this component.'''
 
 	type = "component_add"
 
 	def run(self, args, aProject, userConfig) :
-		super(AddComp, self).run(args, aProject, userConfig)
-		if len(args) :
-			ct = args[1]
+		super(AddComps, self).run(args, aProject, userConfig)
 
-			print 'Adding a component'
+		comps = []
+		if len(args) :
+			# Build a list of components to add from the command line
+			for comp in args :
+				if comp != '-c' :
+					comps.append(comp)
+
+		aProject.addNewComponents(comps)
+
 
 	def setupOptions(self, parser) :
-		self.parser.add_option("-c", "--component", type="string", action="store", help="Add a component to the project.")
+		self.parser.add_option("-c", "--component", type="string", action="append", help="Add a component or group of components to the project.")
+
+
+class RemoveComps (Command) :
+	'''Remove specific components (one or more) from the current project.'''
+
+	type = "component_remove"
+
+	def run(self, args, aProject, userConfig) :
+		super(RemoveComps, self).run(args, aProject, userConfig)
+
+		comps = []
+		if len(args) :
+			# Build a list of components to remove from the command line
+			for comp in args :
+				if comp != '-c' :
+					comps.append(comp)
+
+		aProject.removeComponents(comps)
+
+	def setupOptions(self, parser) :
+		self.parser.add_option("-c", "--component", type="string", action="append", help="Remove a component or group of components from the project.")
 
 
 

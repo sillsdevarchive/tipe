@@ -62,33 +62,26 @@ class BookTex (Project) :
 ###############################################################################
 
 
-	def addComponentType (self, ctype) :
-		'''Add a component type to the current project.  Before doing so, it
-		must varify that the requested component type is valid to add to this
-		type of project.'''
+#    def addNewComponentType (self, ctype) :
+#        '''Add a component type to the current project.  Before doing so, it
+#        must varify that the requested component type is valid to add to this
+#        type of project.  The component type is only added to the
+#        projectComponentTypes list in the project conf file.  The next time TIPE
+#        is run the component type will be initialized.'''
 
-		compTypeList = []
-		compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
-		if not ctype in compTypeList :
-			compTypeList.append(ctype)
-			self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
-			self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
-		else :
-			self.writeToLog('MSG', 'Component type: [' + ctype + '] already exsits.', 'bookTex.addComponentType()')
+#        compTypeList = []
+#        compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
+#        if not ctype in compTypeList :
+#            compTypeList.append(ctype)
+#            self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
+#            self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+#        else :
+#            self.writeToLog('MSG', 'Component type: [' + ctype + '] already exsits.', 'bookTex.addComponentType()')
+#
+#        print "Adding component type", ctype
+#
+#        return True
 
-		print "Adding component type", ctype
-
-		self.initComponentType(ctype)
-
-		return True
-
-
-	def initComponentType (self, ctype) :
-		'''Initialize a component type in this project.  This will copy all the
-		necessary files and folders into the project to support the processing
-		of this component type.'''
-
-		print "init component type", ctype
 
 
 #    def loadComponents (self) :

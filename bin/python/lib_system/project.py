@@ -286,43 +286,43 @@ class Project (object) :
 	def makeProject (self, ptype, pname, pid, pdir='') :
 		'''Create a new publishing project.'''
 
-		# A new project only needs to have the necessary configuration files.
-		# The rest is made with the check project file the first time a
-		# component is processed.
-		if not pdir :
-			pdir = os.getcwd()
-
-		elif pdir == '.' :
-			pdir = os.getcwd()
-		else :
-			pdir = os.path.abspath(pdir)
-
-		# Do some further testing to be sure we are not starting a project
-		# inside another project.
-		(head, tail) = os.path.split(pdir)
-		live = os.path.isfile(os.path.join(head, '.project.conf'))
-		dead = os.path.isfile(os.path.join(head, '.project.conf' + self.lockExt))
-		if live :
-			terminal('Halt! Live project already defined in parent folder')
-			return False
-		elif dead :
-			terminal('Halt! Locked project already defined in parent folder')
-			return False
-
+		# Run some basic tests to see if this project can be created
 		# Test if this project already exists in the user's config file.
 		if isRecordedProject(self.userConfFile, pid) :
 			terminal('Halt! ID [' + pid + '] already defined for another project')
 			return False
+
+		# Grab the cwd if pdir is empty for the default
+		if not pdir or pdir == '.' :
+			pdir = os.getcwd()
+		else :
+			# So a pdir has been passed now it needs testing
+			pdir = os.path.abspath(pdir)
+			# Test for parent project.
+			if os.path.isfile(os.path.join(pdir, '.project.conf')) :
+				terminal('Halt! Live project already defined in this location')
+				return False
+			elif os.path.isfile(os.path.join(os.path.dirname(pdir), '.project.conf')) :
+				terminal('Halt! Live project already defined in parent folder')
+				return False
+			elif os.path.isfile(os.path.join(os.path.dirname(pdir), '.project.conf' + self.lockExt)) :
+				terminal('Halt! Locked project already defined in parent folder')
+				return False
+			elif not os.path.isdir(os.path.dirname(pdir)) :
+				terminal('Halt! Not a valid (parent) path: ' + pdir)
+				return False
+
+		# If we made it to this point we need to check to see if the project
+		# folder exists, if it doesn't make.  We can create only one level deep
+		# though.'
+		if not os.path.isdir(pdir) :
+			os.mkdir(pdir)
 
 		# Create a new version of the project config file
 		newProjConfig = getDefaultProjSettings(pdir, self.userHome, self.tipeHome, ptype)
 		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
 		self._projConfig = newProjConfig
 		self.loadConfig()
-
-		# If we made it this far lets see if the pdir is there
-		if not os.path.isdir(pdir) :
-			os.mkdir(pdir)
 
 		date = tStamp()
 		self._userConfig['System']['isProject'] = True
@@ -334,54 +334,71 @@ class Project (object) :
 		self._projConfig['ProjectInfo']['projectLastEditDate']    = ''
 		self._projConfig['ProjectInfo']['projectCreateDate']      = date
 		self._projConfig['ProjectInfo']['projectIDCode']          = pid
-		recordProject(self.userConfFile, self._projConfig, self.projHome)
-		terminal('Created [' + pid + '] project at: ' + pdir)
+		recordProject(self.userConfFile, self._projConfig, pdir)
 
 		# Finally write out the project config file
 		writeConfFiles(self._userConfig, self._projConfig, self.userHome, pdir)
 		self.writeToLog('LOG', 'Created [' + pid + '] project at: ' + date, 'project.makeProject()')
-		return True
 
-	def removeProject (self, pid) :
+
+	def removeProject (self, pid='') :
 		'''Remove the project from the TIPE system.  This will not remove the
 		project data but will 'disable' the project.'''
 
-		# 1) Check the user's conf file to see if the project actually exists
+		# If no pid was given we'll try to get the current on if there is one
+		if pid == '' :
+			if self.projectIDCode :
+				pid = self.projectIDCode
+			else :
+				terminal('Project ID code not given or found. Remove project failed.')
+				return False
+
+		# If we made it this far we should be able to remove it
 		try :
+			# Check to see if the project does exist in the user config
 			if self._userConfig['Projects'][pid] :
-				# 2) If the project does exist in the user config, disable the project
 				projPath = self._userConfig['Projects'][pid]['projectPath']
 				projConfFile = os.path.join(projPath, '.project.conf')
+				# Disable the project
 				if os.path.isfile(projConfFile) :
 					os.rename(projConfFile, projConfFile + self.lockExt)
 
-				# 3) Remove references from user tipe.conf
+				# Remove references from user tipe.conf
 				del self._userConfig['Projects'][pid]
 				reportSysConfUpdate(self)
 
-				# 4) Report the process is done
+				# Report the process is done
 				terminal('Project [' + pid + '] removed from system configuration.')
-				return
+				return True
 
 		except :
 			terminal('Project ID [' + pid + '] not found in system configuration.')
-			return
+			return False
 
 
-	def restoreProject (self, pdir) :
+	def restoreProject (self, pdir='') :
 		'''Restore a project in the current folder'''
 
+		# Normalize the path to the project we want to restore
+		if pdir == '' or pdir == '.' :
+			pdir = os.getcwd()
+		else :
+			pdir = os.path.abspath(pdir)
+
+		# Restore the project
 		projConfFile = os.path.join(pdir, '.project.conf')
 		if os.path.isfile(projConfFile + self.lockExt) :
 			os.rename(projConfFile + self.lockExt, projConfFile)
-			self._projConfig = mergeProjConfig(ConfigObj(projConfFile), pdir, self.userHome, self.tipeHome)
-			self = Project(self._projConfig, self._userConfig, pdir, self.userHome, self.tipeHome)
-			pname = self._projConfig['ProjectInfo']['projectName']
-			ptype = self._projConfig['ProjectInfo']['projectType']
-			pid = self._projConfig['ProjectInfo']['projectIDCode']
-			date = self._projConfig['ProjectInfo']['projectCreateDate']
-			recordProject(self.userConfFile, pdir, pname, ptype, pid, date)
+
+			# We could put a lot of code here to get this project recorded and
+			# check the integrity, or, we could just let that happen the next
+			# time TIPE is run on the project.  For now we'll do that.
+			terminal('Restored project at: ' + pdir)
 			return True
+
+		else :
+			terminal('Could not find project at: ' + pdir)
+			return False
 
 
 	def changeSystemSetting (self, key, value) :

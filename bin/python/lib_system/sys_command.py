@@ -165,14 +165,14 @@ class CreateProject (Command) :
 
 	def run(self, args, aProject, userConfig) :
 		super(CreateProject, self).run(args, aProject, userConfig)
-		if aProject.makeProject(self.options.ptype, self.options.pname, self.options.pid, self.options.pdir) :
-			terminal('Success! New project created.')
+
+		aProject.makeProject(self.options.ptype, self.options.pname, self.options.pid, self.options.pdir)
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--ptype", action="store", help="Set the type of project this will be, this is required.")
 		self.parser.add_option("-n", "--pname", action="store", help="Set the name of project this will be, this is required.")
 		self.parser.add_option("-i", "--pid", action="store", help="Set the type of project this will be, this is required.")
-		self.parser.add_option("-d", "--pdir", action="store", help="Create project in this directory, default is current directory.")
+		self.parser.add_option("-d", "--pdir", action="store", help="Directory to create this project in, the default is current directory.")
 
 
 class RemoveProject (Command) :
@@ -185,18 +185,10 @@ class RemoveProject (Command) :
 	def run(self, args, aProject, userConfig) :
 		super(RemoveProject, self).run(args, aProject, userConfig)
 		if len(args) :
-			pID = args[1]
-		else :
-			if aProject.projectIDCode != '' :
-				pID = aProject.projectIDCode
-			else :
-				terminal('Project ID code not given or found. Remove project failed.')
-
-		if aProject.removeProject(pID) :
-			terminal('Removed project: [' + pID + ']')
+			aProject.removeProject(args[1])
 
 	def setupOptions(self, parser) :
-		self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed.")
+		self.parser.add_option("-i", "--pid", type="string", action="store", help="The ID code of the project to be removed. The default is the current working directory.")
 
 
 class RestoreProject (Command) :
@@ -207,37 +199,10 @@ class RestoreProject (Command) :
 	def run(self, args, aProject, userConfig) :
 		super(RestoreProject, self).run(args, aProject, userConfig)
 
-		if len(args) == 1 :
-			pdir = os.getcwd()
-		elif len(args) == 2 :
-			if args[1] == '.' :
-				pdir = os.getcwd()
-			else :
-				pdir = os.path.abspath(args[1])
-
-		if aProject.restoreProject(pdir) :
-			terminal('Restored project at: ' + pdir)
-		else :
-			terminal('Restoring project at: ' + pdir + ' failed.')
+		aProject.restoreProject(args[1])
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-d", "--dir", type="string", action="store", help="Restore a project in this directory")
-
-
-# This is an example command class
-#class Setup (Command) :
-#    '''Setup creates a new object'''
-#    type = "setup"
-#    def run(self, aProject, args) :
-#        super(Setup, self).run(aProject, args)
-#        # do something here, options are in self.options
-#
-#    def setupOptions(self, parser) :
-#        self.parser.add_option("-d", "--dir", type="string", action="store", help="Create project in this directory")
-
-
-
-
 
 
 

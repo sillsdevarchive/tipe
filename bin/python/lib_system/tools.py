@@ -145,7 +145,7 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 		pass
 
 
-def xml_to_section(fname) :
+def xml_to_section (fname) :
 	'''Read in our default settings from the XML system settings file'''
 
 	# Read in our XML file
@@ -158,7 +158,7 @@ def xml_to_section(fname) :
 	return ConfigObj(data)
 
 
-def xml_add_section(data, doc) :
+def xml_add_section (data, doc) :
 	'''Subprocess of xml_to_section().  Adds sections in the XML to conf
 	object that is in memory.  It acts only on that object and does not return
 	anything.'''
@@ -184,7 +184,8 @@ def xml_add_section(data, doc) :
 		data[s.find('sectionID').text] = nd
 		xml_add_section(nd, s)
 
-def override_section(self, aSection) :
+
+def override_section (self, aSection) :
 	'''Overrides settings by using the XML defaults and then merging those with
 	items in the configobj that match.'''
 
@@ -210,47 +211,9 @@ def reportSysConfUpdate (aProject) :
 	happens at the end of a process.'''
 
 	ts = tStamp()
-	aProject._userConfig['System']['tipeEditDate'] = ts
+	aProject._userConfig['System']['lastEditDate'] = ts
 	aProject._userConfig['System']['writeOutUserConfFile'] = True
-	aProject.tipeEditDate = ts
-
-
-#def safeConfig(dir, fname, tipedir, setting, projconf = None) :
-#    '''This is the main function for reading in the XML data and overriding
-#    default settings with the current project settings.  This works with both
-#    the project.conf file and the components.conf files.'''
-
-#    # Check to see if the file is there, then read it in and break it into
-#    # sections. If it fails, scream really loud!
-#    f = os.path.join(tipedir, fname)
-#    if os.path.exists(f) :
-#        res = xml_to_section(f)
-#    else :
-#        raise IOError, "Can't open " + f
-
-#    # If this is a live project it should have been passed a valid project.conf
-#    # object.  Otherwise, the default settings from the XML will be good enough
-#    # to get going.
-#    if not projconf : projconf = res
-#    f = projconf['System']['FileNames'][setting]
-
-#    # If dealing with a components we'll use the same process but just create an
-#    # empty object if no components have been defined for the project or a
-#    # project doesn't exist.
-#    if fname == 'components.xml' :
-#        if os.path.exists(f) :
-#            conf = override_components(res, f)
-#        else :
-#            conf = ConfigObj()
-#    else :
-#        if os.path.exists(f) :
-#            conf = override(res, f)
-#        else :
-#            conf = res
-
-#    return (conf, res)
-
-
+	aProject.lastEditDate = ts
 
 
 ############################### Terminal Output ###############################

@@ -44,7 +44,7 @@ class AddComp (Command) :
 
 		comps = []
 		if len(args) :
-			aProject.addNewComponent(args)
+			aProject.addNewComponent(self.options.component, self.options.type, self.options.source)
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-c", "--component", type="string", action="store", help="Add a component or group of components to the project.")

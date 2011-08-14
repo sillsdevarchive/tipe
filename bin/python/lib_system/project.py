@@ -91,24 +91,23 @@ class Project (object) :
 			pass
 
 
-	def addNewComponent (self, cid, ctype csource) :
+	def addNewComponent (self, cid, ctype, csource) :
 		'''Add component to the current project by adding them to the component
 		binding list and inserting component info into the project conf file.
 		All supplied arguments need to be valid.  This function will fail if the
 		type, source or ID are not valid.'''
 
-		OldOrder = []
-		newOrder = []
-		oldOrder = self._projConfig['ProjectInfo']['projectComponentBindingOrder']
-		for comp in oldOrder :
-			newOrder.append(comp)
+		typeList = self._userConfig['System']['validCompTypes']
+		validCompList = self._projConfig[ctype]['validComps']
+		if ctype in typeList and cid in validCompList and os.path.isfile(csource) :
 
-		for comp in comps :
-			newOrder.append(comp)
+			listOrder = []
+			listOrder = self._projConfig['ProjectInfo']['projectComponentBindingOrder']
+			listOrder.append(cid)
 
-		self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = newOrder
-		self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
-		self.writeToLog('MSG', 'Components added: ' + str(comps), 'bookTex.addNewComponents()')
+			self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = listOrder
+			self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+			self.writeToLog('MSG', 'Components added: ' + str(cid), 'bookTex.addNewComponents()')
 
 
 	def removeComponents (self, comps) :

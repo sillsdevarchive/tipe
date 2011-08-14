@@ -31,27 +31,25 @@ from sys_command import Command
 # Insert the commands you want visable to the system here in the order you want
 # them to appear when listed.
 
-class AddComps (Command) :
-	'''Add specific components (one or more) to a project.  The component type
-	modules should already exist for this component.'''
+class AddComp (Command) :
+	'''Add a specific component to a project.  The component type does not
+	necessarily need to be added to the project.  That will be added when the
+	component is initiated.  This will only add one component at a time as
+	opposed to the remove function which will remove multiple components.'''
 
 	type = "component_add"
 
 	def run(self, args, aProject, userConfig) :
-		super(AddComps, self).run(args, aProject, userConfig)
+		super(AddComp, self).run(args, aProject, userConfig)
 
 		comps = []
 		if len(args) :
-			# Build a list of components to add from the command line
-			for comp in args :
-				if comp != '-c' :
-					comps.append(comp)
-
-		aProject.addNewComponents(comps)
-
+			aProject.addNewComponent(args)
 
 	def setupOptions(self, parser) :
-		self.parser.add_option("-c", "--component", type="string", action="append", help="Add a component or group of components to the project.")
+		self.parser.add_option("-c", "--component", type="string", action="store", help="Add a component or group of components to the project.")
+		self.parser.add_option("-t", "--type", type="string", action="store", help="Specify the component type. It needs to be valid but not present in the project.")
+		self.parser.add_option("-s", "--source", type="string", action="store", help="Specify a valid source file for this component.")
 
 
 class RemoveComps (Command) :

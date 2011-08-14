@@ -91,12 +91,11 @@ class Project (object) :
 			pass
 
 
-	def addNewComponents (self, comps) :
-		'''Add components from a list (one or more) to the current project by
-		adding them to the component binding list.  This will append the
-		compnents code to the end of the list and multiple instances of a
-		component can exist in the list.  Other functions will be used to
-		maintain the content and order of the list.'''
+	def addNewComponent (self, cid, ctype csource) :
+		'''Add component to the current project by adding them to the component
+		binding list and inserting component info into the project conf file.
+		All supplied arguments need to be valid.  This function will fail if the
+		type, source or ID are not valid.'''
 
 		OldOrder = []
 		newOrder = []

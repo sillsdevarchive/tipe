@@ -16,6 +16,10 @@ tipe component_type_add -t usfmTex
 tipe component_type_add -t vmapper
 tipe component_type_add -t vMapper
 tipe component_type_remove -t vMapper
-tipe component_add -c mat mrk luk jhn rev
+tipe component_add -c mat -t usfmTex -s ../Source/41MATTEST.USFM
+tipe component_add -c mrk -t usfmTex -s ../Source/42MRKTEST.USFM
+tipe component_add -c luk -t usfmTex -s ../Source/43LUKTEST.USFM
+tipe component_add -c jhn -t usfmTex -s ../Source/44JHNTEST.USFM
+tipe component_add -c rev -t usfmTex -s ../Source/67REVTEST.USFM
 tipe component_remove -c rev
 tipe

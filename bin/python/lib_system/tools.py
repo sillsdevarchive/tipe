@@ -84,11 +84,24 @@ def mergeProjConfig (projConfig, projHome, userHome, tipeHome) :
 	# Find out what kind of project this is
 	oldProjConfig = projConfig
 	projType = oldProjConfig['ProjectInfo']['projectType']
+	compTypes = oldProjConfig['ProjectInfo']['projectComponentTypes']
+	compInfo = ConfigObj()
+	compInfo['Components'] = {}
+	for comp in compTypes :
+		try :
+			compInfo['Components'][comp] = {}
+			compInfo['Components'][comp].merge(oldProjConfig['Components'][comp])
+		except :
+			pass
+
 	# Load in the project type XML default settings
 	projXmlConfig = getDefaultProjSettings(userHome, tipeHome, projType)
 	# Create a new conf object based on all the XML default settings
 	# Then override them with any exsiting project settings.
-	return ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
+	newProjConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
+	newProjConfig.merge(compInfo)
+
+	return newProjConfig
 
 
 def getDefaultProjSettings (userHome, tipeHome, projType) :
@@ -141,21 +154,11 @@ def getDefaultCompTypeSettings (userHome, tipeHome, compType) :
 	return res
 
 
-def writeConfFiles (userConfig, projConfig, userHome, projHome) :
-	'''Write out, if necessary, any conf files.  This will depend on if there
-	has been any activity to necessitate this action.'''
+def writeProjConfFile (projConfig, projHome) :
+	'''Write out only the project config file.'''
 
-	userConfigFile = os.path.join(userHome, userConfig['Files']['userConfFile']['name'])
-	projConfigFile = os.path.join(projHome, userConfig['Files']['projConfFile']['name'])
+	projConfigFile = os.path.join(projHome, '.project.conf')
 	stamp = tStamp()
-
-	# There should always be a userConfig so if the write flag is set we will
-	# write
-	if userConfig['System']['writeOutUserConfFile'] :
-		userConfig['System']['lastEditDate'] = stamp
-		userConfig['System']['writeOutUserConfFile'] = ''
-		userConfig.filename = userConfigFile
-		userConfig.write()
 
 	# There may not always be a valid (populated) projConfig so we need to try
 	# to find the write flag first to see if we are going to write to it.
@@ -169,6 +172,29 @@ def writeConfFiles (userConfig, projConfig, userHome, projHome) :
 	except :
 		# FIXME: Should I be doing something else here?
 		pass
+
+
+def writeUserConfFile (userConfig, userHome) :
+	'''Write out only the user config file.'''
+
+	userConfigFile = os.path.join(userHome, userConfig['Files']['userConfFile']['name'])
+	stamp = tStamp()
+
+	# There should always be a userConfig so if the write flag is set we will
+	# write to it.
+	if userConfig['System']['writeOutUserConfFile'] :
+		userConfig['System']['lastEditDate'] = stamp
+		userConfig['System']['writeOutUserConfFile'] = ''
+		userConfig.filename = userConfigFile
+		userConfig.write()
+
+
+def writeConfFiles (userConfig, projConfig, userHome, projHome) :
+	'''Write out, if necessary, to all the conf files.  This will depend on if
+	there has been any activity to necessitate this action.'''
+
+	writeProjConfFile(projConfig, projHome)
+	writeUserConfFile(userConfig, userHome)
 
 
 def xml_to_section (fname) :

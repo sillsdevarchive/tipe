@@ -37,271 +37,96 @@ Todo:
 
 <root>
     <section>
-        <name>Component Folder Names</name>
-        <sectionID>Folders</sectionID>
-        <description>This section contains the names of all the folders used for processing USFM TeX components.</description>
-        <folder>
-            <name>Illustrations Folder Name</name>
-            <key>illustrationsFolder</key>
-            <description>The name of the folder that all project Illustrations will be kept.</description>
-            <value>Illustrations</value>
-        </folder>
-        <folder>
-            <name>Source Text Folder Name</name>
-            <key>sourceFolder</key>
-            <description>The name of the folder that all source text will be kept. Contents can be linked or hard copied into the project.</description>
-            <value>Source</value>
-        </folder>
-        <folder>
-            <name>Text Folder Name</name>
-            <key>textFolder</key>
-            <description>The name of the folder that the working text is stored in.</description>
-            <value>Texts</value>
-        </folder>
-        <folder>
-            <name>Deliverables Folder Name</name>
-            <key>deliverFolder</key>
-            <description>The name of the folder that all project deliverables will be kept.</description>
-            <value>Deliverables</value>
-        </folder>
-    </section>
-    <section>
-        <name>Processes</name>
-        <sectionID>Processes</sectionID>
-        <description>This section describes processes that are applied to component files.</description>
-        <process>
-            <name>copySource</name>
-            <type>???</type>
-            <description>???</description>
-        </process>
-    </section>
-
-<!--
-
-Put the folders here
-        <setting>
-            <name>Report Folder Name</name>
-            <key>reportFolder</key>
-            <description>The name of the folder that reports are kept.</description>
-            <type>string</type>
-            <value>Reports</value>
-        </setting>
-        <setting>
-            <name>Regression Testing Folder Name</name>
-            <key>regressionFolder</key>
-            <description>The name of the folder that all project regression base files will be kept.</description>
-            <type>string</type>
-            <value>.regression</value>
-        </setting>
-    -->
-
-
-    <section>
-        <name>Dependents</name>
-        <sectionID></sectionID>
-        <description>Files used in a Scripture component with their dependencies.</description>
-        <file>
-            <name>[comp]</name>
-            <type>pdf</type>
-            <location>Process</location>
-            <dependents>[comp].tex, [comp].adj, [comp].piclist</dependents>
-            <createdBy>texRender</createdBy>
-            <description>The final file that is the results of the rendering process.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>tex</type>
-            <location>Process</location>
-            <dependents>group.tex, [comp].usfm, [comp].sty, custom.tex</dependents>
-            <createdBy>autoConfigComp</createdBy>
-            <description>The master contol file that funnels to the XeTeX rendering engine all the information necessary to render this component.</description>
-        </file>
-        <file>
-            <name>custom</name>
-            <type>tex</type>
-            <location>Process</location>
-            <dependents>none</dependents>
-            <createdBy>readOnly</createdBy>
-            <description>The custom contol file that feeds into the the component control file.</description>
-        </file>
-        <file>
-            <name>group</name>
-            <type>tex</type>
-            <location>Process</location>
-            <dependents>global.tex, global.sty, usfmTex.tex, .usfmTex.conf, group.sty</dependents>
-            <createdBy>autoConfigComp</createdBy>
-            <description>The group contol file that feeds into the the component control file.</description>
-        </file>
-        <file>
-            <name>global</name>
-            <type>tex</type>
-            <location>Process</location>
-            <dependents>[bookTex]</dependents>
-            <createdBy>autoConfigProj</createdBy>
-            <description>The global contol file that feeds into the the component control file. This is part of the bookTex control object.</description>
-        </file>
-        <file>
-            <name>usfmTex</name>
-            <type>tex</type>
-            <location>Process</location>
-            <dependents>none</dependents>
-            <createdBy>readOnly</createdBy>
-            <description>This is the main TeX component processing macro file.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>sty</type>
-            <location>Process</location>
-            <dependents>.usfmTex.conf</dependents>
-            <createdBy>autoConfigComp</createdBy>
-            <description>The component style file that feeds into the the component control file. These styles will override any previous styles that are set in dependent style files.</description>
-        </file>
-        <file>
-            <name>group</name>
-            <type>sty</type>
-            <location>Process</location>
-            <dependents>.book.conf</dependents>
-            <createdBy>autoConfigProj</createdBy>
-            <description>The group style file that feeds into the the group control file. These styles will override styles that are set in the global style file.</description>
-        </file>
-        <file>
-            <name>global</name>
-            <type>sty</type>
-            <location>Process</location>
-            <dependents>none</dependents>
-            <createdBy>readOnly</createdBy>
-            <description>The global style file that feeds into the the group control file. These styles are the top level component styles and are the default for all components of this type.</description>
-        </file>
-        <file>
-            <name>.usfmTex</name>
-            <type>conf</type>
-            <location>root</location>
-            <dependents>usfmTex.xml</dependents>
-            <createdBy>system</createdBy>
-            <description>The TeX Scripture component configuration file that is created by the system from the TeX Scripture component type XML file.</description>
-        </file>
-        <file>
-            <name>usfmTex</name>
-            <type>xml</type>
-            <location>[tipe]</location>
-            <dependents>none</dependents>
-            <createdBy>readOnly</createdBy>
-            <description>The TeX Scripture component master XML file that is created to be used by the system.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>usfm</type>
-            <location>Texts</location>
-            <dependents>[comp].usfm</dependents>
-            <createdBy>autoConfigComp</createdBy>
-            <description>The working text file that will be rendered. It is created by pre and post processes run on the source text.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>usfm</type>
-            <location>Source</location>
-            <dependents>none</dependents>
-            <createdBy>import</createdBy>
-            <description>The source text for this Scripture component.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>piclist</type>
-            <location>Process</location>
-            <dependents>captions.csv, .usfmTex.conf, *.png</dependents>
-            <createdBy>autoConfigComp</createdBy>
-            <description>This file contains position and location information for illustrations used in this component.</description>
-        </file>
-        <file>
-            <name>captions.csv</name>
-            <type>csv</type>
-            <location>Illustrations</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>This file contains illustration and caption information for all illustrations used in the publication.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>adj</type>
-            <location>Process</location>
-            <dependents>.usfmTex.conf</dependents>
-            <createdBy>system</createdBy>
-            <description>Component adjustment file which contains location information for where textual adjustments can be made.</description>
-        </file>
-        <file>
-            <name>[illustration]</name>
-            <type>png</type>
-            <location>Illustrations</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>Illustration files used by this component.</description>
-        </file>
-        <file>
-            <name>[process]</name>
-            <type>rpt</type>
-            <location>Report</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>Reports made by various processes.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>parlocs</type>
-            <location>Process</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>The parlocs file is created by XeTeX during the rendering process.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>log</type>
-            <location>Process</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>This is the log file created by XeTeX during the rendering process.</description>
-        </file>
-        <file>
-            <name>[comp]</name>
-            <type>delayed</type>
-            <location>Process</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>The delayed file is created by XeTeX during the rendering process.</description>
-        </file>
-        <file>
-            <name>tipe</name>
-            <type>log</type>
-            <location>root</location>
-            <dependents>none</dependents>
-            <createdBy>system</createdBy>
-            <description>This is the main log file that all the processes in the system feed into.</description>
-        </file>
-    </section>
-    <section>
-        <name>Scripture Type Groups</name>
-        <sectionID>usfmGroups</sectionID>
-        <description>Lists of components in the Scripture type group.</description>
-        <setting>
-            <name>Old Testament</name>
-            <key>ot</key>
-            <description>List of ID Codes for Old Testament Scripture components.</description>
-            <type>list</type>
-            <value>gen, exo, lev, num, deu, jos, jdg, rut, 1sa, 2sa, 1ki, 2ki, 1ch, 2ch, ezr, neh, est, job, psa, pro, ecc, sng, isa, jer, lam, ezk, dan, hos, jol, amo, oba, jon, mic, nam, hab, zep, hag, zec, mal</value>
-        </setting>
-        <setting>
-            <name>New Testament</name>
-            <key>nt</key>
-            <description>List of ID Codes for New Testament Scripture components.</description>
-            <type>list</type>
-            <value>mat, mrk, luk, jhn, act, rom, 1co, 2co, gal, eph, php, col, 1th, 2th, 1ti, 2ti, tit, phm, heb, jas, 1pe, 2pe, 1jn, 2jn, 3jn, jud, rev</value>
-        </setting>
-        <setting>
-            <name>Deuterocanonical</name>
-            <key>dc</key>
-            <description>List of ID Codes for Deuterocanonical Scripture components.</description>
-            <type>list</type>
-            <value>tob, jdt, esg, wis, sir, bar, lje, s3y, sus, bel, 1ma, 2ma, 3ma, 4ma, 1es, 2es, man, ps2, oda, pss, jsa, jdb, tbs, sst, dnt, blt</value>
-        </setting>
+        <name>Component Root Section</name>
+        <sectionID>Components</sectionID>
+        <description>This is the root section for usfmTex component information.</description>
+        <section>
+            <name>USFM TeX Component Information</name>
+            <sectionID>usfmTex</sectionID>
+            <description>This section contains general usfmTex component information.</description>
+            <section>
+                <name>USFM TeX Component Information</name>
+                <sectionID>ComponentInfo</sectionID>
+                <description>This section contains general usfmTex component information.</description>
+                <setting>
+                    <name>Component Type Name</name>
+                    <key>componentTypeName</key>
+                    <description>The name of this component type.</description>
+                    <type>string</type>
+                    <value>usfmTex</value>
+                </setting>
+                <setting>
+                    <name>Valid Component ID Codes</name>
+                    <key>validIdCodes</key>
+                    <description>This list contains all the valid ID codes that can be used for this component type.</description>
+                    <type>list</type>
+                    <value>mat,mrk,luk,jhn,act,rom,1co,2co,gal,eph,php,col,1th,2th,1ti,2ti,tit,phm,heb,jas,1pe,2pe,1jn,2jn,3jn,jud,rev</value>
+                </setting>
+            </section>
+            <section>
+                <name>Files</name>
+                <sectionID>Files</sectionID>
+                <description>This section contains the names of all the usfmTex files the TIPE system will use in this projects.</description>
+                <section>
+                    <name>James Sample Text</name>
+                    <sectionID>jasSample</sectionID>
+                    <description>The Book of James sample file.</description>
+                    <setting>
+                        <name>Name</name>
+                        <key>name</key>
+                        <description>The name of this file.</description>
+                        <type>string</type>
+                        <version>False</version>
+                        <value>59_James.usfm</value>
+                    </setting>
+                    <setting>
+                        <name>Location</name>
+                        <key>location</key>
+                        <description>The location of the folder.</description>
+                        <type>string</type>
+                        <value>Source</value>
+                    </setting>
+                    <setting>
+                        <name>Version Control</name>
+                        <key>versionControl</key>
+                        <description>Is this file under version control?</description>
+                        <type>boolean</type>
+                        <value>False</value>
+                    </setting>
+                    <setting>
+                        <name>Dependent Files</name>
+                        <key>dependents</key>
+                        <description>The file(s) this file is dependent on.</description>
+                        <type>list</type>
+                        <value></value>
+                    </setting>
+                </section>
+            </section>
+            <section>
+                <name>Folders</name>
+                <sectionID>Folders</sectionID>
+                <description>This section contains the settings for all the folders needed for usfmTex component processing.</description>
+                <section>
+                    <name>Project Source Folder</name>
+                    <sectionID>SourceFolder</sectionID>
+                    <description>The project read-only source folder.</description>
+                    <setting>
+                        <name>Name</name>
+                        <key>name</key>
+                        <description>The name of the folder that all project administrative documents will be kept.</description>
+                        <type>string</type>
+                        <value>Source</value>
+                    </setting>
+                    <setting>
+                        <name>Location</name>
+                        <key>location</key>
+                        <description>The location of the folder.</description>
+                        <type>string</type>
+                        <value></value>
+                    </setting>
+                </section>
+            </section>
+        </section>
     </section>
 </root>
 

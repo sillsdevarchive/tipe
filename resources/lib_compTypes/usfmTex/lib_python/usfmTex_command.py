@@ -42,7 +42,6 @@ class AddComp (Command) :
 	def run(self, args, aProject, userConfig) :
 		super(AddComp, self).run(args, aProject, userConfig)
 
-		comps = []
 		if len(args) :
 			aProject.addNewComponent(self.options.component, self.options.type, self.options.source)
 
@@ -52,25 +51,19 @@ class AddComp (Command) :
 		self.parser.add_option("-s", "--source", type="string", action="store", help="Specify a valid source file for this component.")
 
 
-class RemoveComps (Command) :
-	'''Remove specific components (one or more) from the current project.'''
+class RemoveComp (Command) :
+	'''Remove specific component from the current project.'''
 
 	type = "component_remove"
 
 	def run(self, args, aProject, userConfig) :
-		super(RemoveComps, self).run(args, aProject, userConfig)
+		super(RemoveComp, self).run(args, aProject, userConfig)
 
-		comps = []
 		if len(args) :
-			# Build a list of components to remove from the command line
-			for comp in args :
-				if comp != '-c' :
-					comps.append(comp)
-
-		aProject.removeComponents(comps)
+			aProject.removeComponent(self.options.component)
 
 	def setupOptions(self, parser) :
-		self.parser.add_option("-c", "--component", type="string", action="append", help="Remove a component or group of components from the project.")
+		self.parser.add_option("-c", "--component", type="string", action="store", help="Remove a component from the current project.")
 
 
 

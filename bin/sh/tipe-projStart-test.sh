@@ -13,9 +13,6 @@ tipe system_debug --on
 tipe project_create -i xxxxx -t bookTex -n 'A simple test project' -d ~/Publishing/testArea/tipe_dev/xxxxx
 cd ~/Publishing/testArea/tipe_dev/xxxxx
 tipe component_type_add -t usfmTex
-tipe component_type_add -t vmapper
-tipe component_type_add -t vMapper
-tipe component_type_remove -t vMapper
 tipe component_add -c mat -t usfmTex -s ../Source/41MATTEST.USFM
 tipe component_add -c mrk -t usfmTex -s ../Source/42MRKTEST.USFM
 tipe component_add -c luk -t usfmTex -s ../Source/43LUKTEST.USFM

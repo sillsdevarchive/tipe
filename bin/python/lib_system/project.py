@@ -144,7 +144,8 @@ class Project (object) :
 			if not ctype in compTypeList :
 				compTypeList.append(ctype)
 				self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
-				self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+				print getDefaultCompTypeSettings(self.userHome, self.tipeHome, ctype)
+#                self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
 				self.writeToLog('MSG', 'Component type: [' + ctype + '] added to the project.', 'bookTex.addNewComponentType()')
 			else :
 				self.writeToLog('WRN', 'Component type: [' + ctype + '] already exsits.', 'bookTex.addNewComponentType()')
@@ -175,23 +176,27 @@ class Project (object) :
 
 
 	def loadComponents (self) :
-		'''Load all the component modules and information.  Then intializes that
-		component type.'''
+		'''Load all the component modules and information that have been defined
+		for this project.  This is taken from the projectComponentTypes list in
+		the conf file.  It then intializes each component type.'''
 
 		self.componentClasses = {}
-		if len(self.validCompTypes) > 0 :
-			for compType in self.validCompTypes :
-				thisCompLib = os.path.join(self.tipeCompTypes, compType, 'lib_python')
-				sys.path.insert(0, thisCompLib)
-				try :
-					compModule = __import__(compType)
-					compClass = getattr(compModule, compType[0].upper() + compType[1:], Component)
-				except :
-					compClass = Component
-					terminal('Error: Component module not found for: ' + compType)
+		if len(self.projectComponentTypes) > 0 :
+			for compType in self.projectComponentTypes :
+				if compType in self.validCompTypes :
+					thisCompLib = os.path.join(self.tipeCompTypes, compType, 'lib_python')
+					sys.path.insert(0, thisCompLib)
+					try :
+						compModule = __import__(compType)
+						compClass = getattr(compModule, compType[0].upper() + compType[1:], Component)
+					except :
+						compClass = Component
+						terminal('Error: Component module not found for: ' + compType)
 
-				self.componentClasses[compType] = compClass
-				compClass.initType(self)
+					self.componentClasses[compType] = compClass
+					compClass.initType(self)
+				else :
+					terminal('Error: Invalid component type found: ' + compType)
 
 
 	def loadConfig(self) :

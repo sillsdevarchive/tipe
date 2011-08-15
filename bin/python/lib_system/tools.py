@@ -85,13 +85,14 @@ def mergeProjConfig (projConfig, projHome, userHome, tipeHome) :
 	oldProjConfig = projConfig
 	projType = oldProjConfig['ProjectInfo']['projectType']
 	# Load in the project type XML default settings
-	projXmlConfig = getDefaultProjSettings(projHome, userHome, tipeHome, projType)
+	projXmlConfig = getDefaultProjSettings(userHome, tipeHome, projType)
 	# Create a new conf object based on all the XML default settings
 	# Then override them with any exsiting project settings.
 	return ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
 
 
-def getDefaultProjSettings (projHome, userHome, tipeHome, projType) :
+def getDefaultProjSettings (userHome, tipeHome, projType) :
+	'''Get the default settings out of a project type xml description file.'''
 
 	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
 	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
@@ -108,6 +109,31 @@ def getDefaultProjSettings (projHome, userHome, tipeHome, projType) :
 	try :
 		if os.path.exists(userProjXML) :
 			res = xml_to_section(userProjXML)
+	except :
+		pass
+
+	# Return the final results of the conf settings
+	return res
+
+
+def getDefaultCompTypeSettings (userHome, tipeHome, compType) :
+	'''Get the default settings out of a project type xml description file.'''
+
+	tipeCompXML     = os.path.join(tipeHome, 'resources', 'lib_compTypes', compType, compType + '.xml')
+	userCompXML     = os.path.join(userHome, 'resources', 'lib_compTypes', compType, compType + '.xml')
+
+	# Check first to see if this project type exsits in the user area.  That
+	# project def. will get priority over system defs.  We use one or the other,
+	# not both.
+	if  os.path.exists(tipeCompXML) :
+		res = xml_to_section(tipeCompXML)
+	else :
+		raise IOError, "Can't open " + tipeCompXML
+
+	# The user overrides are not required
+	try :
+		if os.path.exists(userCompXML) :
+			res = xml_to_section(userCompXML)
 	except :
 		pass
 

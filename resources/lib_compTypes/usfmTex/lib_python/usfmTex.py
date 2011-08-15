@@ -65,6 +65,6 @@ class UsfmTex (Component) :
 		in place for this type of component so it can be rendered.'''
 
 
-		print "initializing this component:", cls
+		print "(usfmTex.initType) Initializing this component:", cls
 
 

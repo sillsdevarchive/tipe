@@ -40,7 +40,7 @@ class AddCompType (Command) :
 	def run(self, args, aProject, userConfig) :
 		super(AddCompType, self).run(args, aProject, userConfig)
 		if len(args) :
-			aProject.addNewComponentType(args[1])
+			aProject.addNewComponentType(self.options.type)
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--type", type="string", action="store", help="The type of component to be added to the project.")
@@ -54,7 +54,7 @@ class RemoveCompType (Command) :
 	def run(self, args, aProject, userConfig) :
 		super(RemoveCompType, self).run(args, aProject, userConfig)
 		if len(args) :
-			aProject.removeComponentType(args[1])
+			aProject.removeComponentType(self.options.type)
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-t", "--type", type="string", action="store", help="The type of component to be removed from the project.")
@@ -67,13 +67,11 @@ class ChangeProjSettings (Command) :
 
 	def run(self, aProject, args) :
 		super(ChangeProjSettings, self).run(aProject, args)
-		aProject.changeProjectSetting()
-
-
+		aProject.changeProjectSetting(self.options.pname, self.options.pid)
 
 	def setupOptions(self, parser) :
-		self.parser.add_option("--projectName", action="store", help="Change the name of the current project.")
-		self.parser.add_option("--projectID", action="store", help="Change the ID code of the current project.")
+		self.parser.add_option("-n", "--pname", action="store", help="Change the name of the current project.")
+		self.parser.add_option("-i", "--pid", action="store", help="Change the ID code of the current project.")
 
 
 # This is an example command class

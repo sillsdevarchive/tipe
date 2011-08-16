@@ -81,7 +81,8 @@ projType = None
 # Now create a fresh projConfig object
 if os.path.isfile(projConfFile) :
 	# Create a fresh merged version of the projConfig
-	projConfig = mergeProjConfig(ConfigObj(projConfFile), projHome, userHome, tipeHome)
+	projConfig  = mergeProjConfig(ConfigObj(projConfFile), projHome, userHome, tipeHome)
+	projInit    = mergeProjConfig(ConfigObj(projConfFile), projHome, userHome, tipeHome)
 
 	# If we successfuly created a projConfig, the we will load in the type info.
 	# For a project conf file to be written out it must be a valid project type

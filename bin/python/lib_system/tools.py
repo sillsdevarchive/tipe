@@ -104,15 +104,32 @@ def mergeProjConfig (projConfig, projHome, userHome, tipeHome) :
 	return newProjConfig
 
 
+def getProjInitSettings (userHome, tipeHome, projType) :
+	'''Get the project initialisation settings from the project type init xml
+	file.'''
+
+	tipeProjInitXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '_init.xml')
+	userProjInitXML     = os.path.join(userHome, 'resources', 'lib_projTypes', projType, projType + '_init.xml')
+
+
+# FIXME: Working here!
+
 def getDefaultProjSettings (userHome, tipeHome, projType) :
 	'''Get the default settings out of a project type xml description file.'''
 
 	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
 	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
 
-	# Check first to see if this project type exsits in the user area.  That
-	# project def. will get priority over system defs.  We use one or the other,
-	# not both.
+	return
+
+
+
+def getDefaultSettings (tipeXML, userXML) :
+	'''Generic function to get settings from a system XML file.  This will check
+	for an xml file in the user area first.'''
+
+	# Check first to see if this file exsits in the user area.  That file will
+	# get priority over system files.  We use one or the other, not both.
 	if  os.path.exists(tipeProjXML) :
 		res = xml_to_section(tipeProjXML)
 	else :

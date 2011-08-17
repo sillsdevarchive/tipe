@@ -125,7 +125,7 @@ class Debugging (Command) :
 class Help (Command) :
 	'''Provide user with information on a specific command.'''
 
-	type = "system_help"
+	type = "help"
 
 	def run(self, args, aProject, userConfig) :
 		global commands

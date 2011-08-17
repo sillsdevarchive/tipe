@@ -43,10 +43,11 @@ class UsfmTex (Component) :
 		'''Initialize this class.'''
 
 		# Make it available to the Project Class with this
-		super(UsfmTex, self).__init__(aProject._projConfig, aProject._userConfig, aProject.projHome, aProject.userHome, aProject.tipeHome)
+		super(UsfmTex, self).__init__(aProject._projConfig, aProject._projInit, aProject._userConfig, aProject.projHome, aProject.userHome, aProject.tipeHome)
 
 		# Set class vars
 		self._projConfig = aProject._projConfig
+		self._projInit = aProject._projInit
 		self._userConfig = aProject._userConfig
 		self.projHome = aProject.projHome
 		self.userHome = aProject.userHome

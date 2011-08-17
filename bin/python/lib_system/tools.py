@@ -79,7 +79,7 @@ def recordProject (userConfigFile, projConfig, projHome) :
 
 
 def mergeProjConfig (projConfig, projHome, userHome, tipeHome) :
-	'''Retrun a merge project config file from a valid project config file'''
+	'''Retrun a merge project config object from a valid project config file'''
 
 	# Find out what kind of project this is
 	oldProjConfig = projConfig
@@ -95,7 +95,7 @@ def mergeProjConfig (projConfig, projHome, userHome, tipeHome) :
 			pass
 
 	# Load in the project type XML default settings
-	projXmlConfig = getDefaultProjSettings(userHome, tipeHome, projType)
+	projXmlConfig = getProjSettings(userHome, tipeHome, projType)
 	# Create a new conf object based on all the XML default settings
 	# Then override them with any exsiting project settings.
 	newProjConfig = ConfigObj(projXmlConfig.dict()).override(oldProjConfig)
@@ -111,64 +111,69 @@ def getProjInitSettings (userHome, tipeHome, projType) :
 	tipeProjInitXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '_init.xml')
 	userProjInitXML     = os.path.join(userHome, 'resources', 'lib_projTypes', projType, projType + '_init.xml')
 
+	res = getXMLSettings(tipeProjInitXML)
+	if os.path.isfile(userProjInitXML) :
+		return overrideSettings(res, userProjInitXML)
+	else :
+		return res
 
-# FIXME: Working here!
 
-def getDefaultProjSettings (userHome, tipeHome, projType) :
+def getCompInitSettings (userHome, tipeHome, compType) :
+	'''Get the project initialisation settings from the project type init xml
+	file.  Then, if it exsits, override these settings with the version found in
+	the user area.'''
+
+	tipeCompInitXML     = os.path.join(tipeHome, 'resources', 'lib_compTypes', compType, compType + '_init.xml')
+	userCompInitXML     = os.path.join(userHome, 'resources', 'lib_compTypes', compType, compType + '_init.xml')
+
+	res = getXMLSettings(tipeCompInitXML)
+	if os.path.isfile(userCompInitXML) :
+		return overrideSettings(res, userCompInitXML)
+	else :
+		return res
+
+
+def getProjSettings (userHome, tipeHome, projType) :
 	'''Get the default settings out of a project type xml description file.'''
 
 	tipeProjXML     = os.path.join(tipeHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
 	userProjXML     = os.path.join(userHome, 'resources', 'lib_projTypes', projType, projType + '.xml')
 
-	return
-
-
-
-def getDefaultSettings (tipeXML, userXML) :
-	'''Generic function to get settings from a system XML file.  This will check
-	for an xml file in the user area first.'''
-
-	# Check first to see if this file exsits in the user area.  That file will
-	# get priority over system files.  We use one or the other, not both.
-	if  os.path.exists(tipeProjXML) :
-		res = xml_to_section(tipeProjXML)
+	res = getXMLSettings(tipeProjXML)
+	if os.path.isfile(userProjXML) :
+		return overrideSettings(res, userProjXML)
 	else :
-		raise IOError, "Can't open " + tipeProjXML
-
-	# The user overrides are not required
-	try :
-		if os.path.exists(userProjXML) :
-			res = xml_to_section(userProjXML)
-	except :
-		pass
-
-	# Return the final results of the conf settings
-	return res
+		return res
 
 
-def getDefaultCompTypeSettings (userHome, tipeHome, compType) :
+def getCompSettings (userHome, tipeHome, compType) :
 	'''Get the default settings out of a project type xml description file.'''
 
 	tipeCompXML     = os.path.join(tipeHome, 'resources', 'lib_compTypes', compType, compType + '.xml')
 	userCompXML     = os.path.join(userHome, 'resources', 'lib_compTypes', compType, compType + '.xml')
 
-	# Check first to see if this project type exsits in the user area.  That
-	# project def. will get priority over system defs.  We use one or the other,
-	# not both.
-	if  os.path.exists(tipeCompXML) :
-		res = xml_to_section(tipeCompXML)
+	res = getXMLSettings(tipeCompXML)
+	if os.path.isfile(userCompXML) :
+		return overrideSettings(res, userCompXML)
 	else :
-		raise IOError, "Can't open " + tipeCompXML
+		return res
 
-	# The user overrides are not required
-	try :
-		if os.path.exists(userCompXML) :
-			res = xml_to_section(userCompXML)
-	except :
-		pass
 
-	# Return the final results of the conf settings
-	return res
+def getXMLSettings (xmlFile) :
+	'''Get settings from an XML file.'''
+
+	if  os.path.exists(xmlFile) :
+		return xml_to_section(xmlFile)
+	else :
+		raise IOError, "Can't open " + xmlFile
+
+
+def overrideSettings (settings, overrideXML) :
+	'''Override the settings in an object with another like object.'''
+
+	settings = xml_to_section(overrideXML)
+
+	return settings
 
 
 def writeProjConfFile (projConfig, projHome) :
@@ -194,7 +199,7 @@ def writeProjConfFile (projConfig, projHome) :
 def writeUserConfFile (userConfig, userHome) :
 	'''Write out only the user config file.'''
 
-	userConfigFile = os.path.join(userHome, userConfig['Files']['userConfFile']['name'])
+	userConfigFile = os.path.join(userHome, 'tipe.conf')
 	stamp = tStamp()
 
 	# There should always be a userConfig so if the write flag is set we will

@@ -82,7 +82,6 @@ projType = None
 if os.path.isfile(projConfFile) :
 	# Create a fresh merged version of the projConfig
 	projConfig  = mergeProjConfig(ConfigObj(projConfFile), projHome, userHome, tipeHome)
-	projInit    = mergeProjConfig(ConfigObj(projConfFile), projHome, userHome, tipeHome)
 
 	# If we successfuly created a projConfig, the we will load in the type info.
 	# For a project conf file to be written out it must be a valid project type
@@ -90,6 +89,7 @@ if os.path.isfile(projConfFile) :
 	if projConfig :
 		projectType         = projConfig['ProjectInfo']['projectType']
 		tipeProjTypes       = os.path.join(tipeHome, 'resources', 'lib_projTypes')
+		projInit            = getProjInitSettings(userHome, tipeHome, projectType)
 # FIXME: Need to override sys path with user path if the type exists there
 		# Dynamically load the right project type modules
 		thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
@@ -101,14 +101,15 @@ if os.path.isfile(projConfFile) :
 		# die here
 
 	# Fold in the projConfig into the aProject object
-	aProject = getattr(projModule, projectType[0].upper() + projectType[1:], Project)(projConfig, uConf.userConfig, projHome, userHome, tipeHome)
+	aProject = getattr(projModule, projectType[0].upper() + projectType[1:], Project)(projConfig, projInit, uConf.userConfig, projHome, userHome, tipeHome)
 	recordProject(uConf.userConfFile, projConfig, projHome)
 
 else :
 	# If there is no project, we still need a
 	# dummy projConfig object so we'll just make one up.
-	projConfig = ConfigObj()
-	aProject = Project(projConfig, uConf.userConfig, projHome, userHome, tipeHome)
+	projConfig  = ConfigObj()
+	projInit    = ConfigObj()
+	aProject    = Project(projConfig, projInit, uConf.userConfig, projHome, userHome, tipeHome)
 
 
 ###############################################################################
@@ -150,7 +151,7 @@ if command :
 
 else :
 	terminal('\nAvailable commands:')
-	commands['system_help'].run(opts, aProject, uConf.userConfig)
+	commands['help'].run(opts, aProject, uConf.userConfig)
 
 
 ###############################################################################

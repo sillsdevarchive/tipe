@@ -41,11 +41,11 @@ from project import Project
 
 class BookTex (Project) :
 
-	def __init__(self, projConfig, userConfig, projHome, userHome, tipeHome) :
+	def __init__(self, projConfig, projInit, userConfig, projHome, userHome, tipeHome) :
 		'''Initialize this class.'''
 
 		# Make it available to the Project Class with this
-		super(BookTex, self).__init__(projConfig, userConfig, projHome, userHome, tipeHome)
+		super(BookTex, self).__init__(projConfig, projInit, userConfig, projHome, userHome, tipeHome)
 
 		# Set class vars
 		self._projConfig = projConfig

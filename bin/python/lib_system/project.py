@@ -44,7 +44,7 @@ from component import Component
 
 class Project (object) :
 
-	def __init__(self, projConfig, userConfig, projHome, userHome, tipeHome) :
+	def __init__(self, projConfig, projInit, userConfig, projHome, userHome, tipeHome) :
 
 		self.projHome           = projHome
 		self.userHome           = userHome
@@ -52,6 +52,7 @@ class Project (object) :
 
 		# Load project config files
 		self._projConfig        = projConfig
+		self._projInit          = projInit
 		self._userConfig        = userConfig
 
 		# Set all the initial paths and locations
@@ -74,8 +75,8 @@ class Project (object) :
 
 		# Set all the system settings
 		if self._userConfig :
-			self.projConfFile   = os.path.join(self.projHome, self._userConfig['Files']['projConfFile']['name'])
-			self.userConfFile   = os.path.join(self.userHome, self._userConfig['Files']['userConfFile']['name'])
+			self.projConfFile   = os.path.join(self.projHome, '.project.conf')
+			self.userConfFile   = os.path.join(self.userHome, 'tipe.conf')
 			for k in ('systemVersion',      'userName',
 					  'debugging',          'lastEditDate',
 					  'projLogLineLimit',   'lockExt') :
@@ -99,7 +100,7 @@ class Project (object) :
 		the binding order list.'''
 
 		typeList = self._projConfig['ProjectInfo']['validCompTypes']
-		validCompList = self._projConfig['Components'][ctype]['validIdCodes']
+		validCompList = self._projConfig['Components'][ctype]['ComponentInfo']['validIdCodes']
 		if cid not in self._projConfig['ProjectInfo']['projectComponentBindingOrder'] :
 			if ctype in typeList and cid in validCompList and os.path.isfile(csource) :
 				# Add component code to binding order list
@@ -164,7 +165,7 @@ class Project (object) :
 			if not ctype in compTypeList :
 				compTypeList.append(ctype)
 				self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
-				self._projConfig.merge(getDefaultCompTypeSettings(self.userHome, self.tipeHome, ctype))
+				self._projConfig.merge(getCompSettings(self.userHome, self.tipeHome, ctype))
 				self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
 				self.writeToLog('MSG', 'Component type: [' + ctype + '] added to the project.', 'bookTex.addNewComponentType()')
 			else :
@@ -228,10 +229,10 @@ class Project (object) :
 			setattr(self, k, self._projConfig['ProjectInfo'][k] if 'ProjectInfo' in self._projConfig else None)
 
 		# In case we are in a situation where we had to make an aProject object
-		# with an empty projConfig we will test before doing this.
-		if len(self._projConfig) > 0 :
-			self.projLogFile        = os.path.join(self.projHome, self._projConfig['Files']['projLogFile']['name'])
-			self.projErrorLogFile   = os.path.join(self.projHome, self._projConfig['Files']['projErrorLogFile']['name'])
+		# with an empty projInit we will test before doing this.
+		if len(self._projInit) > 0 :
+			self.projLogFile        = os.path.join(self.projHome, self._projInit['Files']['projLogFile']['name'])
+			self.projErrorLogFile   = os.path.join(self.projHome, self._projInit['Files']['projErrorLogFile']['name'])
 			self.orgProjectEditDate = self.projectLastEditDate
 
 
@@ -241,10 +242,10 @@ class Project (object) :
 
 		mod = 'project.initProject()'
 		# Create all necessary folders
-		fldrs = self._projConfig['Folders'].__iter__()
+		fldrs = self._projInit['Folders'].__iter__()
 		for f in fldrs :
 			folderName = ''; parentFolder = ''
-			fGroup = self._projConfig['Folders'][f]
+			fGroup = self._projInit['Folders'][f]
 			for key, value in fGroup.iteritems() :
 				if key == 'name' :
 					folderName = value
@@ -271,10 +272,10 @@ class Project (object) :
 						terminal('Created folder: ' + folderName)
 
 		# Create some necessary files
-		fls = self._projConfig['Files'].__iter__()
+		fls = self._projInit['Files'].__iter__()
 		for fs in fls :
 			fileName = ''; parentFolder = ''
-			fGroup = self._projConfig['Files'][fs]
+			fGroup = self._projInit['Files'][fs]
 			for key, value in fGroup.iteritems() :
 				if key == 'name' :
 					fileName = value
@@ -341,9 +342,11 @@ class Project (object) :
 			os.mkdir(pdir)
 
 		# Create a new version of the project config file
-		newProjConfig = getDefaultProjSettings(self.userHome, self.tipeHome, ptype)
+		newProjConfig = getProjSettings(self.userHome, self.tipeHome, ptype)
+		newInitConfig = getProjInitSettings(self.userHome, self.tipeHome, ptype)
 		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
 		self._projConfig = newProjConfig
+		self._projInit = newInitConfig
 		self.loadConfig()
 
 		date = tStamp()

@@ -31,35 +31,6 @@ from sys_command import Command
 # Insert the commands you want visable to the system here in the order you want
 # them to appear when listed.
 
-
-class AddCompType (Command) :
-	'''Add a component type to a project.'''
-
-	type = "component_type_add"
-
-	def run(self, args, aProject, userConfig) :
-		super(AddCompType, self).run(args, aProject, userConfig)
-		if len(args) :
-			aProject.addNewComponentType(self.options.type)
-
-	def setupOptions(self, parser) :
-		self.parser.add_option("-t", "--type", type="string", action="store", help="The type of component to be added to the project.")
-
-
-class RemoveCompType (Command) :
-	'''Add a component type to a project.'''
-
-	type = "component_type_remove"
-
-	def run(self, args, aProject, userConfig) :
-		super(RemoveCompType, self).run(args, aProject, userConfig)
-		if len(args) :
-			aProject.removeComponentType(self.options.type)
-
-	def setupOptions(self, parser) :
-		self.parser.add_option("-t", "--type", type="string", action="store", help="The type of component to be removed from the project.")
-
-
 class ChangeProjSettings (Command) :
 	'''Change a system setting.'''
 

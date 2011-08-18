@@ -73,25 +73,11 @@ Todo:
             <value></value>
         </setting>
         <setting>
-            <name>Write Out Project Configuration File</name>
-            <key>writeOutProjConfFile</key>
-            <description>When changes are made to the project configuration file this is set to true to tigger a writeout operation when the application closes.</description>
-            <type>boolean</type>
-            <value></value>
-        </setting>
-        <setting>
             <name>Valid Component Type List</name>
             <key>validCompTypes</key>
             <description>A list of valid component types that are acceptable to use with this project type.</description>
             <type>list</type>
             <value>usfmTex</value>
-        </setting>
-        <setting>
-            <name>Project Component Types</name>
-            <key>projectComponentTypes</key>
-            <description>A list of component types that are used in this project (one or more).</description>
-            <type>list</type>
-            <value></value>
         </setting>
         <setting>
             <name>Project Component Binding Order List</name>
@@ -101,7 +87,6 @@ Todo:
             <value></value>
         </setting>
     </section>
-
     <section>
         <name>Format</name>
         <sectionID>Format</sectionID>
@@ -121,6 +106,5 @@ Todo:
             <value>210</value>
         </setting>
     </section>
-
 </root>
 

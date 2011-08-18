@@ -159,7 +159,12 @@ else :
 ###############################################################################
 
 # Now write out the config files if needed
-writeConfFiles(aProject._userConfig, aProject._projConfig, userHome, projHome)
+if aProject.writeOutProjConfFile :
+	writeProjConfFile(aProject._projConfig, projHome)
+
+if aProject.writeOutUserConfFile :
+	writeUserConfFile(aProject._userConfig, userHome)
+
 
 ## Politely say good bye
 terminal('\n\t\tThank you, please come again!\n')

@@ -17,6 +17,6 @@ tipe component_type_add -t usfmTex
 #tipe component_add -c mrk -t usfmTex -s ../Source/42MRKTEST.USFM
 #tipe component_add -c luk -t usfmTex -s ../Source/43LUKTEST.USFM
 #tipe component_add -c jhn -t usfmTex -s ../Source/44JHNTEST.USFM
-tipe component_add -c jas -t usfmTex -s ../Source/59_James.usfm
+tipe component_add -c jas -t usfmTex -s ../../Source/59_James.usfm
 #tipe component_remove -c rev
 tipe

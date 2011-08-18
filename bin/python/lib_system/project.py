@@ -30,15 +30,6 @@ from component import Component
 
 
 ###############################################################################
-############################ Define Global Functions ##########################
-###############################################################################
-
-
-
-
-
-
-###############################################################################
 ################################## Begin Class ################################
 ###############################################################################
 
@@ -84,12 +75,68 @@ class Project (object) :
 
 			self.orgLastEditDate    = self.lastEditDate
 
+		# Set some flags
+		self.writeOutProjConfFile = False
+		self.writeOutUserConfFile = False
+
 		# If there is no project yet we want to just skip this next part
 		try :
 			self.loadConfig()
-			self.loadComponents()
+			# self.loadComponents() I think this is deprecated as we load on demand now
 		except :
 			pass
+
+
+###############################################################################
+################################ Begin Functions ##############################
+###############################################################################
+
+	def preProcessComp (self, cid) :
+		'''Preprocess a project component.'''
+
+		# First lets make sure our component is initialized (this will also
+		# initialize the component type as well).
+
+		if cid :
+			c = self.getComponent(cid)
+			c.preProcess()
+		else :
+			for c in self.getComponents() :
+				c.preProcess()
+
+
+	def getComponent (self, cid) :
+		'''Create a component object that is ready for processes to be run on
+		it.'''
+
+		# find component type for cid
+		ctype = self._projConfig['Components'][cid]['compType']
+
+		# import component type module if not loaded
+		self.initCompType(ctype)
+
+		# create instance of component based on type and pass config and self
+		# store in dictionary for later reuse?
+
+
+	def getComponents (self) :
+		'''Create all the component objects that are ready for processing.'''
+		# for c in components list :
+			# yield getComponent(c)
+		# or
+		# return [getComponent(c) for c in components_list]
+		# or
+		# res = []
+		# for c in components_list :
+		#   res.append(getComponent(c))
+		# return res
+		pass
+
+
+	def initCompType (self, ctype) :
+		'''Initialize a component type'''
+
+		pass
 
 
 	def addNewComponent (self, cid, ctype, csource) :
@@ -99,132 +146,154 @@ class Project (object) :
 		type, source or ID are not valid or if the component already exsists in
 		the binding order list.'''
 
-		typeList = self._projConfig['ProjectInfo']['validCompTypes']
-		validCompList = self._projConfig['Components'][ctype]['ComponentInfo']['validIdCodes']
-		if cid not in self._projConfig['ProjectInfo']['projectComponentBindingOrder'] :
-			if ctype in typeList and cid in validCompList and os.path.isfile(csource) :
-				# Add component code to binding order list
-				listOrder = []
-				listOrder = self._projConfig['ProjectInfo']['projectComponentBindingOrder']
-				listOrder.append(cid)
-				# If one doesn't already exsist, create a section under the
-				# component type section
-				try :
-					isHere = self._projConfig['Components'][ctype][cid]
-				except :
-					compItem = ConfigObj()
-					compItem['Components'] = {}
-					compItem['Components'][ctype] = {}
-					compItem['Components'][ctype][cid] = {}
-					compItem['Components'][ctype][cid]['source'] = csource
-					self._projConfig.merge(compItem)
+		# Test for comp type section
+		try :
+			ct = self._projConfig['ComponentTypes']
+		except :
+			self._projConfig['ComponentTypes'] = {}
 
-				self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = listOrder
-				self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
-				self.writeToLog('MSG', 'Component added: ' + str(cid), 'bookTex.addNewComponents()')
-		else :
-				self.writeToLog('WRN', 'Component exsits: ' + str(cid) + ' No action taken.', 'bookTex.addNewComponents()')
+		# First we add the type if it is not already in the project
+		if ctype in self.validCompTypes :
+			if not ctype in self._projConfig['ComponentTypes'] :
+				self.addNewComponentType(ctype)
+
+		# Test the parameters, return if any fails
+		if cid in self._projConfig['ProjectInfo']['projectComponentBindingOrder'] :
+			self.writeToLog('ERR', 'Component: [' + cid + '] exsits. Only one instance allowed.', 'bookTex.addNewComponents()')
+			return
+
+		if not cid in self._projConfig['ComponentTypes'][ctype]['validIdCodes'] :
+			self.writeToLog('ERR', 'ID: [' + cid + '] not valid ID for [' + ctype + '] component type', 'bookTex.addNewComponents()')
+			return
+
+		if not os.path.isfile(csource) :
+			self.writeToLog('ERR', 'Path: [' + csource + '] not valid.', 'bookTex.addNewComponents()')
+			return
+
+		# Add component code to binding order list
+		listOrder = []
+		listOrder = self._projConfig['ProjectInfo']['projectComponentBindingOrder']
+		listOrder.append(cid)
+		self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = listOrder
+
+		# Add to the installed components list for this type
+		compList = []
+		compList = self._projConfig['ComponentTypes'][ctype]['installedComponents']
+		compList.append(cid)
+		self._projConfig['ComponentTypes'][ctype]['installedComponents'] = compList
+
+		# The cid should be unique to the project so we add a section for it
+		compItem = ConfigObj()
+		compItem['Components'] = {}
+		compItem['Components'][cid] = {}
+		compItem['Components'][cid]['source'] = csource
+		compItem['Components'][cid]['compType'] = ctype
+		self._projConfig.merge(compItem)
+
+		self.writeOutProjConfFile = True
+		self.writeToLog('MSG', 'Component added: ' + str(cid), 'bookTex.addNewComponents()')
 
 
 	def removeComponent (self, comp) :
 		'''Remove a component from the current project by removing them from the
 		component binding list and from their type information section.'''
 
+		# Find out what kind of component type this is
+		ctype = self._projConfig['Components'][comp]['compType']
+
+		# Remove from Binding order list first
 		orderList = []
 		orderList = self._projConfig['ProjectInfo']['projectComponentBindingOrder']
 		if comp in orderList :
 			orderList.remove(comp)
+			self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = orderList
+			self.writeOutProjConfFile = True
 		else :
 			self.writeToLog('WRN', 'Component [' + comp + '] not found in binding order list', 'bookTex.removeComponents()')
 
-		self._projConfig['ProjectInfo']['projectComponentBindingOrder'] = orderList
-		# Remove references in the Components section.  To do this we will need
-		# to look up the ctype first.
-		compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
-		for ctype in compTypeList :
-			try :
-				del self._projConfig['Components'][ctype][comp]
-				self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
-				self.writeToLog('MSG', 'Removed component: [' + comp + '] from project.', 'bookTex.removeComponents()')
-			except :
-				pass
 
+		# Remove from the components installed list
+		compList = self._projConfig['ComponentTypes'][ctype]['installedComponents']
+		if comp in compList :
+			compList.remove(comp)
+			self._projConfig['ComponentTypes'][ctype]['installedComponents'] = compList
+			self.writeOutProjConfFile = True
+
+		# Remove the component's section from components
+		if comp in self._projConfig['Components'] :
+			del self._projConfig['Components'][comp]
+			self.writeOutProjConfFile = True
+
+		# Remove references in the ComponentTypes section if this is the last
+		# component of its kind to be removed.
+		if len(self._projConfig['ComponentTypes'][ctype]['installedComponents']) == 0 :
+			self.removeComponentType(ctype)
+
+		# I guess if at least one of the above succeded we removed it
+		if self.writeOutProjConfFile :
+			self.writeToLog('MSG', 'Removed component: [' + comp + '] from project.', 'bookTex.removeComponents()')
 
 
 	def addNewComponentType (self, ctype) :
-		'''Add a component type to the current project.  Before doing so, it
-		must varify that the requested component type is valid to add to this
-		type of project.  The component type is only added to the
-		projectComponentTypes list in the project conf file.  The next time TIPE
-		is run the component type will be initialized.'''
+		'''This will add all the component type information to a project.'''
 
-		compTypeList = []
-		compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
+		# It is assumed this is okay to do
+		try :
+			self._projConfig['ComponentTypes'][ctype] = {}
+		except :
+			self._projConfig['ComponentTypes'] = {}
+			self._projConfig['ComponentTypes'][ctype] = {}
 
-		if ctype in self.validCompTypes :
-			if not ctype in compTypeList :
-				compTypeList.append(ctype)
-				self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
-				self._projConfig.merge(getCompSettings(self.userHome, self.tipeHome, ctype))
-				self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
-				self.writeToLog('MSG', 'Component type: [' + ctype + '] added to the project.', 'bookTex.addNewComponentType()')
-			else :
-				self.writeToLog('WRN', 'Component type: [' + ctype + '] already exsits.', 'bookTex.addNewComponentType()')
-
-		else :
-			self.writeToLog('ERR', 'Invalid component type: [' + ctype + ']', 'bookTex_command.AddCompType')
+		self._projConfig.merge(getCompSettings(self.userHome, self.tipeHome, ctype))
+		self.writeOutProjConfFile = True
+		self.writeToLog('MSG', 'Component type: [' + ctype + '] added to project.', 'bookTex.addNewComponentType()')
 
 
 	def removeComponentType (self, ctype) :
 		'''Remove a component type to the current project.  Before doing so, it
 		must varify that the requested component type is valid.'''
 
-		compTypeList = []
-		compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
-
-		if ctype in compTypeList :
-			# Remove it from the components list
-			compTypeList.remove(ctype)
-			self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
-			# Remove references in the Components section
-			del self._projConfig['Components'][ctype]
-			self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
+		if len(self._projConfig['ComponentTypes'][ctype]['installedComponents']) == 0 :
+			# Remove references in the ComponentType section
+			del self._projConfig['ComponentTypes'][ctype]
+			self.writeOutProjConfFile = True
 			# FIXME: More should be done at this point to remove files, etc of the comp type.
 			self.writeToLog('MSG', 'Component type: [' + ctype + '] removed from project.', 'bookTex.removeComponentType()')
 		else :
 			self.writeToLog('WRN', 'Component type: [' + ctype + '] does not exsits.', 'bookTex.removeComponentType()')
 
 
-	def loadComponents (self) :
-		'''Load all the component modules and information that have been defined
-		for this project.  This is taken from the projectComponentTypes list in
-		the conf file.  It then intializes each component type.'''
+#    def loadComponents (self) :
+#        '''Load all the component modules and information that have been defined
+#        for this project.  This is taken from the projectComponentTypes list in
+#        the conf file.  It then intializes each component type.'''
 
-		self.componentClasses = {}
-		if len(self.projectComponentTypes) > 0 :
-			for compType in self.projectComponentTypes :
-				if compType in self.validCompTypes :
-					thisComp = os.path.join(self.tipeCompTypes, compType, 'lib_python')
-					sys.path.insert(0, thisComp)
-					try :
-						compModule = __import__(compType)
-						compClass = getattr(compModule, compType[0].upper() + compType[1:], Component)
-					except :
-						compClass = Component
-						terminal('Error: Component module not found for: ' + compType)
+#        print "I am loading!'"
 
-					self.componentClasses[compType] = compClass
-					compClass.initType(self)
-				else :
-					terminal('Error: Invalid component type found: ' + compType)
+#        self.componentClasses = {}
+#        if len(self.projectComponentTypes) > 0 :
+#            for compType in self.projectComponentTypes :
+#                if compType in self.validCompTypes :
+#                    thisComp = os.path.join(self.tipeCompTypes, compType, 'lib_python')
+#                    sys.path.insert(0, thisComp)
+#                    try :
+#                        compModule = __import__(compType)
+#                        compClass = getattr(compModule, compType[0].upper() + compType[1:], Component)
+#                    except :
+#                        compClass = Component
+#                        terminal('Error: Component module not found for: ' + compType)
+
+#                    self.componentClasses[compType] = compClass
+#                    compClass.initType(self)
+#                else :
+#                    terminal('Error: Invalid component type found: ' + compType)
 
 
 	def loadConfig(self) :
 		# Load project settings
 		for k in ('projectType',            'projectName',
 				  'projectLastEditDate',    'projectCreateDate',
-				  'projectIDCode',          'projectComponentTypes',
-				  'validCompTypes',         'writeOutProjConfFile') :
+				  'projectIDCode',          'validCompTypes') :
 
 			setattr(self, k, self._projConfig['ProjectInfo'][k] if 'ProjectInfo' in self._projConfig else None)
 
@@ -344,7 +413,7 @@ class Project (object) :
 		# Create a new version of the project config file
 		newProjConfig = getProjSettings(self.userHome, self.tipeHome, ptype)
 		newInitConfig = getProjInitSettings(self.userHome, self.tipeHome, ptype)
-		newProjConfig['ProjectInfo']['writeOutProjConfFile'] = True
+		self.writeOutProjConfFile = True
 		self._projConfig = newProjConfig
 		self._projInit = newInitConfig
 		self.loadConfig()

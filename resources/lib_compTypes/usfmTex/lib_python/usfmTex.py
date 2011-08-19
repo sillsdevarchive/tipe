@@ -68,4 +68,7 @@ class UsfmTex (Component) :
 
 		print "(usfmTex.initType) Initializing this component:", cls
 
+	def preProcess(self) :
+		# do pre processing of a usfmtex component here
+		print "PreProcessing a usfmtex component""
 

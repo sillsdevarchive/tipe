@@ -40,4 +40,6 @@ class Component (object) :
 		'''Internal housekeeping for the component type when it first wakes up'''
 		pass
 
+	def preProcess(self) :
+		pass
 

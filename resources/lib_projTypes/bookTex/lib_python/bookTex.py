@@ -7,7 +7,7 @@
 ######################### Description/Documentation ###########################
 ###############################################################################
 
-# This class will handle project infrastructure tasks.
+# This class will handle project level tasks specific for this type of project.
 
 # History:
 # 20110728 - djd - Initial draft
@@ -26,7 +26,7 @@ import os, sys
 # Load the local classes
 from bookTex_command import Command
 from project import Project
-
+from component import Component
 
 ###############################################################################
 ############################ Define Global Functions ##########################
@@ -48,11 +48,13 @@ class BookTex (Project) :
 		super(BookTex, self).__init__(projConfig, projInit, userConfig, projHome, userHome, tipeHome)
 
 		# Set class vars
-		self._projConfig = projConfig
-		self._userConfig = userConfig
-		self.projHome = projHome
-		self.userHome = userHome
-		self.tipeHome = tipeHome
+		self._projConfig    = projConfig
+		self._userConfig    = userConfig
+		self._projInit      = projInit
+		self.projHome       = projHome
+		self.userHome       = userHome
+		self.tipeHome       = tipeHome
+#        self.validCompTypes = projConfig['ProjectInfo']['validCompTypes']
 
 
 
@@ -62,43 +64,3 @@ class BookTex (Project) :
 ###############################################################################
 
 
-#    def addNewComponentType (self, ctype) :
-#        '''Add a component type to the current project.  Before doing so, it
-#        must varify that the requested component type is valid to add to this
-#        type of project.  The component type is only added to the
-#        projectComponentTypes list in the project conf file.  The next time TIPE
-#        is run the component type will be initialized.'''
-
-#        compTypeList = []
-#        compTypeList = self._projConfig['ProjectInfo']['projectComponentTypes']
-#        if not ctype in compTypeList :
-#            compTypeList.append(ctype)
-#            self._projConfig['ProjectInfo']['projectComponentTypes'] = compTypeList
-#            self._projConfig['ProjectInfo']['writeOutProjConfFile'] = True
-#        else :
-#            self.writeToLog('MSG', 'Component type: [' + ctype + '] already exsits.', 'bookTex.addComponentType()')
-#
-#        print "Adding component type", ctype
-#
-#        return True
-
-
-
-#    def loadComponents (self) :
-#        '''Load all the components for a project.'''
-#
-#        # Start by loading all the component types for this project.
-#        self.loadComponentTypes()
-#
-#        # Load Components
-#        print 'Loading project components. (Not working!)'
-#
-#        return True
-#
-#
-#    def loadComponentTypes (self) :
-#        '''Load the component type classes for this project.'''
-#
-#        print 'Loading project component types. (Not working!)'
-#
-#        return True

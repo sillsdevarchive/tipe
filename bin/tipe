@@ -90,6 +90,8 @@ if os.path.isfile(projConfFile) :
 		projectType         = projConfig['ProjectInfo']['projectType']
 		tipeProjTypes       = os.path.join(tipeHome, 'resources', 'lib_projTypes')
 		projInit            = getProjInitSettings(userHome, tipeHome, projectType)
+		from proj_command import *
+
 # FIXME: Need to override sys path with user path if the type exists there
 		# Dynamically load the right project type modules
 		thisTypeLib = os.path.join(tipeProjTypes, projectType, 'lib_python')
@@ -161,9 +163,11 @@ else :
 # Now write out the config files if needed
 if aProject.writeOutProjConfFile :
 	writeProjConfFile(aProject._projConfig, projHome)
+	aProject.writeOutProjConfFile = False
 
 if aProject.writeOutUserConfFile :
 	writeUserConfFile(aProject._userConfig, userHome)
+	aProject.writeOutUserConfFile = False
 
 
 ## Politely say good bye

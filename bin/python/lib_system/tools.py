@@ -177,6 +177,7 @@ def writeProjConfFile (projConfig, projHome) :
 		projConfig['ProjectInfo']['projectLastEditDate'] = tStamp()
 		projConfig.filename = projConfigFile
 		projConfig.write()
+		projConfig.writeOutProjConfFile = False
 
 	except :
 		# FIXME: Should I be doing something else here?

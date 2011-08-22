@@ -89,3 +89,6 @@ class RemoveComp (Command) :
 
 	def setupOptions(self, parser) :
 		self.parser.add_option("-c", "--component", type="string", action="store", help="Add a component or group of components to the project.")
+
+
+

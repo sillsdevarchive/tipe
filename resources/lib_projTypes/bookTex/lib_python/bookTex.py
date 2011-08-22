@@ -19,9 +19,7 @@
 # Firstly, import all the standard Python modules we need for
 # this process
 
-import os, sys
-#from datetime import *
-#from configobj import ConfigObj, Section
+#import os, sys
 
 # Load the local classes
 from bookTex_command import Command
@@ -46,16 +44,6 @@ class BookTex (Project) :
 
 		# Make it available to the Project Class with this
 		super(BookTex, self).__init__(projConfig, projInit, userConfig, projHome, userHome, tipeHome)
-
-		# Set class vars
-		self._projConfig    = projConfig
-		self._userConfig    = userConfig
-		self._projInit      = projInit
-		self.projHome       = projHome
-		self.userHome       = userHome
-		self.tipeHome       = tipeHome
-#        self.validCompTypes = projConfig['ProjectInfo']['validCompTypes']
-
 
 
 

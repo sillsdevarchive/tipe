@@ -75,6 +75,13 @@ class Project (object) :
 
 			self.orgLastEditDate    = self.lastEditDate
 
+		# Load the project vars if this is a valid project
+		if len(self._projConfig) :
+			for k in (  'projectType',                  'projectName',
+						'projectIDCode',                'validCompTypes',
+						'projectComponentBindingOrder') :
+				 setattr(self, k, self._projConfig['ProjectInfo'][k] if self._projConfig else None)
+
 		# Set some flags
 		self.writeOutProjConfFile = False
 		self.writeOutUserConfFile = False
@@ -180,6 +187,7 @@ class Project (object) :
 			elif os.path.isfile(os.path.join(os.path.dirname(pdir), '.project.conf' + self.lockExt)) :
 				terminal('Halt! Locked project already defined in parent folder')
 				return False
+
 			elif not os.path.isdir(os.path.dirname(pdir)) :
 				terminal('Halt! Not a valid (parent) path: ' + pdir)
 				return False
@@ -297,7 +305,11 @@ class Project (object) :
 		it.'''
 
 		# find component type for cid
-		ctype = self._projConfig['Components'][cid]['compType']
+		try :
+			ctype = self._projConfig['Components'][cid]['compType']
+		except :
+			self.writeToLog('ERR', 'Component: [' + cid + '] not found.', 'project.getComponent()')
+			return
 
 		# import component type module if not loaded
 		comp = self.initCompType(ctype)
@@ -323,6 +335,8 @@ class Project (object) :
 	def initCompType (self, ctype) :
 		'''Initialize a component type'''
 		''' create a component object of the right class'''
+
+# Need to start working here, have to return stuff for the component
 		print "Initializing: " + ctype
 		return Component(self)
 
